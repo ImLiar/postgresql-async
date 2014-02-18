@@ -24,9 +24,9 @@ import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{BufferDumper, ByteBufferUtils, Log}
 import java.nio.charset.Charset
 import scala.annotation.switch
-import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.codec.MessageToMessageEncoder
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.channel.ChannelHandlerContext
+import com.github.mauricio.netty.handler.codec.MessageToMessageEncoder
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object MySQLOneToOneEncoder {
   val log = Log.get[MySQLOneToOneEncoder]

@@ -18,8 +18,8 @@ package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ErrorMessage}
 import org.specs2.mutable.Specification
-import io.netty.util.CharsetUtil
-import io.netty.buffer.Unpooled
+import com.github.mauricio.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.Unpooled
 
 class ParserESpec extends Specification {
 

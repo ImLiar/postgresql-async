@@ -20,8 +20,8 @@ import com.github.mauricio.async.db.column._
 import com.github.mauricio.async.db.postgresql.column.ColumnTypes._
 import scala.annotation.switch
 import java.nio.charset.Charset
-import io.netty.util.CharsetUtil
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.general.ColumnData
 
 object PostgreSQLColumnDecoderRegistry {

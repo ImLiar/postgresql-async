@@ -1,7 +1,7 @@
 package com.github.mauricio.async.db.util
 
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
+import com.github.mauricio.netty.channel.nio.NioEventLoopGroup
+import com.github.mauricio.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory}
 
 /*
  * Copyright 2013 Maurício Linhares

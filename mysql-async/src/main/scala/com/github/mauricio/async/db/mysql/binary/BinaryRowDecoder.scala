@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
-import _root_.io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.exceptions.BufferNotFullyConsumedException
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 import com.github.mauricio.async.db.util._

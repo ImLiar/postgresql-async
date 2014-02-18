@@ -28,7 +28,7 @@ import scala.util.{Success, Failure, Try}
 import scala.concurrent.ExecutionContext
 import com.github.mauricio.async.db.util.ExecutorServiceUtils
 import com.github.mauricio.async.db.util.NettyUtils
-import io.netty.channel.EventLoopGroup
+import com.github.mauricio.netty.channel.EventLoopGroup
 
 object PostgreSQLConnectionFactory {
   val log = Log.get[PostgreSQLConnectionFactory]

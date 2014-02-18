@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.postgresql.util.{ArrayStreamingParserDelegat
 import scala.collection.IndexedSeq
 import scala.collection.mutable.{ArrayBuffer, Stack}
 import com.github.mauricio.async.db.general.ColumnData
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.mauricio.netty.buffer.{Unpooled, ByteBuf}
 import java.nio.charset.Charset
 
 class ArrayDecoder(private val decoder: ColumnDecoder) extends ColumnDecoder {

@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.column
 
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.column.ColumnDecoder
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.general.ColumnData

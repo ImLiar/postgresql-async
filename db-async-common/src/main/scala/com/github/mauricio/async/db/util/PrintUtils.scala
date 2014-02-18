@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.util
 
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object PrintUtils {
 

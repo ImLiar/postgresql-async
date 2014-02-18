@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, PreparedStatementExecuteMessage}
 import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 class ExecutePreparedStatementEncoder(
                                        charset: Charset,

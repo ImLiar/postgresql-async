@@ -26,9 +26,9 @@ import com.github.mauricio.async.db.util._
 import java.net.InetSocketAddress
 import scala.annotation.switch
 import scala.concurrent._
-import io.netty.channel._
-import io.netty.bootstrap.Bootstrap
-import io.netty.channel
+import com.github.mauricio.netty.channel._
+import com.github.mauricio.netty.bootstrap.Bootstrap
+import com.github.mauricio.netty.channel
 import scala.util.Failure
 import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
 import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
@@ -36,8 +36,8 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ProcessData
 import scala.util.Success
 import com.github.mauricio.async.db.postgresql.messages.backend.RowDescriptionMessage
 import com.github.mauricio.async.db.postgresql.messages.backend.ParameterStatusMessage
-import io.netty.channel.socket.nio.NioSocketChannel
-import io.netty.handler.codec.CodecException
+import com.github.mauricio.netty.channel.socket.nio.NioSocketChannel
+import com.github.mauricio.netty.handler.codec.CodecException
 
 object PostgreSQLConnectionHandler {
   final val log = Log.get[PostgreSQLConnectionHandler]

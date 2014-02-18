@@ -24,8 +24,8 @@ import com.github.mauricio.async.db.postgresql.messages.frontend._
 import com.github.mauricio.async.db.util.{BufferDumper, Log}
 import java.nio.charset.Charset
 import scala.annotation.switch
-import io.netty.handler.codec.MessageToMessageEncoder
-import io.netty.channel.ChannelHandlerContext
+import com.github.mauricio.netty.handler.codec.MessageToMessageEncoder
+import com.github.mauricio.netty.channel.ChannelHandlerContext
 
 object MessageEncoder {
   val log = Log.get[MessageEncoder]

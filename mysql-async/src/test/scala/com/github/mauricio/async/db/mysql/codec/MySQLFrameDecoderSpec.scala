@@ -16,15 +16,15 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
-import io.netty.buffer.ByteBuf
-import io.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.ByteBuf
+import com.github.mauricio.netty.util.CharsetUtil
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.util.ByteBufferUtils
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.mysql.message.server.OkMessage
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
-import io.netty.channel.embedded.EmbeddedChannel
+import com.github.mauricio.netty.channel.embedded.EmbeddedChannel
 
 class MySQLFrameDecoderSpec extends Specification {
 

@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.async.db.postgresql.messages.backend.{AuthenticationChallengeMD5, AuthenticationChallengeCleartextMessage, AuthenticationOkMessage, ServerMessage}
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object AuthenticationStartupParser extends MessageParser {
 

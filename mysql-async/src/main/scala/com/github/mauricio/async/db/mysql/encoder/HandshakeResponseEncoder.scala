@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.encoder
 
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.async.db.mysql.encoder.auth.MySQLNativePasswordAuthentication
 import com.github.mauricio.async.db.mysql.message.client.{HandshakeResponseMessage, ClientMessage}

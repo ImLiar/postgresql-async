@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
-import io.netty.buffer.Unpooled
-import io.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.Unpooled
+import com.github.mauricio.netty.util.CharsetUtil
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 import org.specs2.mutable.Specification

@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 import com.github.mauricio.async.db.general.ColumnData
 import com.github.mauricio.async.db.postgresql.messages.backend.PostgreSQLColumnData
 import com.github.mauricio.async.db.util.Log
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 import java.sql.Timestamp
 import java.util.{Calendar, Date}

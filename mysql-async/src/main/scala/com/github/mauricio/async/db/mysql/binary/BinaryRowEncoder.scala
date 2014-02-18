@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.mauricio.netty.buffer.{Unpooled, ByteBuf}
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.mysql.binary.encoder._
 import com.github.mauricio.async.db.util._

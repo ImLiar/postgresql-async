@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.mysql.util
 
 import com.github.mauricio.async.db.mysql.exceptions.CharsetMappingNotAvailableException
 import java.nio.charset.Charset
-import io.netty.util.CharsetUtil
+import com.github.mauricio.netty.util.CharsetUtil
 
 object CharsetMapper {
 

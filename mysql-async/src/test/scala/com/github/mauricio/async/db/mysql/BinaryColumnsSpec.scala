@@ -2,7 +2,7 @@ package com.github.mauricio.async.db.mysql
 
 import org.specs2.mutable.Specification
 import java.util.UUID
-import io.netty.util.CharsetUtil
+import com.github.mauricio.netty.util.CharsetUtil
 import com.github.mauricio.async.db.RowData
 
 class BinaryColumnsSpec extends Specification with ConnectionHelper {

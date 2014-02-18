@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 
 object ByteArrayDecoder extends BinaryDecoder {

@@ -17,8 +17,8 @@
 package com.github.mauricio.async.db.postgresql.column
 
 import com.github.mauricio.async.db.column.IntegerEncoderDecoder
-import io.netty.buffer.Unpooled
-import io.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.Unpooled
+import com.github.mauricio.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
 
 class ArrayDecoderSpec extends Specification {

@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.util
 
 import java.nio.charset.Charset
 import java.nio.ByteOrder
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.mauricio.netty.buffer.{Unpooled, ByteBuf}
 
 object ByteBufferUtils {
 

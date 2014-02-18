@@ -21,8 +21,8 @@ import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongExcepti
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ErrorMessage}
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.exceptions.NegativeMessageSizeException
-import io.netty.util.CharsetUtil
-import io.netty.buffer.Unpooled
+import com.github.mauricio.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.Unpooled
 import java.util
 
 class MessageDecoderSpec extends Specification {

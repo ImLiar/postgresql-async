@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{ColumnProcessingFinishedMessage, ServerMessage}
 
 object ColumnProcessingFinishedDecoder extends MessageDecoder {

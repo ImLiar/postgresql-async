@@ -22,9 +22,9 @@ import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.util.ByteBufferUtils.read3BytesInt
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.{BufferDumper, Log}
-import io.netty.buffer.ByteBuf
-import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.codec.ByteToMessageDecoder
+import com.github.mauricio.netty.buffer.ByteBuf
+import com.github.mauricio.netty.channel.ChannelHandlerContext
+import com.github.mauricio.netty.handler.codec.ByteToMessageDecoder
 import java.nio.ByteOrder
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger

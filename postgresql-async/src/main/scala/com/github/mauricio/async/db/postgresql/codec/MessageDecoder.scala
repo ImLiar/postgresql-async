@@ -22,9 +22,9 @@ import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupPar
 import com.github.mauricio.async.db.util.{BufferDumper, Log}
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.exceptions.NegativeMessageSizeException
-import io.netty.handler.codec.ByteToMessageDecoder
-import io.netty.channel.ChannelHandlerContext
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.handler.codec.ByteToMessageDecoder
+import com.github.mauricio.netty.channel.ChannelHandlerContext
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object MessageDecoder {
   val log = Log.get[MessageDecoder]

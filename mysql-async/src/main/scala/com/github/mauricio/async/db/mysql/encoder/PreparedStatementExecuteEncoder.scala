@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.encoder
 
-import io.netty.buffer.{ByteBuf, Unpooled}
+import com.github.mauricio.netty.buffer.{ByteBuf, Unpooled}
 import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import com.github.mauricio.async.db.mysql.message.client.{PreparedStatementExecuteMessage, ClientMessage}
 import com.github.mauricio.async.db.util.ByteBufferUtils

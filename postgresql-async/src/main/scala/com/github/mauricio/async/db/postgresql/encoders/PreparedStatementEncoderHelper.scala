@@ -20,7 +20,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import java.nio.charset.Charset
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.mauricio.netty.buffer.{Unpooled, ByteBuf}
 import scala.collection.mutable.ArrayBuffer
 
 object PreparedStatementEncoderHelper {

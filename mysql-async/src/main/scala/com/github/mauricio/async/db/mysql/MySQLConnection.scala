@@ -30,7 +30,7 @@ import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
-import io.netty.channel.{EventLoopGroup, ChannelHandlerContext}
+import com.github.mauricio.netty.channel.{EventLoopGroup, ChannelHandlerContext}
 import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
 import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
 import com.github.mauricio.async.db.mysql.message.server.ErrorMessage

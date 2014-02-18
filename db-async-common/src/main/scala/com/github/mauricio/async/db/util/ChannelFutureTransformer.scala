@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.util
 
-import io.netty.channel.{ChannelFutureListener, ChannelFuture}
+import com.github.mauricio.netty.channel.{ChannelFutureListener, ChannelFuture}
 import scala.concurrent.{Promise, Future}
 import com.github.mauricio.async.db.exceptions.CanceledChannelFutureException
 import scala.language.implicitConversions

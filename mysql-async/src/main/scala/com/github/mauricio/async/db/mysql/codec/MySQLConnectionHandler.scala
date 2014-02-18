@@ -24,11 +24,11 @@ import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
-import io.netty.bootstrap.Bootstrap
-import io.netty.buffer.ByteBufAllocator
-import io.netty.channel._
-import io.netty.channel.socket.nio.NioSocketChannel
-import io.netty.handler.codec.CodecException
+import com.github.mauricio.netty.bootstrap.Bootstrap
+import com.github.mauricio.netty.buffer.ByteBufAllocator
+import com.github.mauricio.netty.channel._
+import com.github.mauricio.netty.channel.socket.nio.NioSocketChannel
+import com.github.mauricio.netty.handler.codec.CodecException
 import java.net.InetSocketAddress
 import scala.Some
 import scala.annotation.switch
@@ -63,9 +63,9 @@ class MySQLConnectionHandler(
 
   def connect: Future[MySQLConnectionHandler] = {
     this.bootstrap.channel(classOf[NioSocketChannel])
-    this.bootstrap.handler(new ChannelInitializer[io.netty.channel.Channel]() {
+    this.bootstrap.handler(new ChannelInitializer[com.github.mauricio.netty.channel.Channel]() {
 
-      override def initChannel(channel: io.netty.channel.Channel): Unit = {
+      override def initChannel(channel: com.github.mauricio.netty.channel.Channel): Unit = {
         channel.pipeline.addLast(
           decoder,
           encoder,

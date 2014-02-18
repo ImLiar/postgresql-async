@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.util
 import com.github.mauricio.async.db.exceptions.UnknownLengthException
 import java.nio.charset.Charset
 import scala.language.implicitConversions
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object ChannelWrapper {
   implicit def bufferToWrapper( buffer : ByteBuf ) = new ChannelWrapper(buffer)

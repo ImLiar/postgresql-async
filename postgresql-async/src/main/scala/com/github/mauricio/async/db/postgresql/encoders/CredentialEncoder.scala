@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.postgresql.messages.frontend.{CredentialMess
 import com.github.mauricio.async.db.postgresql.util.PasswordHelper
 import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.mauricio.netty.buffer.{Unpooled, ByteBuf}
 
 class CredentialEncoder(charset: Charset) extends Encoder {
 

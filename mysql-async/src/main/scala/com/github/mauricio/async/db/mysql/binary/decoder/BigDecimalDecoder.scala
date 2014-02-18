@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.mysql.binary.decoder
 
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 class BigDecimalDecoder( charset : Charset ) extends BinaryDecoder {
   def decode(buffer: ByteBuf): Any = {

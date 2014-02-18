@@ -1,8 +1,8 @@
 package com.github.mauricio.async.db.util
 
 import org.specs2.mutable.Specification
-import io.netty.util.CharsetUtil
-import io.netty.buffer.Unpooled
+import com.github.mauricio.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.Unpooled
 
 /*
  * Copyright 2013 Maurício Linhares

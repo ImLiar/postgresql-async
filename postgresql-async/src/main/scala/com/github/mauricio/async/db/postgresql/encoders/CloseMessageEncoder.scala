@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.frontend.ClientMessage
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.mauricio.netty.buffer.{Unpooled, ByteBuf}
 
 object CloseMessageEncoder extends Encoder {
 

@@ -30,7 +30,7 @@ import messages.backend._
 import messages.frontend._
 import scala.Some
 import scala.concurrent._
-import io.netty.channel.EventLoopGroup
+import com.github.mauricio.netty.channel.EventLoopGroup
 import java.util.concurrent.CopyOnWriteArrayList
 
 object PostgreSQLConnection {
