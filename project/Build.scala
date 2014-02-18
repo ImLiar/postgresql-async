@@ -56,8 +56,11 @@ object Configuration {
     "joda-time" % "joda-time" % "2.3",
     "org.joda" % "joda-convert" % "1.5",
     "org.scala-lang" % "scala-library" % projectScalaVersion,
-    "io.netty" % "netty-all" % "4.0.14.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
+    "commons-logging" % "commons-logging" % "1.1.3" % "optional",
+    "org.jboss.marshalling" % "jboss-marshalling" % "1.3.18.GA" % "optional",
+    "com.jcraft" % "jzlib" % "1.1.2" % "optional",
+    "log4j" % "log4j" % "1.2.17" % "optional" intransitive(),
     specs2Dependency,
     logbackDependency
   )
@@ -76,7 +79,7 @@ object Configuration {
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
     scalaVersion := projectScalaVersion,
-    javacOptions := Seq("-source", "1.5", "-target", "1.5", "-encoding", "UTF8"),
+    javacOptions := Seq("-source", "1.7", "-target", "1.7", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,
     publishArtifact in Test := false,
