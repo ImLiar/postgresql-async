@@ -34,8 +34,9 @@ import io.netty.channel.EventLoopGroup
 import java.util.concurrent.CopyOnWriteArrayList
 
 object PostgreSQLConnection {
-  val Counter = new AtomicLong()
-  val ServerVersionKey = "server_version"
+  final val Counter = new AtomicLong()
+  final val ServerVersionKey = "server_version"
+  final val log = Log.get[PostgreSQLConnection]
 }
 
 class PostgreSQLConnection
@@ -59,8 +60,8 @@ class PostgreSQLConnection
     group,
     executionContext
   )
+
   private final val currentCount = Counter.incrementAndGet()
-  private final val log = Log.getByName(s"${this.getClass.getName}:${currentCount}")
   private final val preparedStatementsCounter = new AtomicInteger()
   private final implicit val internalExecutionContext = executionContext
 
@@ -149,6 +150,7 @@ class PostgreSQLConnection
       this.disconnect
     }
 
+    this.currentPreparedStatement.map(p => this.parsedStatements.remove(p.query))
     this.currentPreparedStatement = None
     this.failQueryPromise(e)
   }

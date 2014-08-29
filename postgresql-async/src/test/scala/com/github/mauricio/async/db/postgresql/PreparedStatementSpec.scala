@@ -20,6 +20,8 @@ import org.specs2.mutable.Specification
 import org.joda.time.LocalDate
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.exceptions.InsufficientParametersException
+import java.util.Date
+import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
 
 class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
@@ -116,7 +118,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           executeDdl(handler, this.messagesCreate)
           executeDdl(handler, create)
 
-          1.until(4).map {
+          foreach(1.until(4)) {
             x =>
               executePreparedStatement(handler, this.messagesInsert, Array(message, moment))
               executePreparedStatement(handler, insert, Array(otherMoment, otherMessage))
@@ -132,7 +134,6 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
               otherResult.columnNames must contain(allOf("id", "other_moment", "other_content")).inOrder
               otherResult(x - 1)("other_moment") === otherMoment
               otherResult(x - 1)("other_content") === otherMessage
-
           }
 
       }
@@ -250,7 +251,34 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
         handler =>
           val string = "someString"
           val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", Array(string)).rows.get
-          result(0)(0) == string
+          result(0)(0) === string
+      }
+    }
+
+    "fail if prepared statement has more variables than it was given" in {
+      withHandler {
+        handler =>
+          executeDdl(handler, messagesCreate)
+
+          handler.sendPreparedStatement(
+            "SELECT * FROM messages WHERE content = ? AND moment = ?",
+            Array("some content")) must throwAn[InsufficientParametersException]
+      }
+    }
+
+    "run prepared statement twice with bad and good values" in {
+      withHandler {
+        handler =>
+          val content = "Some Moment"
+
+          val query = "SELECT content FROM messages WHERE id = ?"
+
+          executeDdl(handler, messagesCreate)
+          executePreparedStatement(handler, this.messagesInsert, Array(Some(content), None))
+
+          executePreparedStatement(handler, query, Array("undefined")) must throwA[GenericDatabaseException]
+          val result = executePreparedStatement(handler, query, Array(1)).rows.get
+          result(0)(0) === content
       }
     }
 
