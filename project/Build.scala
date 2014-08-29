@@ -60,6 +60,7 @@ object Configuration {
     "commons-logging" % "commons-logging" % "1.1.3" % "optional",
     "org.jboss.marshalling" % "jboss-marshalling" % "1.3.18.GA" % "optional",
     "com.jcraft" % "jzlib" % "1.1.2" % "optional",
+    "com.google.protobuf" % "protobuf-java" % "2.5.0" % "optional",
     "log4j" % "log4j" % "1.2.17" % "optional" intransitive(),
     specs2Dependency,
     logbackDependency
