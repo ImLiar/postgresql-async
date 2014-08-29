@@ -55,7 +55,7 @@ object Configuration {
     "org.slf4j" % "slf4j-api" % "1.7.5",
     "joda-time" % "joda-time" % "2.3",
     "org.joda" % "joda-convert" % "1.5",
-    "io.netty" % "netty-all" % "4.0.18.Final",
+//    "io.netty" % "netty-all" % "4.0.18.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
     "commons-logging" % "commons-logging" % "1.1.3" % "optional",
     "org.jboss.marshalling" % "jboss-marshalling" % "1.3.18.GA" % "optional",
