@@ -46,7 +46,7 @@ object ProjectBuild extends Build {
 object Configuration {
 
   val commonVersion = "0.2.14-SNAPSHOT"
-  val projectScalaVersion = "2.11.0"
+  val projectScalaVersion = "2.10.4"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "2.3.11" % "test"
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
@@ -79,7 +79,7 @@ object Configuration {
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
     crossScalaVersions := Seq(projectScalaVersion, "2.10.4"),
-    javacOptions := Seq("-source", "1.6", "-target", "1.6", "-encoding", "UTF8"),
+    javacOptions := Seq("-source", "1.7", "-target", "1.7", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,
     parallelExecution := false,
