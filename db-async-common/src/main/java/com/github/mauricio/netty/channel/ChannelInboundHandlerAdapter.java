@@ -16,24 +16,24 @@
 package com.github.mauricio.netty.channel;
 
 /**
- * Abstract base class for {@link com.github.mauricio.netty.channel.ChannelInboundHandler} implementations which provide
+ * Abstract base class for {@link ChannelInboundHandler} implementations which provide
  * implementations of all of their methods.
  *
  * <p>
- * This implementation just forward the operation to the next {@link com.github.mauricio.netty.channel.ChannelHandler} in the
+ * This implementation just forward the operation to the next {@link ChannelHandler} in the
  * {@link ChannelPipeline}. Sub-classes may override a method implementation to change this.
  * </p>
  * <p>
- * Be aware that messages are not released after the {@link #channelRead(com.github.mauricio.netty.channel.ChannelHandlerContext, Object)}
- * method returns automatically. If you are looking for a {@link com.github.mauricio.netty.channel.ChannelInboundHandler} implementation that
- * releases the received messages automatically, please see {@link com.github.mauricio.netty.channel.SimpleChannelInboundHandler}.
+ * Be aware that messages are not released after the {@link #channelRead(ChannelHandlerContext, Object)}
+ * method returns automatically. If you are looking for a {@link ChannelInboundHandler} implementation that
+ * releases the received messages automatically, please see {@link SimpleChannelInboundHandler}.
  * </p>
  */
 public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireChannelRegistered()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireChannelRegistered()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -43,8 +43,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireChannelUnregistered()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireChannelUnregistered()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -54,8 +54,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireChannelActive()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireChannelActive()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -65,8 +65,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireChannelInactive()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireChannelInactive()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -76,8 +76,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireChannelRead(Object)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireChannelRead(Object)} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -87,8 +87,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireChannelReadComplete()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireChannelReadComplete()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -98,8 +98,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireUserEventTriggered(Object)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireUserEventTriggered(Object)} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -109,8 +109,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireChannelWritabilityChanged()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireChannelWritabilityChanged()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -120,8 +120,8 @@ public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implemen
     }
 
     /**
-     * Calls {@link com.github.mauricio.netty.channel.ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
+     * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */

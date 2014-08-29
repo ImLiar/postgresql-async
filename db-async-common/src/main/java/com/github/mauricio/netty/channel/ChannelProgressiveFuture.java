@@ -20,7 +20,7 @@ import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 import com.github.mauricio.netty.util.concurrent.ProgressiveFuture;
 
 /**
- * An special {@link com.github.mauricio.netty.channel.ChannelFuture} which is used to indicate the {@link FileRegion} transfer progress
+ * An special {@link ChannelFuture} which is used to indicate the {@link FileRegion} transfer progress
  */
 public interface ChannelProgressiveFuture extends ChannelFuture, ProgressiveFuture<Void> {
     @Override

@@ -16,45 +16,54 @@
 package com.github.mauricio.netty.channel.group;
 
 import com.github.mauricio.netty.bootstrap.ServerBootstrap;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.buffer.ByteBuf;
+import com.github.mauricio.netty.buffer.ByteBufHolder;
+import com.github.mauricio.netty.buffer.Unpooled;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelInboundHandlerAdapter;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.ServerChannel;
+import com.github.mauricio.netty.util.CharsetUtil;
+import com.github.mauricio.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.Set;
 
 /**
- * A thread-safe {@link java.util.Set} that contains open {@link Channel}s and provides
- * various bulk operations on them.  Using {@link com.github.mauricio.netty.channel.group.ChannelGroup}, you can
+ * A thread-safe {@link Set} that contains open {@link Channel}s and provides
+ * various bulk operations on them.  Using {@link ChannelGroup}, you can
  * categorize {@link Channel}s into a meaningful group (e.g. on a per-service
  * or per-state basis.)  A closed {@link Channel} is automatically removed from
  * the collection, so that you don't need to worry about the life cycle of the
  * added {@link Channel}.  A {@link Channel} can belong to more than one
- * {@link com.github.mauricio.netty.channel.group.ChannelGroup}.
+ * {@link ChannelGroup}.
  *
  * <h3>Broadcast a message to multiple {@link Channel}s</h3>
  * <p>
  * If you need to broadcast a message to more than one {@link Channel}, you can
- * add the {@link Channel}s associated with the recipients and call {@link com.github.mauricio.netty.channel.group.ChannelGroup#write(Object)}:
+ * add the {@link Channel}s associated with the recipients and call {@link ChannelGroup#write(Object)}:
  * <pre>
- * <strong>{@link com.github.mauricio.netty.channel.group.ChannelGroup} recipients =
- *         new {@link com.github.mauricio.netty.channel.group.DefaultChannelGroup}({@link com.github.mauricio.netty.util.concurrent.GlobalEventExecutor}.INSTANCE);</strong>
+ * <strong>{@link ChannelGroup} recipients =
+ *         new {@link DefaultChannelGroup}({@link GlobalEventExecutor}.INSTANCE);</strong>
  * recipients.add(channelA);
  * recipients.add(channelB);
  * ..
- * <strong>recipients.write({@link com.github.mauricio.netty.buffer.Unpooled}.copiedBuffer(
+ * <strong>recipients.write({@link Unpooled}.copiedBuffer(
  *         "Service will shut down for maintenance in 5 minutes.",
- *         {@link com.github.mauricio.netty.util.CharsetUtil}.UTF_8));</strong>
+ *         {@link CharsetUtil}.UTF_8));</strong>
  * </pre>
  *
- * <h3>Simplify shutdown process with {@link com.github.mauricio.netty.channel.group.ChannelGroup}</h3>
+ * <h3>Simplify shutdown process with {@link ChannelGroup}</h3>
  * <p>
  * If both {@link ServerChannel}s and non-{@link ServerChannel}s exist in the
- * same {@link com.github.mauricio.netty.channel.group.ChannelGroup}, any requested I/O operations on the group are
+ * same {@link ChannelGroup}, any requested I/O operations on the group are
  * performed for the {@link ServerChannel}s first and then for the others.
  * <p>
  * This rule is very useful when you shut down a server in one shot:
  *
  * <pre>
- * <strong>{@link com.github.mauricio.netty.channel.group.ChannelGroup} allChannels =
- *         new {@link com.github.mauricio.netty.channel.group.DefaultChannelGroup}({@link com.github.mauricio.netty.util.concurrent.GlobalEventExecutor}.INSTANCE);</strong>
+ * <strong>{@link ChannelGroup} allChannels =
+ *         new {@link DefaultChannelGroup}({@link GlobalEventExecutor}.INSTANCE);</strong>
  *
  * public static void main(String[] args) throws Exception {
  *     {@link ServerBootstrap} b = new {@link ServerBootstrap}(..);
@@ -94,9 +103,9 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
     /**
      * Writes the specified {@code message} to all {@link Channel}s in this
      * group. If the specified {@code message} is an instance of
-     * {@link com.github.mauricio.netty.buffer.ByteBuf}, it is automatically
-     * {@linkplain com.github.mauricio.netty.buffer.ByteBuf#duplicate() duplicated} to avoid a race
-     * condition. The same is true for {@link com.github.mauricio.netty.buffer.ByteBufHolder}. Please note that this operation is asynchronous as
+     * {@link ByteBuf}, it is automatically
+     * {@linkplain ByteBuf#duplicate() duplicated} to avoid a race
+     * condition. The same is true for {@link ByteBufHolder}. Please note that this operation is asynchronous as
      * {@link Channel#write(Object)} is.
      *
      * @return itself
@@ -106,9 +115,9 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
     /**
      * Writes the specified {@code message} to all {@link Channel}s in this
      * group that match the given {@link ChannelMatcher}. If the specified {@code message} is an instance of
-     * {@link com.github.mauricio.netty.buffer.ByteBuf}, it is automatically
-     * {@linkplain com.github.mauricio.netty.buffer.ByteBuf#duplicate() duplicated} to avoid a race
-     * condition. The same is true for {@link com.github.mauricio.netty.buffer.ByteBufHolder}. Please note that this operation is asynchronous as
+     * {@link ByteBuf}, it is automatically
+     * {@linkplain ByteBuf#duplicate() duplicated} to avoid a race
+     * condition. The same is true for {@link ByteBufHolder}. Please note that this operation is asynchronous as
      * {@link Channel#write(Object)} is.
      *
      * @return the {@link ChannelGroupFuture} instance that notifies when
@@ -119,8 +128,8 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
     /**
      * Flush all {@link Channel}s in this
      * group. If the specified {@code messages} are an instance of
-     * {@link com.github.mauricio.netty.buffer.ByteBuf}, it is automatically
-     * {@linkplain com.github.mauricio.netty.buffer.ByteBuf#duplicate() duplicated} to avoid a race
+     * {@link ByteBuf}, it is automatically
+     * {@linkplain ByteBuf#duplicate() duplicated} to avoid a race
      * condition. Please note that this operation is asynchronous as
      * {@link Channel#write(Object)} is.
      *
@@ -132,8 +141,8 @@ public interface ChannelGroup extends Set<Channel>, Comparable<ChannelGroup> {
     /**
      * Flush all {@link Channel}s in this group that match the given {@link ChannelMatcher}.
      * If the specified {@code messages} are an instance of
-     * {@link com.github.mauricio.netty.buffer.ByteBuf}, it is automatically
-     * {@linkplain com.github.mauricio.netty.buffer.ByteBuf#duplicate() duplicated} to avoid a race
+     * {@link ByteBuf}, it is automatically
+     * {@linkplain ByteBuf#duplicate() duplicated} to avoid a race
      * condition. Please note that this operation is asynchronous as
      * {@link Channel#write(Object)} is.
      *

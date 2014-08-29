@@ -25,11 +25,16 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * A virtual buffer which shows multiple buffers as a single merged buffer.  It is recommended to use
- * {@link ByteBufAllocator#compositeBuffer()} or {@link com.github.mauricio.netty.buffer.Unpooled#wrappedBuffer(com.github.mauricio.netty.buffer.ByteBuf...)} instead of calling the
+ * {@link ByteBufAllocator#compositeBuffer()} or {@link Unpooled#wrappedBuffer(ByteBuf...)} instead of calling the
  * constructor explicitly.
  */
 public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
@@ -95,12 +100,12 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Add the given {@link com.github.mauricio.netty.buffer.ByteBuf}.
+     * Add the given {@link ByteBuf}.
      *
-     * Be aware that this method does not increase the {@code writerIndex} of the {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
      * If you need to have it increased you need to handle it by your own.
      *
-     * @param buffer the {@link com.github.mauricio.netty.buffer.ByteBuf} to add
+     * @param buffer the {@link ByteBuf} to add
      */
     public CompositeByteBuf addComponent(ByteBuf buffer) {
         addComponent0(components.size(), buffer);
@@ -109,12 +114,12 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Add the given {@link com.github.mauricio.netty.buffer.ByteBuf}s.
+     * Add the given {@link ByteBuf}s.
      *
-     * Be aware that this method does not increase the {@code writerIndex} of the {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
      * If you need to have it increased you need to handle it by your own.
      *
-     * @param buffers the {@link com.github.mauricio.netty.buffer.ByteBuf}s to add
+     * @param buffers the {@link ByteBuf}s to add
      */
     public CompositeByteBuf addComponents(ByteBuf... buffers) {
         addComponents0(components.size(), buffers);
@@ -123,12 +128,12 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Add the given {@link com.github.mauricio.netty.buffer.ByteBuf}s.
+     * Add the given {@link ByteBuf}s.
      *
-     * Be aware that this method does not increase the {@code writerIndex} of the {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
      * If you need to have it increased you need to handle it by your own.
      *
-     * @param buffers the {@link com.github.mauricio.netty.buffer.ByteBuf}s to add
+     * @param buffers the {@link ByteBuf}s to add
      */
     public CompositeByteBuf addComponents(Iterable<ByteBuf> buffers) {
         addComponents0(components.size(), buffers);
@@ -137,13 +142,13 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Add the given {@link com.github.mauricio.netty.buffer.ByteBuf} on the specific index.
+     * Add the given {@link ByteBuf} on the specific index.
      *
-     * Be aware that this method does not increase the {@code writerIndex} of the {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
      * If you need to have it increased you need to handle it by your own.
      *
-     * @param cIndex the index on which the {@link com.github.mauricio.netty.buffer.ByteBuf} will be added
-     * @param buffer the {@link com.github.mauricio.netty.buffer.ByteBuf} to add
+     * @param cIndex the index on which the {@link ByteBuf} will be added
+     * @param buffer the {@link ByteBuf} to add
      */
     public CompositeByteBuf addComponent(int cIndex, ByteBuf buffer) {
         addComponent0(cIndex, buffer);
@@ -182,13 +187,13 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Add the given {@link com.github.mauricio.netty.buffer.ByteBuf}s on the specific index
+     * Add the given {@link ByteBuf}s on the specific index
      *
-     * Be aware that this method does not increase the {@code writerIndex} of the {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
      * If you need to have it increased you need to handle it by your own.
      *
-     * @param cIndex the index on which the {@link com.github.mauricio.netty.buffer.ByteBuf} will be added.
-     * @param buffers the {@link com.github.mauricio.netty.buffer.ByteBuf}s to add
+     * @param cIndex the index on which the {@link ByteBuf} will be added.
+     * @param buffers the {@link ByteBuf}s to add
      */
     public CompositeByteBuf addComponents(int cIndex, ByteBuf... buffers) {
         addComponents0(cIndex, buffers);
@@ -234,13 +239,13 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Add the given {@link com.github.mauricio.netty.buffer.ByteBuf}s on the specific index
+     * Add the given {@link ByteBuf}s on the specific index
      *
-     * Be aware that this method does not increase the {@code writerIndex} of the {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Be aware that this method does not increase the {@code writerIndex} of the {@link CompositeByteBuf}.
      * If you need to have it increased you need to handle it by your own.
      *
-     * @param cIndex the index on which the {@link com.github.mauricio.netty.buffer.ByteBuf} will be added.
-     * @param buffers the {@link com.github.mauricio.netty.buffer.ByteBuf}s to add
+     * @param cIndex the index on which the {@link ByteBuf} will be added.
+     * @param buffers the {@link ByteBuf}s to add
      */
     public CompositeByteBuf addComponents(int cIndex, Iterable<ByteBuf> buffers) {
         addComponents0(cIndex, buffers);
@@ -339,9 +344,9 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Remove the {@link com.github.mauricio.netty.buffer.ByteBuf} from the given index.
+     * Remove the {@link ByteBuf} from the given index.
      *
-     * @param cIndex the index on from which the {@link com.github.mauricio.netty.buffer.ByteBuf} will be remove
+     * @param cIndex the index on from which the {@link ByteBuf} will be remove
      */
     public CompositeByteBuf removeComponent(int cIndex) {
         checkComponentIndex(cIndex);
@@ -351,9 +356,9 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Remove the number of {@link com.github.mauricio.netty.buffer.ByteBuf}s starting from the given index.
+     * Remove the number of {@link ByteBuf}s starting from the given index.
      *
-     * @param cIndex the index on which the {@link com.github.mauricio.netty.buffer.ByteBuf}s will be started to removed
+     * @param cIndex the index on which the {@link ByteBuf}s will be started to removed
      * @param numComponents the number of components to remove
      */
     public CompositeByteBuf removeComponents(int cIndex, int numComponents) {
@@ -547,14 +552,14 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Return the current number of {@link com.github.mauricio.netty.buffer.ByteBuf}'s that are composed in this instance
+     * Return the current number of {@link ByteBuf}'s that are composed in this instance
      */
     public int numComponents() {
         return components.size();
     }
 
     /**
-     * Return the max number of {@link com.github.mauricio.netty.buffer.ByteBuf}'s that are composed in this instance
+     * Return the max number of {@link ByteBuf}'s that are composed in this instance
      */
     public int maxNumComponents() {
         return maxNumComponents;
@@ -1029,30 +1034,30 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Return the {@link com.github.mauricio.netty.buffer.ByteBuf} on the specified index
+     * Return the {@link ByteBuf} on the specified index
      *
-     * @param cIndex the index for which the {@link com.github.mauricio.netty.buffer.ByteBuf} should be returned
-     * @return buf the {@link com.github.mauricio.netty.buffer.ByteBuf} on the specified index
+     * @param cIndex the index for which the {@link ByteBuf} should be returned
+     * @return buf the {@link ByteBuf} on the specified index
      */
     public ByteBuf component(int cIndex) {
         return internalComponent(cIndex).duplicate();
     }
 
     /**
-     * Return the {@link com.github.mauricio.netty.buffer.ByteBuf} on the specified index
+     * Return the {@link ByteBuf} on the specified index
      *
-     * @param offset the offset for which the {@link com.github.mauricio.netty.buffer.ByteBuf} should be returned
-     * @return the {@link com.github.mauricio.netty.buffer.ByteBuf} on the specified index
+     * @param offset the offset for which the {@link ByteBuf} should be returned
+     * @return the {@link ByteBuf} on the specified index
      */
     public ByteBuf componentAtOffset(int offset) {
         return internalComponentAtOffset(offset).duplicate();
     }
 
     /**
-     * Return the internal {@link com.github.mauricio.netty.buffer.ByteBuf} on the specified index. Note that updating the indexes of the returned
+     * Return the internal {@link ByteBuf} on the specified index. Note that updating the indexes of the returned
      * buffer will lead to an undefined behavior of this buffer.
      *
-     * @param cIndex the index for which the {@link com.github.mauricio.netty.buffer.ByteBuf} should be returned
+     * @param cIndex the index for which the {@link ByteBuf} should be returned
      */
     public ByteBuf internalComponent(int cIndex) {
         checkComponentIndex(cIndex);
@@ -1060,10 +1065,10 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Return the internal {@link com.github.mauricio.netty.buffer.ByteBuf} on the specified offset. Note that updating the indexes of the returned
+     * Return the internal {@link ByteBuf} on the specified offset. Note that updating the indexes of the returned
      * buffer will lead to an undefined behavior of this buffer.
      *
-     * @param offset the offset for which the {@link com.github.mauricio.netty.buffer.ByteBuf} should be returned
+     * @param offset the offset for which the {@link ByteBuf} should be returned
      */
     public ByteBuf internalComponentAtOffset(int offset) {
         return findComponent(offset).buf;
@@ -1165,7 +1170,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Consolidate the composed {@link com.github.mauricio.netty.buffer.ByteBuf}s
+     * Consolidate the composed {@link ByteBuf}s
      */
     public CompositeByteBuf consolidate() {
         assert !freed;
@@ -1192,7 +1197,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Consolidate the composed {@link com.github.mauricio.netty.buffer.ByteBuf}s
+     * Consolidate the composed {@link ByteBuf}s
      *
      * @param cIndex the index on which to start to compose
      * @param numComponents the number of components to compose
@@ -1222,7 +1227,7 @@ public class CompositeByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Discard all {@link com.github.mauricio.netty.buffer.ByteBuf}s which are read.
+     * Discard all {@link ByteBuf}s which are read.
      */
     public CompositeByteBuf discardReadComponents() {
         assert !freed;

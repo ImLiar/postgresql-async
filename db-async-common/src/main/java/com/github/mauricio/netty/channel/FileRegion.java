@@ -18,15 +18,16 @@ package com.github.mauricio.netty.channel;
 import com.github.mauricio.netty.util.ReferenceCounted;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * A region of a file that is sent via a {@link com.github.mauricio.netty.channel.Channel} which supports
+ * A region of a file that is sent via a {@link Channel} which supports
  * <a href="http://en.wikipedia.org/wiki/Zero-copy">zero-copy file transfer</a>.
  *
  * <h3>Upgrade your JDK / JRE</h3>
  *
- * {@link java.nio.channels.FileChannel#transferTo(long, long, java.nio.channels.WritableByteChannel)} has at least
+ * {@link FileChannel#transferTo(long, long, WritableByteChannel)} has at least
  * four known bugs in the old versions of Sun JDK and perhaps its derived ones.
  * Please upgrade your JDK to 1.6.0_18 or later version if you are going to use
  * zero-copy file transfer.
@@ -44,12 +45,12 @@ import java.nio.channels.WritableByteChannel;
  * <h3>Check your operating system and JDK / JRE</h3>
  *
  * If your operating system (or JDK / JRE) does not support zero-copy file
- * transfer, sending a file with {@link com.github.mauricio.netty.channel.FileRegion} might fail or yield worse
+ * transfer, sending a file with {@link FileRegion} might fail or yield worse
  * performance.  For example, sending a large file doesn't work well in Windows.
  *
  * <h3>Not all transports support it</h3>
  *
- * Currently, the NIO transport is the only transport that supports {@link com.github.mauricio.netty.channel.FileRegion}.
+ * Currently, the NIO transport is the only transport that supports {@link FileRegion}.
  */
 public interface FileRegion extends ReferenceCounted {
 

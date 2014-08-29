@@ -23,6 +23,7 @@
 package com.github.mauricio.netty.util.internal.chmv8;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * One or more variables that together maintain an initially zero
@@ -32,7 +33,7 @@ import java.io.Serializable;
  * #longValue}) returns the current total combined across the
  * variables maintaining the sum.
  *
- * <p>This class is usually preferable to {@link java.util.concurrent.atomic.AtomicLong} when
+ * <p>This class is usually preferable to {@link AtomicLong} when
  * multiple threads update a common sum that is used for purposes such
  * as collecting statistics, not for fine-grained synchronization
  * control.  Under low update contention, the two classes have similar

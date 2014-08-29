@@ -45,7 +45,7 @@ public class LocalEventLoopGroup extends MultithreadEventLoopGroup {
      * Create a new instance
      *
      * @param nThreads          the number of threads to use
-     * @param threadFactory     the {@link java.util.concurrent.ThreadFactory} or {@code null} to use the default
+     * @param threadFactory     the {@link ThreadFactory} or {@code null} to use the default
      */
     public LocalEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
         super(nThreads, threadFactory);

@@ -21,15 +21,16 @@ import com.github.mauricio.netty.channel.ChannelHandler.Sharable;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.MessageToByteEncoder;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
- * An encoder which serializes a Java object into a {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * An encoder which serializes a Java object into a {@link ByteBuf}.
  * <p>
  * Please note that the serialized form this encoder produces is not
- * compatible with the standard {@link java.io.ObjectInputStream}.  Please use
- * {@link com.github.mauricio.netty.handler.codec.serialization.ObjectDecoder} or {@link com.github.mauricio.netty.handler.codec.serialization.ObjectDecoderInputStream} to ensure the
+ * compatible with the standard {@link ObjectInputStream}.  Please use
+ * {@link ObjectDecoder} or {@link ObjectDecoderInputStream} to ensure the
  * interoperability with this encoder.
  */
 @Sharable

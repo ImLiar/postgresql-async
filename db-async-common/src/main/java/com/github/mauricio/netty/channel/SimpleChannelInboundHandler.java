@@ -25,7 +25,7 @@ import com.github.mauricio.netty.util.internal.TypeParameterMatcher;
  *
  * <pre>
  *     public class StringHandler extends
- *             {@link com.github.mauricio.netty.channel.SimpleChannelInboundHandler}&lt;{@link String}&gt; {
+ *             {@link SimpleChannelInboundHandler}&lt;{@link String}&gt; {
  *
  *         {@code @Override}
  *         protected void channelRead0({@link ChannelHandlerContext} ctx, {@link String} message)
@@ -39,7 +39,7 @@ import com.github.mauricio.netty.util.internal.TypeParameterMatcher;
  *
  * <h3>Forward compatibility notice</h3>
  * <p>
- * Please keep in mind that {@link #channelRead0(ChannelHandlerContext, Object)} will be renamed to
+ * Please keep in mind that {@link #channelRead0(ChannelHandlerContext, I)} will be renamed to
  * {@code messageReceived(ChannelHandlerContext, I)} in 5.0.
  * </p>
  */
@@ -59,7 +59,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
      *
      * @param autoRelease   {@code true} if handled messages should be released automatically by pass them to
-     *                      {@link com.github.mauricio.netty.util.ReferenceCountUtil#release(Object)}.
+     *                      {@link ReferenceCountUtil#release(Object)}.
      */
     protected SimpleChannelInboundHandler(boolean autoRelease) {
         matcher = TypeParameterMatcher.find(this, SimpleChannelInboundHandler.class, "I");
@@ -78,7 +78,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
      *
      * @param inboundMessageType    The type of messages to match
      * @param autoRelease           {@code true} if handled messages should be released automatically by pass them to
-     *                              {@link com.github.mauricio.netty.util.ReferenceCountUtil#release(Object)}.
+     *                              {@link ReferenceCountUtil#release(Object)}.
      */
     protected SimpleChannelInboundHandler(Class<? extends I> inboundMessageType, boolean autoRelease) {
         matcher = TypeParameterMatcher.get(inboundMessageType);
@@ -118,7 +118,7 @@ public abstract class SimpleChannelInboundHandler<I> extends ChannelInboundHandl
      *
      * Is called for each message of type {@link I}.
      *
-     * @param ctx           the {@link ChannelHandlerContext} which this {@link com.github.mauricio.netty.channel.SimpleChannelInboundHandler}
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link SimpleChannelInboundHandler}
      *                      belongs to
      * @param msg           the message to handle
      * @throws Exception    is thrown if an error occurred

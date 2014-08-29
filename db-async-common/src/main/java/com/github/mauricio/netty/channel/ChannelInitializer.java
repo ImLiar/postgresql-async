@@ -15,34 +15,36 @@
  */
 package com.github.mauricio.netty.channel;
 
+import com.github.mauricio.netty.bootstrap.Bootstrap;
+import com.github.mauricio.netty.bootstrap.ServerBootstrap;
 import com.github.mauricio.netty.channel.ChannelHandler.Sharable;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 /**
- * A special {@link com.github.mauricio.netty.channel.ChannelInboundHandler} which offers an easy way to initialize a {@link com.github.mauricio.netty.channel.Channel} once it was
- * registered to its {@link com.github.mauricio.netty.channel.EventLoop}.
+ * A special {@link ChannelInboundHandler} which offers an easy way to initialize a {@link Channel} once it was
+ * registered to its {@link EventLoop}.
  *
- * Implementations are most often used in the context of {@link com.github.mauricio.netty.bootstrap.Bootstrap#handler(com.github.mauricio.netty.channel.ChannelHandler)} ,
- * {@link com.github.mauricio.netty.bootstrap.ServerBootstrap#handler(com.github.mauricio.netty.channel.ChannelHandler)} and {@link com.github.mauricio.netty.bootstrap.ServerBootstrap#childHandler(com.github.mauricio.netty.channel.ChannelHandler)} to
- * setup the {@link ChannelPipeline} of a {@link com.github.mauricio.netty.channel.Channel}.
+ * Implementations are most often used in the context of {@link Bootstrap#handler(ChannelHandler)} ,
+ * {@link ServerBootstrap#handler(ChannelHandler)} and {@link ServerBootstrap#childHandler(ChannelHandler)} to
+ * setup the {@link ChannelPipeline} of a {@link Channel}.
  *
  * <pre>
  *
- * public class MyChannelInitializer extends {@link com.github.mauricio.netty.channel.ChannelInitializer} {
- *     public void initChannel({@link com.github.mauricio.netty.channel.Channel} channel) {
+ * public class MyChannelInitializer extends {@link ChannelInitializer} {
+ *     public void initChannel({@link Channel} channel) {
  *         channel.pipeline().addLast("myHandler", new MyHandler());
  *     }
  * }
  *
- * {@link com.github.mauricio.netty.bootstrap.ServerBootstrap} bootstrap = ...;
+ * {@link ServerBootstrap} bootstrap = ...;
  * ...
  * bootstrap.childHandler(new MyChannelInitializer());
  * ...
  * </pre>
- * Be aware that this class is marked as {@link com.github.mauricio.netty.channel.ChannelHandler.Sharable} and so the implementation must be safe to be re-used.
+ * Be aware that this class is marked as {@link Sharable} and so the implementation must be safe to be re-used.
  *
- * @param <C>   A sub-type of {@link com.github.mauricio.netty.channel.Channel}
+ * @param <C>   A sub-type of {@link Channel}
  */
 @Sharable
 public abstract class ChannelInitializer<C extends Channel> extends ChannelInboundHandlerAdapter {
@@ -50,11 +52,11 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ChannelInitializer.class);
 
     /**
-     * This method will be called once the {@link com.github.mauricio.netty.channel.Channel} was registered. After the method returns this instance
-     * will be removed from the {@link ChannelPipeline} of the {@link com.github.mauricio.netty.channel.Channel}.
+     * This method will be called once the {@link Channel} was registered. After the method returns this instance
+     * will be removed from the {@link ChannelPipeline} of the {@link Channel}.
      *
-     * @param ch            the {@link com.github.mauricio.netty.channel.Channel} which was registered.
-     * @throws Exception    is thrown if an error occurs. In that case the {@link com.github.mauricio.netty.channel.Channel} will be closed.
+     * @param ch            the {@link Channel} which was registered.
+     * @throws Exception    is thrown if an error occurs. In that case the {@link Channel} will be closed.
      */
     protected abstract void initChannel(C ch) throws Exception;
 

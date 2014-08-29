@@ -20,6 +20,7 @@ import com.github.mauricio.netty.channel.ChannelConfig;
 import com.github.mauricio.netty.channel.MessageSizeEstimator;
 import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 
+import java.net.ServerSocket;
 import java.net.StandardSocketOptions;
 
 /**
@@ -28,7 +29,7 @@ import java.net.StandardSocketOptions;
  * <h3>Available options</h3>
  *
  * In addition to the options provided by {@link ChannelConfig},
- * {@link com.github.mauricio.netty.channel.socket.ServerSocketChannelConfig} allows the following options in the
+ * {@link ServerSocketChannelConfig} allows the following options in the
  * option map:
  *
  * <table border="1" cellspacing="0" cellpadding="6">
@@ -79,7 +80,7 @@ public interface ServerSocketChannelConfig extends ChannelConfig {
 
     /**
      * Sets the performance preferences as specified in
-     * {@link java.net.ServerSocket#setPerformancePreferences(int, int, int)}.
+     * {@link ServerSocket#setPerformancePreferences(int, int, int)}.
      */
     ServerSocketChannelConfig setPerformancePreferences(int connectionTime, int latency, int bandwidth);
 

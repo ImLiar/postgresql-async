@@ -16,10 +16,12 @@
 package com.github.mauricio.netty.channel.nio;
 
 
+import com.github.mauricio.netty.channel.Channel;
 import com.github.mauricio.netty.channel.ChannelException;
 import com.github.mauricio.netty.channel.EventLoopException;
 import com.github.mauricio.netty.channel.SingleThreadEventLoop;
 import com.github.mauricio.netty.channel.nio.AbstractNioChannel.NioUnsafe;
+import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.SystemPropertyUtil;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
@@ -31,14 +33,18 @@ import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * {@link com.github.mauricio.netty.channel.SingleThreadEventLoop} implementation which register the {@link com.github.mauricio.netty.channel.Channel}'s to a
- * {@link java.nio.channels.Selector} and so does the multi-plexing of these in the event loop.
+ * {@link SingleThreadEventLoop} implementation which register the {@link Channel}'s to a
+ * {@link Selector} and so does the multi-plexing of these in the event loop.
  *
  */
 public final class NioEventLoop extends SingleThreadEventLoop {
@@ -85,7 +91,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     }
 
     /**
-     * The NIO {@link java.nio.channels.Selector}.
+     * The NIO {@link Selector}.
      */
     Selector selector;
     private SelectedSelectionKeySet selectedKeys;
@@ -159,13 +165,13 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     @Override
     protected Queue<Runnable> newTaskQueue() {
         // This event loop never calls takeTask()
-        return new ConcurrentLinkedQueue<Runnable>();
+        return PlatformDependent.newMpscQueue();
     }
 
     /**
-     * Registers an arbitrary {@link java.nio.channels.SelectableChannel}, not necessarily created by Netty, to the {@link java.nio.channels.Selector}
-     * of this event loop.  Once the specified {@link java.nio.channels.SelectableChannel} is registered, the specified {@code task} will
-     * be executed by this event loop when the {@link java.nio.channels.SelectableChannel} is ready.
+     * Registers an arbitrary {@link SelectableChannel}, not necessarily created by Netty, to the {@link Selector}
+     * of this event loop.  Once the specified {@link SelectableChannel} is registered, the specified {@code task} will
+     * be executed by this event loop when the {@link SelectableChannel} is ready.
      */
     public void register(final SelectableChannel ch, final int interestOps, final NioTask<?> task) {
         if (ch == null) {
@@ -205,14 +211,14 @@ public final class NioEventLoop extends SingleThreadEventLoop {
      * {@code 50}, which means the event loop will try to spend the same amount of time for I/O as for non-I/O tasks.
      */
     public void setIoRatio(int ioRatio) {
-        if (ioRatio <= 0 || ioRatio >= 100) {
-            throw new IllegalArgumentException("ioRatio: " + ioRatio + " (expected: 0 < ioRatio < 100)");
+        if (ioRatio <= 0 || ioRatio > 100) {
+            throw new IllegalArgumentException("ioRatio: " + ioRatio + " (expected: 0 < ioRatio <= 100)");
         }
         this.ioRatio = ioRatio;
     }
 
     /**
-     * Replaces the current {@link java.nio.channels.Selector} of this event loop with newly created {@link java.nio.channels.Selector}s to work
+     * Replaces the current {@link Selector} of this event loop with newly created {@link Selector}s to work
      * around the infamous epoll 100% CPU bug.
      */
     public void rebuildSelector() {
@@ -247,7 +253,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 for (SelectionKey key: oldSelector.keys()) {
                     Object a = key.attachment();
                     try {
-                        if (key.channel().keyFor(newSelector) != null) {
+                        if (!key.isValid() || key.channel().keyFor(newSelector) != null) {
                             continue;
                         }
 
@@ -333,18 +339,19 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 }
 
                 cancelledKeys = 0;
-
-                final long ioStartTime = System.nanoTime();
                 needsToSelectAgain = false;
-                if (selectedKeys != null) {
-                    processSelectedKeysOptimized(selectedKeys.flip());
-                } else {
-                    processSelectedKeysPlain(selector.selectedKeys());
-                }
-                final long ioTime = System.nanoTime() - ioStartTime;
-
                 final int ioRatio = this.ioRatio;
-                runAllTasks(ioTime * (100 - ioRatio) / ioRatio);
+                if (ioRatio == 100) {
+                    processSelectedKeys();
+                    runAllTasks();
+                } else {
+                    final long ioStartTime = System.nanoTime();
+
+                    processSelectedKeys();
+
+                    final long ioTime = System.nanoTime() - ioStartTime;
+                    runAllTasks(ioTime * (100 - ioRatio) / ioRatio);
+                }
 
                 if (isShuttingDown()) {
                     closeAll();
@@ -363,6 +370,14 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                     // Ignore.
                 }
             }
+        }
+    }
+
+    private void processSelectedKeys() {
+        if (selectedKeys != null) {
+            processSelectedKeysOptimized(selectedKeys.flip());
+        } else {
+            processSelectedKeysPlain(selector.selectedKeys());
         }
     }
 

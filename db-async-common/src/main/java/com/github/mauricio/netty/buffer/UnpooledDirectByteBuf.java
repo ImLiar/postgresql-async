@@ -27,8 +27,8 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
 /**
- * A NIO {@link java.nio.ByteBuffer} based buffer.  It is recommended to use {@link Unpooled#directBuffer(int)}
- * and {@link Unpooled#wrappedBuffer(java.nio.ByteBuffer)} instead of calling the
+ * A NIO {@link ByteBuffer} based buffer.  It is recommended to use {@link Unpooled#directBuffer(int)}
+ * and {@link Unpooled#wrappedBuffer(ByteBuffer)} instead of calling the
  * constructor explicitly.
  */
 public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
@@ -99,14 +99,14 @@ public class UnpooledDirectByteBuf extends AbstractReferenceCountedByteBuf {
     }
 
     /**
-     * Allocate a new direct {@link java.nio.ByteBuffer} with the given initialCapacity.
+     * Allocate a new direct {@link ByteBuffer} with the given initialCapacity.
      */
     protected ByteBuffer allocateDirect(int initialCapacity) {
         return ByteBuffer.allocateDirect(initialCapacity);
     }
 
     /**
-     * Free a direct {@link java.nio.ByteBuffer}
+     * Free a direct {@link ByteBuffer}
      */
     protected void freeDirect(ByteBuffer buffer) {
         PlatformDependent.freeDirectBuffer(buffer);

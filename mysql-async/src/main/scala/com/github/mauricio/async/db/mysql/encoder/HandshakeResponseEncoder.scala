@@ -23,7 +23,7 @@ import com.github.mauricio.async.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.mauricio.async.db.mysql.message.client.{ClientMessage, HandshakeResponseMessage}
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{ByteBufferUtils, Log}
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object HandshakeResponseEncoder {
 

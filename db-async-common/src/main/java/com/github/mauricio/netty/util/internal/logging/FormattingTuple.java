@@ -40,7 +40,7 @@
 package com.github.mauricio.netty.util.internal.logging;
 
 /**
- * Holds the results of formatting done by {@link com.github.mauricio.netty.util.internal.logging.MessageFormatter}.
+ * Holds the results of formatting done by {@link MessageFormatter}.
  */
 class FormattingTuple {
 

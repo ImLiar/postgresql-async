@@ -16,7 +16,7 @@
 package com.github.mauricio.netty.handler.codec.serialization;
 
 /**
- * please use {@link com.github.mauricio.netty.handler.codec.serialization.ClassResolvers} as instance factory
+ * please use {@link ClassResolvers} as instance factory
  */
 public interface ClassResolver {
 

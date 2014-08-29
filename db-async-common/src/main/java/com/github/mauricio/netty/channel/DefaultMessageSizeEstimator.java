@@ -19,8 +19,8 @@ import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufHolder;
 
 /**
- * Default {@link com.github.mauricio.netty.channel.MessageSizeEstimator} implementation which supports the estimation of the size of
- * {@link com.github.mauricio.netty.buffer.ByteBuf}, {@link com.github.mauricio.netty.buffer.ByteBufHolder} and {@link FileRegion}.
+ * Default {@link MessageSizeEstimator} implementation which supports the estimation of the size of
+ * {@link ByteBuf}, {@link ByteBufHolder} and {@link FileRegion}.
  */
 public final class DefaultMessageSizeEstimator implements MessageSizeEstimator {
 

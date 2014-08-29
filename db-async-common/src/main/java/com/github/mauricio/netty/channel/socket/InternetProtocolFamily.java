@@ -16,7 +16,7 @@
 package com.github.mauricio.netty.channel.socket;
 
 /**
- * Internet Protocol (IP) families used byte the {@link com.github.mauricio.netty.channel.socket.DatagramChannel}
+ * Internet Protocol (IP) families used byte the {@link DatagramChannel}
  */
 public enum InternetProtocolFamily {
     IPv4,

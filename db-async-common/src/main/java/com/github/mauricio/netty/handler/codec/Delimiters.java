@@ -19,7 +19,7 @@ import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.Unpooled;
 
 /**
- * A set of commonly used delimiters for {@link com.github.mauricio.netty.handler.codec.DelimiterBasedFrameDecoder}.
+ * A set of commonly used delimiters for {@link DelimiterBasedFrameDecoder}.
  */
 public final class Delimiters {
 

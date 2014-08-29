@@ -23,7 +23,7 @@ import com.github.mauricio.netty.util.internal.StringUtil;
 import java.net.SocketAddress;
 
 /**
- * The default {@link com.github.mauricio.netty.channel.AddressedEnvelope} implementation.
+ * The default {@link AddressedEnvelope} implementation.
  *
  * @param <M> the type of the wrapped message
  * @param <A> the type of the recipient address

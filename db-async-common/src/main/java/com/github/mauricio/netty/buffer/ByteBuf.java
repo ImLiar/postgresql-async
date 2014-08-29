@@ -25,11 +25,12 @@ import java.nio.ByteOrder;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * A random and sequential accessible sequence of zero or more bytes (octets).
  * This interface provides an abstract view for one or more primitive byte
- * arrays ({@code byte[]}) and {@linkplain java.nio.ByteBuffer NIO buffers}.
+ * arrays ({@code byte[]}) and {@linkplain ByteBuffer NIO buffers}.
  *
  * <h3>Creation of a buffer</h3>
  *
@@ -39,14 +40,14 @@ import java.nio.charset.Charset;
  *
  * <h3>Random Access Indexing</h3>
  *
- * Just like an ordinary primitive byte array, {@link com.github.mauricio.netty.buffer.ByteBuf} uses
+ * Just like an ordinary primitive byte array, {@link ByteBuf} uses
  * <a href="http://en.wikipedia.org/wiki/Zero-based_numbering">zero-based indexing</a>.
  * It means the index of the first byte is always {@code 0} and the index of the last byte is
  * always {@link #capacity() capacity - 1}.  For example, to iterate all bytes of a buffer, you
  * can do the following, regardless of its internal implementation:
  *
  * <pre>
- * {@link com.github.mauricio.netty.buffer.ByteBuf} buffer = ...;
+ * {@link ByteBuf} buffer = ...;
  * for (int i = 0; i &lt; buffer.capacity(); i ++) {
  *     byte b = buffer.getByte(i);
  *     System.out.println((char) b);
@@ -55,7 +56,7 @@ import java.nio.charset.Charset;
  *
  * <h3>Sequential Access Indexing</h3>
  *
- * {@link com.github.mauricio.netty.buffer.ByteBuf} provides two pointer variables to support sequential
+ * {@link ByteBuf} provides two pointer variables to support sequential
  * read and write operations - {@link #readerIndex() readerIndex} for a read
  * operation and {@link #writerIndex() writerIndex} for a write operation
  * respectively.  The following diagram shows how a buffer is segmented into
@@ -76,7 +77,7 @@ import java.nio.charset.Charset;
  * starts with {@code read} or {@code skip} will get or skip the data at the
  * current {@link #readerIndex() readerIndex} and increase it by the number of
  * read bytes.  If the argument of the read operation is also a
- * {@link com.github.mauricio.netty.buffer.ByteBuf} and no destination index is specified, the specified
+ * {@link ByteBuf} and no destination index is specified, the specified
  * buffer's {@link #writerIndex() writerIndex} is increased together.
  * <p>
  * If there's not enough content left, {@link IndexOutOfBoundsException} is
@@ -85,7 +86,7 @@ import java.nio.charset.Charset;
  *
  * <pre>
  * // Iterates the readable bytes of a buffer.
- * {@link com.github.mauricio.netty.buffer.ByteBuf} buffer = ...;
+ * {@link ByteBuf} buffer = ...;
  * while (buffer.readable()) {
  *     System.out.println(buffer.readByte());
  * }
@@ -96,7 +97,7 @@ import java.nio.charset.Charset;
  * This segment is a undefined space which needs to be filled.  Any operation
  * whose name ends with {@code write} will write the data at the current
  * {@link #writerIndex() writerIndex} and increase it by the number of written
- * bytes.  If the argument of the write operation is also a {@link com.github.mauricio.netty.buffer.ByteBuf},
+ * bytes.  If the argument of the write operation is also a {@link ByteBuf},
  * and no source index is specified, the specified buffer's
  * {@link #readerIndex() readerIndex} is increased together.
  * <p>
@@ -108,7 +109,7 @@ import java.nio.charset.Charset;
  *
  * <pre>
  * // Fills the writable bytes of a buffer with random integers.
- * {@link com.github.mauricio.netty.buffer.ByteBuf} buffer = ...;
+ * {@link ByteBuf} buffer = ...;
  * while (buffer.maxWritableBytes() >= 4) {
  *     buffer.writeInt(random.nextInt());
  * }
@@ -152,7 +153,7 @@ import java.nio.charset.Charset;
  * {@link #writerIndex() writerIndex} to {@code 0} by calling {@link #clear()}.
  * It does not clear the buffer content (e.g. filling with {@code 0}) but just
  * clears the two pointers.  Please also note that the semantic of this
- * operation is different from {@link java.nio.ByteBuffer#clear()}.
+ * operation is different from {@link ByteBuffer#clear()}.
  *
  * <pre>
  *  BEFORE clear()
@@ -186,7 +187,7 @@ import java.nio.charset.Charset;
  * {@link #readerIndex() readerIndex} and the other is for storing
  * {@link #writerIndex() writerIndex}.  You can always reposition one of the
  * two indexes by calling a reset method.  It works in a similar fashion to
- * the mark and reset methods in {@link java.io.InputStream} except that there's no
+ * the mark and reset methods in {@link InputStream} except that there's no
  * {@code readlimit}.
  *
  * <h3>Derived buffers</h3>
@@ -204,19 +205,19 @@ import java.nio.charset.Charset;
  *
  * <h4>Byte array</h4>
  *
- * If a {@link com.github.mauricio.netty.buffer.ByteBuf} is backed by a byte array (i.e. {@code byte[]}),
+ * If a {@link ByteBuf} is backed by a byte array (i.e. {@code byte[]}),
  * you can access it directly via the {@link #array()} method.  To determine
  * if a buffer is backed by a byte array, {@link #hasArray()} should be used.
  *
  * <h4>NIO Buffers</h4>
  *
- * If a {@link com.github.mauricio.netty.buffer.ByteBuf} can be converted into an NIO {@link java.nio.ByteBuffer} which shares its
+ * If a {@link ByteBuf} can be converted into an NIO {@link ByteBuffer} which shares its
  * content (i.e. view buffer), you can get it via the {@link #nioBuffer()} method.  To determine
  * if a buffer can be converted into an NIO buffer, use {@link #nioBufferCount()}.
  *
  * <h4>Strings</h4>
  *
- * Various {@link #toString(java.nio.charset.Charset)} methods convert a {@link com.github.mauricio.netty.buffer.ByteBuf}
+ * Various {@link #toString(Charset)} methods convert a {@link ByteBuf}
  * into a {@link String}.  Please note that {@link #toString()} is not a
  * conversion method.
  *
@@ -322,7 +323,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * <pre>
      * // Create a buffer whose readerIndex, writerIndex and capacity are
      * // 0, 0 and 8 respectively.
-     * {@link com.github.mauricio.netty.buffer.ByteBuf} buf = {@link Unpooled}.buffer(8);
+     * {@link ByteBuf} buf = {@link Unpooled}.buffer(8);
      *
      * // IndexOutOfBoundsException is thrown because the specified
      * // readerIndex (2) cannot be greater than the current writerIndex (0).
@@ -335,7 +336,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * <pre>
      * // Create a buffer whose readerIndex, writerIndex and capacity are
      * // 0, 8 and 8 respectively.
-     * {@link com.github.mauricio.netty.buffer.ByteBuf} buf = {@link Unpooled}.wrappedBuffer(new byte[8]);
+     * {@link ByteBuf} buf = {@link Unpooled}.wrappedBuffer(new byte[8]);
      *
      * // readerIndex becomes 8.
      * buf.readLong();
@@ -467,7 +468,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf discardReadBytes();
 
     /**
-     * Similar to {@link com.github.mauricio.netty.buffer.ByteBuf#discardReadBytes()} except that this method might discard
+     * Similar to {@link ByteBuf#discardReadBytes()} except that this method might discard
      * some, all, or none of read bytes depending on its internal implementation to reduce
      * overall memory bandwidth consumption at the cost of potentially additional memory
      * consumption.
@@ -655,10 +656,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Transfers this buffer's data to the specified destination starting at
      * the specified absolute {@code index} until the destination becomes
      * non-writable.  This method is basically same with
-     * {@link #getBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)}, except that this
+     * {@link #getBytes(int, ByteBuf, int, int)}, except that this
      * method increases the {@code writerIndex} of the destination by the
      * number of the transferred bytes while
-     * {@link #getBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)} does not.
+     * {@link #getBytes(int, ByteBuf, int, int)} does not.
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * the source buffer (i.e. {@code this}).
      *
@@ -672,10 +673,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Transfers this buffer's data to the specified destination starting at
      * the specified absolute {@code index}.  This method is basically same
-     * with {@link #getBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)}, except that this
+     * with {@link #getBytes(int, ByteBuf, int, int)}, except that this
      * method increases the {@code writerIndex} of the destination by the
      * number of the transferred bytes while
-     * {@link #getBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)} does not.
+     * {@link #getBytes(int, ByteBuf, int, int)} does not.
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * the source buffer (i.e. {@code this}).
      *
@@ -766,7 +767,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *         if the specified {@code index} is less than {@code 0} or
      *         if {@code index + length} is greater than
      *            {@code this.capacity}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified stream threw an exception during I/O
      */
     public abstract ByteBuf getBytes(int index, OutputStream out, int length) throws IOException;
@@ -785,7 +786,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *         if the specified {@code index} is less than {@code 0} or
      *         if {@code index + length} is greater than
      *            {@code this.capacity}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified channel threw an exception during I/O
      */
     public abstract int getBytes(int index, GatheringByteChannel out, int length) throws IOException;
@@ -905,10 +906,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Transfers the specified source buffer's data to this buffer starting at
      * the specified absolute {@code index} until the source buffer becomes
      * unreadable.  This method is basically same with
-     * {@link #setBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)}, except that this
+     * {@link #setBytes(int, ByteBuf, int, int)}, except that this
      * method increases the {@code readerIndex} of the source buffer by
      * the number of the transferred bytes while
-     * {@link #setBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)} does not.
+     * {@link #setBytes(int, ByteBuf, int, int)} does not.
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * the source buffer (i.e. {@code this}).
      *
@@ -922,10 +923,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     /**
      * Transfers the specified source buffer's data to this buffer starting at
      * the specified absolute {@code index}.  This method is basically same
-     * with {@link #setBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)}, except that this
+     * with {@link #setBytes(int, ByteBuf, int, int)}, except that this
      * method increases the {@code readerIndex} of the source buffer by
      * the number of the transferred bytes while
-     * {@link #setBytes(int, com.github.mauricio.netty.buffer.ByteBuf, int, int)} does not.
+     * {@link #setBytes(int, ByteBuf, int, int)} does not.
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * the source buffer (i.e. {@code this}).
      *
@@ -1014,7 +1015,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * @throws IndexOutOfBoundsException
      *         if the specified {@code index} is less than {@code 0} or
      *         if {@code index + length} is greater than {@code this.capacity}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified stream threw an exception during I/O
      */
     public abstract int setBytes(int index, InputStream in, int length) throws IOException;
@@ -1033,7 +1034,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * @throws IndexOutOfBoundsException
      *         if the specified {@code index} is less than {@code 0} or
      *         if {@code index + length} is greater than {@code this.capacity}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified channel threw an exception during I/O
      */
     public abstract int  setBytes(int index, ScatteringByteChannel in, int length) throws IOException;
@@ -1204,9 +1205,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * the current {@code readerIndex} until the destination becomes
      * non-writable, and increases the {@code readerIndex} by the number of the
      * transferred bytes.  This method is basically same with
-     * {@link #readBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)}, except that this method
+     * {@link #readBytes(ByteBuf, int, int)}, except that this method
      * increases the {@code writerIndex} of the destination by the number of
-     * the transferred bytes while {@link #readBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)}
+     * the transferred bytes while {@link #readBytes(ByteBuf, int, int)}
      * does not.
      *
      * @throws IndexOutOfBoundsException
@@ -1219,10 +1220,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Transfers this buffer's data to the specified destination starting at
      * the current {@code readerIndex} and increases the {@code readerIndex}
      * by the number of the transferred bytes (= {@code length}).  This method
-     * is basically same with {@link #readBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)},
+     * is basically same with {@link #readBytes(ByteBuf, int, int)},
      * except that this method increases the {@code writerIndex} of the
      * destination by the number of the transferred bytes (= {@code length})
-     * while {@link #readBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)} does not.
+     * while {@link #readBytes(ByteBuf, int, int)} does not.
      *
      * @throws IndexOutOfBoundsException
      *         if {@code length} is greater than {@code this.readableBytes} or
@@ -1291,7 +1292,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *
      * @throws IndexOutOfBoundsException
      *         if {@code length} is greater than {@code this.readableBytes}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified stream threw an exception during I/O
      */
     public abstract ByteBuf readBytes(OutputStream out, int length) throws IOException;
@@ -1306,7 +1307,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *
      * @throws IndexOutOfBoundsException
      *         if {@code length} is greater than {@code this.readableBytes}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified channel threw an exception during I/O
      */
     public abstract int  readBytes(GatheringByteChannel out, int length) throws IOException;
@@ -1413,9 +1414,9 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * the current {@code writerIndex} until the source buffer becomes
      * unreadable, and increases the {@code writerIndex} by the number of
      * the transferred bytes.  This method is basically same with
-     * {@link #writeBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)}, except that this method
+     * {@link #writeBytes(ByteBuf, int, int)}, except that this method
      * increases the {@code readerIndex} of the source buffer by the number of
-     * the transferred bytes while {@link #writeBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)}
+     * the transferred bytes while {@link #writeBytes(ByteBuf, int, int)}
      * does not.
      *
      * @throws IndexOutOfBoundsException
@@ -1428,10 +1429,10 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Transfers the specified source buffer's data to this buffer starting at
      * the current {@code writerIndex} and increases the {@code writerIndex}
      * by the number of the transferred bytes (= {@code length}).  This method
-     * is basically same with {@link #writeBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)},
+     * is basically same with {@link #writeBytes(ByteBuf, int, int)},
      * except that this method increases the {@code readerIndex} of the source
      * buffer by the number of the transferred bytes (= {@code length}) while
-     * {@link #writeBytes(com.github.mauricio.netty.buffer.ByteBuf, int, int)} does not.
+     * {@link #writeBytes(ByteBuf, int, int)} does not.
      *
      * @param length the number of bytes to transfer
      *
@@ -1506,7 +1507,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *
      * @throws IndexOutOfBoundsException
      *         if {@code length} is greater than {@code this.writableBytes}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified stream threw an exception during I/O
      */
     public abstract int  writeBytes(InputStream in, int length) throws IOException;
@@ -1522,7 +1523,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *
      * @throws IndexOutOfBoundsException
      *         if {@code length} is greater than {@code this.writableBytes}
-     * @throws java.io.IOException
+     * @throws IOException
      *         if the specified channel threw an exception during I/O
      */
     public abstract int  writeBytes(ScatteringByteChannel in, int length) throws IOException;
@@ -1682,12 +1683,12 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf duplicate();
 
     /**
-     * Returns the maximum number of NIO {@link java.nio.ByteBuffer}s that consist this buffer.  Note that {@link #nioBuffers()}
-     * or {@link #nioBuffers(int, int)} might return a less number of {@link java.nio.ByteBuffer}s.
+     * Returns the maximum number of NIO {@link ByteBuffer}s that consist this buffer.  Note that {@link #nioBuffers()}
+     * or {@link #nioBuffers(int, int)} might return a less number of {@link ByteBuffer}s.
      *
-     * @return {@code -1} if this buffer has no underlying {@link java.nio.ByteBuffer}.
-     *         the number of the underlying {@link java.nio.ByteBuffer}s if this buffer has at least one underlying
-     *         {@link java.nio.ByteBuffer}.  Note that this method does not return {@code 0} to avoid confusion.
+     * @return {@code -1} if this buffer has no underlying {@link ByteBuffer}.
+     *         the number of the underlying {@link ByteBuffer}s if this buffer has at least one underlying
+     *         {@link ByteBuffer}.  Note that this method does not return {@code 0} to avoid confusion.
      *
      * @see #nioBuffer()
      * @see #nioBuffer(int, int)
@@ -1697,7 +1698,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract int nioBufferCount();
 
     /**
-     * Exposes this buffer's readable bytes as an NIO {@link java.nio.ByteBuffer}.  The returned buffer
+     * Exposes this buffer's readable bytes as an NIO {@link ByteBuffer}.  The returned buffer
      * shares the content with this buffer, while changing the position and limit of the returned
      * NIO buffer does not affect the indexes and marks of this buffer.  This method is identical
      * to {@code buf.nioBuffer(buf.readerIndex(), buf.readableBytes())}.  This method does not
@@ -1706,7 +1707,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * buffer and it adjusted its capacity.
      *
      * @throws UnsupportedOperationException
-     *         if this buffer cannot create a {@link java.nio.ByteBuffer} that shares the content with itself
+     *         if this buffer cannot create a {@link ByteBuffer} that shares the content with itself
      *
      * @see #nioBufferCount()
      * @see #nioBuffers()
@@ -1715,7 +1716,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuffer nioBuffer();
 
     /**
-     * Exposes this buffer's sub-region as an NIO {@link java.nio.ByteBuffer}.  The returned buffer
+     * Exposes this buffer's sub-region as an NIO {@link ByteBuffer}.  The returned buffer
      * shares the content with this buffer, while changing the position and limit of the returned
      * NIO buffer does not affect the indexes and marks of this buffer.  This method does not
      * modify {@code readerIndex} or {@code writerIndex} of this buffer.  Please note that the
@@ -1723,7 +1724,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * buffer and it adjusted its capacity.
      *
      * @throws UnsupportedOperationException
-     *         if this buffer cannot create a {@link java.nio.ByteBuffer} that shares the content with itself
+     *         if this buffer cannot create a {@link ByteBuffer} that shares the content with itself
      *
      * @see #nioBufferCount()
      * @see #nioBuffers()
@@ -1737,7 +1738,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuffer internalNioBuffer(int index, int length);
 
     /**
-     * Exposes this buffer's readable bytes as an NIO {@link java.nio.ByteBuffer}'s.  The returned buffer
+     * Exposes this buffer's readable bytes as an NIO {@link ByteBuffer}'s.  The returned buffer
      * shares the content with this buffer, while changing the position and limit of the returned
      * NIO buffer does not affect the indexes and marks of this buffer. This method does not
      * modify {@code readerIndex} or {@code writerIndex} of this buffer.  Please note that the
@@ -1746,7 +1747,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      *
      *
      * @throws UnsupportedOperationException
-     *         if this buffer cannot create a {@link java.nio.ByteBuffer} that shares the content with itself
+     *         if this buffer cannot create a {@link ByteBuffer} that shares the content with itself
      *
      * @see #nioBufferCount()
      * @see #nioBuffer()
@@ -1755,7 +1756,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuffer[] nioBuffers();
 
     /**
-     * Exposes this buffer's bytes as an NIO {@link java.nio.ByteBuffer}'s for the specified index and length
+     * Exposes this buffer's bytes as an NIO {@link ByteBuffer}'s for the specified index and length
      * The returned buffer shares the content with this buffer, while changing the position and limit
      * of the returned NIO buffer does not affect the indexes and marks of this buffer. This method does
      * not modify {@code readerIndex} or {@code writerIndex} of this buffer.  Please note that the
@@ -1763,7 +1764,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * buffer and it adjusted its capacity.
      *
      * @throws UnsupportedOperationException
-     *         if this buffer cannot create a {@link java.nio.ByteBuffer} that shares the content with itself
+     *         if this buffer cannot create a {@link ByteBuffer} that shares the content with itself
      *
      * @see #nioBufferCount()
      * @see #nioBuffer()
@@ -1816,7 +1817,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * This method does not modify {@code readerIndex} or {@code writerIndex} of
      * this buffer.
      *
-     * @throws java.nio.charset.UnsupportedCharsetException
+     * @throws UnsupportedCharsetException
      *         if the specified character set name is not supported by the
      *         current VM
      */
@@ -1848,7 +1849,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
      * Please note that it does not compare {@link #readerIndex()} nor
      * {@link #writerIndex()}.  This method also returns {@code false} for
      * {@code null} and an object which is not an instance of
-     * {@link com.github.mauricio.netty.buffer.ByteBuf} type.
+     * {@link ByteBuf} type.
      */
     @Override
     public abstract boolean equals(Object obj);

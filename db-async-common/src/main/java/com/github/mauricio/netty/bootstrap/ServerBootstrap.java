@@ -15,7 +15,18 @@
  */
 package com.github.mauricio.netty.bootstrap;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelFutureListener;
+import com.github.mauricio.netty.channel.ChannelHandler;
+import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelInboundHandlerAdapter;
+import com.github.mauricio.netty.channel.ChannelInitializer;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.channel.EventLoopGroup;
+import com.github.mauricio.netty.channel.ServerChannel;
 import com.github.mauricio.netty.channel.socket.SocketChannel;
 import com.github.mauricio.netty.util.AttributeKey;
 import com.github.mauricio.netty.util.internal.StringUtil;
@@ -101,8 +112,8 @@ public final class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, Se
     }
 
     /**
-     * Set the specific {@link com.github.mauricio.netty.util.AttributeKey} with the given value on every child {@link Channel}. If the value is
-     * {@code null} the {@link com.github.mauricio.netty.util.AttributeKey} is removed
+     * Set the specific {@link AttributeKey} with the given value on every child {@link Channel}. If the value is
+     * {@code null} the {@link AttributeKey} is removed
      */
     public <T> ServerBootstrap childAttr(AttributeKey<T> childKey, T value) {
         if (childKey == null) {

@@ -16,15 +16,18 @@
 package com.github.mauricio.netty.handler.codec;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelInboundHandler;
 import com.github.mauricio.netty.channel.ChannelInboundHandlerAdapter;
+import com.github.mauricio.netty.channel.ChannelPipeline;
 import com.github.mauricio.netty.util.ReferenceCountUtil;
+import com.github.mauricio.netty.util.ReferenceCounted;
 import com.github.mauricio.netty.util.internal.RecyclableArrayList;
 import com.github.mauricio.netty.util.internal.TypeParameterMatcher;
 
 import java.util.List;
 
 /**
- * {@link com.github.mauricio.netty.channel.ChannelInboundHandlerAdapter} which decodes from one message to an other message.
+ * {@link ChannelInboundHandlerAdapter} which decodes from one message to an other message.
  *
  *
  * For example here is an implementation which decodes a {@link String} to an {@link Integer} which represent
@@ -32,19 +35,19 @@ import java.util.List;
  *
  * <pre>
  *     public class StringToIntegerDecoder extends
- *             {@link com.github.mauricio.netty.handler.codec.MessageToMessageDecoder}&lt;{@link String}&gt; {
+ *             {@link MessageToMessageDecoder}&lt;{@link String}&gt; {
  *
  *         {@code @Override}
- *         public void decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link String} message,
+ *         public void decode({@link ChannelHandlerContext} ctx, {@link String} message,
  *                            List&lt;Object&gt; out) throws {@link Exception} {
  *             out.add(message.length());
  *         }
  *     }
  * </pre>
  *
- * Be aware that you need to call {@link com.github.mauricio.netty.util.ReferenceCounted#retain()} on messages that are just passed through if they
- * are of type {@link com.github.mauricio.netty.util.ReferenceCounted}. This is needed as the {@link com.github.mauricio.netty.handler.codec.MessageToMessageDecoder} will call
- * {@link com.github.mauricio.netty.util.ReferenceCounted#release()} on decoded messages.
+ * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
+ * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageDecoder} will call
+ * {@link ReferenceCounted#release()} on decoded messages.
  *
  */
 public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAdapter {
@@ -69,7 +72,7 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
 
     /**
      * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
-     * {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link com.github.mauricio.netty.channel.ChannelPipeline}.
+     * {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      */
     public boolean acceptInboundMessage(Object msg) throws Exception {
         return matcher.match(msg);
@@ -107,9 +110,9 @@ public abstract class MessageToMessageDecoder<I> extends ChannelInboundHandlerAd
      * Decode from one message to an other. This method will be called for each written message that can be handled
      * by this encoder.
      *
-     * @param ctx           the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.MessageToMessageDecoder} belongs to
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToMessageDecoder} belongs to
      * @param msg           the message to decode to an other one
-     * @param out           the {@link java.util.List} to which decoded messages should be added
+     * @param out           the {@link List} to which decoded messages should be added
      * @throws Exception    is thrown if an error accour
      */
     protected abstract void decode(ChannelHandlerContext ctx, I msg, List<Object> out) throws Exception;

@@ -17,7 +17,7 @@
 package com.github.mauricio.netty.util.concurrent;
 
 /**
- * A subtype of {@link com.github.mauricio.netty.util.concurrent.GenericFutureListener} that hides type parameter for convenience.
+ * A subtype of {@link GenericFutureListener} that hides type parameter for convenience.
  * <pre>
  * Future f = new DefaultPromise(..);
  * f.addListener(new FutureListener() {

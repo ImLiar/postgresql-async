@@ -29,15 +29,15 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Collection of method to handle objects that may implement {@link com.github.mauricio.netty.util.ReferenceCounted}.
+ * Collection of method to handle objects that may implement {@link ReferenceCounted}.
  */
 public final class ReferenceCountUtil {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ReferenceCountUtil.class);
 
     /**
-     * Try to call {@link com.github.mauricio.netty.util.ReferenceCounted#retain()} if the specified message implements {@link com.github.mauricio.netty.util.ReferenceCounted}.
-     * If the specified message doesn't implement {@link com.github.mauricio.netty.util.ReferenceCounted}, this method does nothing.
+     * Try to call {@link ReferenceCounted#retain()} if the specified message implements {@link ReferenceCounted}.
+     * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
      */
     @SuppressWarnings("unchecked")
     public static <T> T retain(T msg) {
@@ -48,8 +48,8 @@ public final class ReferenceCountUtil {
     }
 
     /**
-     * Try to call {@link com.github.mauricio.netty.util.ReferenceCounted#retain()} if the specified message implements {@link com.github.mauricio.netty.util.ReferenceCounted}.
-     * If the specified message doesn't implement {@link com.github.mauricio.netty.util.ReferenceCounted}, this method does nothing.
+     * Try to call {@link ReferenceCounted#retain()} if the specified message implements {@link ReferenceCounted}.
+     * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
      */
     @SuppressWarnings("unchecked")
     public static <T> T retain(T msg, int increment) {
@@ -60,8 +60,8 @@ public final class ReferenceCountUtil {
     }
 
     /**
-     * Try to call {@link com.github.mauricio.netty.util.ReferenceCounted#release()} if the specified message implements {@link com.github.mauricio.netty.util.ReferenceCounted}.
-     * If the specified message doesn't implement {@link com.github.mauricio.netty.util.ReferenceCounted}, this method does nothing.
+     * Try to call {@link ReferenceCounted#release()} if the specified message implements {@link ReferenceCounted}.
+     * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
      */
     public static boolean release(Object msg) {
         if (msg instanceof ReferenceCounted) {
@@ -71,8 +71,8 @@ public final class ReferenceCountUtil {
     }
 
     /**
-     * Try to call {@link com.github.mauricio.netty.util.ReferenceCounted#release()} if the specified message implements {@link com.github.mauricio.netty.util.ReferenceCounted}.
-     * If the specified message doesn't implement {@link com.github.mauricio.netty.util.ReferenceCounted}, this method does nothing.
+     * Try to call {@link ReferenceCounted#release()} if the specified message implements {@link ReferenceCounted}.
+     * If the specified message doesn't implement {@link ReferenceCounted}, this method does nothing.
      */
     public static boolean release(Object msg, int decrement) {
         if (msg instanceof ReferenceCounted) {

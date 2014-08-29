@@ -22,8 +22,8 @@ import com.github.mauricio.async.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.mauricio.async.db.mysql.message.server.{HandshakeMessage, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
-import io.netty.buffer.ByteBuf
-import io.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.ByteBuf
+import com.github.mauricio.netty.util.CharsetUtil
 
 object HandshakeV10Decoder {
   final val log = Log.get[HandshakeV10Decoder]

@@ -15,7 +15,11 @@
  */
 package com.github.mauricio.netty.handler.codec;
 
-import com.github.mauricio.netty.buffer.*;
+import com.github.mauricio.netty.buffer.ByteBuf;
+import com.github.mauricio.netty.buffer.ByteBufAllocator;
+import com.github.mauricio.netty.buffer.ByteBufProcessor;
+import com.github.mauricio.netty.buffer.SwappedByteBuf;
+import com.github.mauricio.netty.buffer.Unpooled;
 import com.github.mauricio.netty.util.Signal;
 import com.github.mauricio.netty.util.internal.StringUtil;
 
@@ -28,7 +32,7 @@ import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 
 /**
- * Special {@link com.github.mauricio.netty.buffer.ByteBuf} implementation which is used by the {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}
+ * Special {@link ByteBuf} implementation which is used by the {@link ReplayingDecoder}
  */
 final class ReplayingDecoderBuffer extends ByteBuf {
 
@@ -341,7 +345,7 @@ final class ReplayingDecoderBuffer extends ByteBuf {
     @Override
     public int forEachByte(ByteBufProcessor processor) {
         int ret = buffer.forEachByte(processor);
-        if (!terminated && ret < 0) {
+        if (ret < 0) {
             throw REPLAY;
         } else {
             return ret;

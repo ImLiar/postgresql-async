@@ -25,7 +25,7 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * Called once a bind operation is made.
      *
      * @param ctx           the {@link ChannelHandlerContext} for which the bind operation is made
-     * @param localAddress  the {@link java.net.SocketAddress} to which it should bound
+     * @param localAddress  the {@link SocketAddress} to which it should bound
      * @param promise       the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception    thrown if an error accour
      */
@@ -35,14 +35,14 @@ public interface ChannelOutboundHandler extends ChannelHandler {
      * Called once a connect operation is made.
      *
      * @param ctx               the {@link ChannelHandlerContext} for which the connect operation is made
-     * @param remoteAddress     the {@link java.net.SocketAddress} to which it should connect
-     * @param localAddress      the {@link java.net.SocketAddress} which is used as source on connect
+     * @param remoteAddress     the {@link SocketAddress} to which it should connect
+     * @param localAddress      the {@link SocketAddress} which is used as source on connect
      * @param promise           the {@link ChannelPromise} to notify once the operation completes
      * @throws Exception        thrown if an error accour
      */
     void connect(
-        ChannelHandlerContext ctx, SocketAddress remoteAddress,
-        SocketAddress localAddress, ChannelPromise promise) throws Exception;
+            ChannelHandlerContext ctx, SocketAddress remoteAddress,
+            SocketAddress localAddress, ChannelPromise promise) throws Exception;
 
     /**
      * Called once a disconnect operation is made.

@@ -31,7 +31,7 @@ public final class PendingWrite {
     };
 
     /**
-     * Create a new empty {@link com.github.mauricio.netty.util.internal.RecyclableArrayList} instance
+     * Create a new empty {@link RecyclableArrayList} instance
      */
     public static PendingWrite newInstance(Object msg, Promise<Void> promise) {
         PendingWrite pending = RECYCLER.get();
@@ -58,7 +58,7 @@ public final class PendingWrite {
     }
 
     /**
-     * Fails the underlying {@link com.github.mauricio.netty.util.concurrent.Promise} with the given cause and reycle this instance.
+     * Fails the underlying {@link Promise} with the given cause and reycle this instance.
      */
     public boolean failAndRecycle(Throwable cause) {
         ReferenceCountUtil.release(msg);
@@ -69,7 +69,7 @@ public final class PendingWrite {
     }
 
     /**
-     * Mark the underlying {@link com.github.mauricio.netty.util.concurrent.Promise} successed and reycle this instance.
+     * Mark the underlying {@link Promise} successed and reycle this instance.
      */
     public boolean successAndRecycle() {
         if (promise != null) {
@@ -87,7 +87,7 @@ public final class PendingWrite {
     }
 
     /**
-     * Recycle this instance and return the {@link com.github.mauricio.netty.util.concurrent.Promise}.
+     * Recycle this instance and return the {@link Promise}.
      */
     public Promise<Void> recycleAndGet() {
         Promise<Void> promise = this.promise;

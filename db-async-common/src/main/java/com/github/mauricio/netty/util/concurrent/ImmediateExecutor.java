@@ -18,7 +18,7 @@ package com.github.mauricio.netty.util.concurrent;
 import java.util.concurrent.Executor;
 
 /**
- * {@link java.util.concurrent.Executor} which execute tasks in the callers thread.
+ * {@link Executor} which execute tasks in the callers thread.
  */
 public final class ImmediateExecutor implements Executor {
     public static final ImmediateExecutor INSTANCE = new ImmediateExecutor();

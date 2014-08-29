@@ -27,7 +27,7 @@ import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import java.util.concurrent.atomic.{AtomicLong,AtomicReference}
 import scala.concurrent.{ExecutionContext, Promise, Future}
-import io.netty.channel.{EventLoopGroup, ChannelHandlerContext}
+import com.github.mauricio.netty.channel.{EventLoopGroup, ChannelHandlerContext}
 import scala.util.Failure
 import scala.Some
 import scala.util.Success

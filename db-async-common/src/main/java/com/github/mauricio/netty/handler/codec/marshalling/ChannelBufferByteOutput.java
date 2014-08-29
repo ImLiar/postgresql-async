@@ -21,7 +21,7 @@ import org.jboss.marshalling.ByteOutput;
 import java.io.IOException;
 
 /**
- * {@link ByteOutput} implementation which writes the data to a {@link com.github.mauricio.netty.buffer.ByteBuf}
+ * {@link ByteOutput} implementation which writes the data to a {@link ByteBuf}
  *
  *
  */
@@ -30,7 +30,7 @@ class ChannelBufferByteOutput implements ByteOutput {
     private final ByteBuf buffer;
 
     /**
-     * Create a new instance which use the given {@link com.github.mauricio.netty.buffer.ByteBuf}
+     * Create a new instance which use the given {@link ByteBuf}
      */
     public ChannelBufferByteOutput(ByteBuf buffer) {
         this.buffer = buffer;
@@ -62,7 +62,7 @@ class ChannelBufferByteOutput implements ByteOutput {
     }
 
     /**
-     * Return the {@link com.github.mauricio.netty.buffer.ByteBuf} which contains the written content
+     * Return the {@link ByteBuf} which contains the written content
      *
      */
     ByteBuf getBuffer() {

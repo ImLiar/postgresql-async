@@ -16,13 +16,14 @@
 package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 
 /**
  * Default implementation of {@link MarshallerProvider} which just create a new {@link Marshaller}
- * on ever {@link #getMarshaller(com.github.mauricio.netty.channel.ChannelHandlerContext)} call.
+ * on ever {@link #getMarshaller(ChannelHandlerContext)} call.
  */
 public class DefaultMarshallerProvider implements MarshallerProvider {
 

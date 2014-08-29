@@ -20,7 +20,7 @@ import com.github.mauricio.netty.buffer.ByteBufAllocator;
 
 
 /**
- * The {@link com.github.mauricio.netty.channel.RecvByteBufAllocator} that always yields the same buffer
+ * The {@link RecvByteBufAllocator} that always yields the same buffer
  * size prediction.  This predictor ignores the feed back from the I/O thread.
  */
 public class FixedRecvByteBufAllocator implements RecvByteBufAllocator {

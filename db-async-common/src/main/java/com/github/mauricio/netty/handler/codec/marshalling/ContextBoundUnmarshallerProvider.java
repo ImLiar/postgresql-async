@@ -15,6 +15,8 @@
  */
 package com.github.mauricio.netty.handler.codec.marshalling;
 
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelHandler;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.util.Attribute;
 import com.github.mauricio.netty.util.AttributeKey;
@@ -24,9 +26,9 @@ import org.jboss.marshalling.Unmarshaller;
 
 /**
  * {@link UnmarshallerProvider} which store a reference to the {@link Unmarshaller} in the
- * {@link com.github.mauricio.netty.channel.ChannelHandlerContext} via the {@link com.github.mauricio.netty.channel.ChannelHandlerContext#attr(com.github.mauricio.netty.util.AttributeKey)}
- * method. So the same {@link Unmarshaller} will be used during the life-time of a {@link com.github.mauricio.netty.channel.Channel}
- * for the {@link com.github.mauricio.netty.channel.ChannelHandler}'s {@link com.github.mauricio.netty.channel.ChannelHandlerContext}.
+ * {@link ChannelHandlerContext} via the {@link ChannelHandlerContext#attr(AttributeKey)}
+ * method. So the same {@link Unmarshaller} will be used during the life-time of a {@link Channel}
+ * for the {@link ChannelHandler}'s {@link ChannelHandlerContext}.
  *
  *
  */

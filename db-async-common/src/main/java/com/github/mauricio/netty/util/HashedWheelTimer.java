@@ -35,13 +35,13 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * A {@link com.github.mauricio.netty.util.Timer} optimized for approximated I/O timeout scheduling.
+ * A {@link Timer} optimized for approximated I/O timeout scheduling.
  *
  * <h3>Tick Duration</h3>
  *
  * As described with 'approximated', this timer does not execute the scheduled
- * {@link com.github.mauricio.netty.util.TimerTask} on time.  {@link com.github.mauricio.netty.util.HashedWheelTimer}, on every tick, will
- * check if there are any {@link com.github.mauricio.netty.util.TimerTask}s behind the schedule and execute
+ * {@link TimerTask} on time.  {@link HashedWheelTimer}, on every tick, will
+ * check if there are any {@link TimerTask}s behind the schedule and execute
  * them.
  * <p>
  * You can increase or decrease the accuracy of the execution timing by
@@ -52,22 +52,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * <h3>Ticks per Wheel (Wheel Size)</h3>
  *
- * {@link com.github.mauricio.netty.util.HashedWheelTimer} maintains a data structure called 'wheel'.
- * To put simply, a wheel is a hash table of {@link com.github.mauricio.netty.util.TimerTask}s whose hash
+ * {@link HashedWheelTimer} maintains a data structure called 'wheel'.
+ * To put simply, a wheel is a hash table of {@link TimerTask}s whose hash
  * function is 'dead line of the task'.  The default number of ticks per wheel
  * (i.e. the size of the wheel) is 512.  You could specify a larger value
  * if you are going to schedule a lot of timeouts.
  *
  * <h3>Do not create many instances.</h3>
  *
- * {@link com.github.mauricio.netty.util.HashedWheelTimer} creates a new thread whenever it is instantiated and
+ * {@link HashedWheelTimer} creates a new thread whenever it is instantiated and
  * started.  Therefore, you should make sure to create only one instance and
  * share it across your application.  One of the common mistakes, that makes
  * your application unresponsive, is to create a new instance for every connection.
  *
  * <h3>Implementation Details</h3>
  *
- * {@link com.github.mauricio.netty.util.HashedWheelTimer} is based on
+ * {@link HashedWheelTimer} is based on
  * <a href="http://cseweb.ucsd.edu/users/varghese/">George Varghese</a> and
  * Tony Lauck's paper,
  * <a href="http://cseweb.ucsd.edu/users/varghese/PAPERS/twheel.ps.Z">'Hashed
@@ -103,7 +103,7 @@ public class HashedWheelTimer implements Timer {
 
     /**
      * Creates a new timer with the default thread factory
-     * ({@link java.util.concurrent.Executors#defaultThreadFactory()}), default tick duration, and
+     * ({@link Executors#defaultThreadFactory()}), default tick duration, and
      * default number of ticks per wheel.
      */
     public HashedWheelTimer() {
@@ -112,7 +112,7 @@ public class HashedWheelTimer implements Timer {
 
     /**
      * Creates a new timer with the default thread factory
-     * ({@link java.util.concurrent.Executors#defaultThreadFactory()}) and default number of ticks
+     * ({@link Executors#defaultThreadFactory()}) and default number of ticks
      * per wheel.
      *
      * @param tickDuration   the duration between tick
@@ -126,7 +126,7 @@ public class HashedWheelTimer implements Timer {
 
     /**
      * Creates a new timer with the default thread factory
-     * ({@link java.util.concurrent.Executors#defaultThreadFactory()}).
+     * ({@link Executors#defaultThreadFactory()}).
      *
      * @param tickDuration   the duration between tick
      * @param unit           the time unit of the {@code tickDuration}
@@ -142,9 +142,9 @@ public class HashedWheelTimer implements Timer {
      * Creates a new timer with the default tick duration and default number of
      * ticks per wheel.
      *
-     * @param threadFactory  a {@link java.util.concurrent.ThreadFactory} that creates a
+     * @param threadFactory  a {@link ThreadFactory} that creates a
      *                       background {@link Thread} which is dedicated to
-     *                       {@link com.github.mauricio.netty.util.TimerTask} execution.
+     *                       {@link TimerTask} execution.
      * @throws NullPointerException if {@code threadFactory} is {@code null}
      */
     public HashedWheelTimer(ThreadFactory threadFactory) {
@@ -154,9 +154,9 @@ public class HashedWheelTimer implements Timer {
     /**
      * Creates a new timer with the default number of ticks per wheel.
      *
-     * @param threadFactory  a {@link java.util.concurrent.ThreadFactory} that creates a
+     * @param threadFactory  a {@link ThreadFactory} that creates a
      *                       background {@link Thread} which is dedicated to
-     *                       {@link com.github.mauricio.netty.util.TimerTask} execution.
+     *                       {@link TimerTask} execution.
      * @param tickDuration   the duration between tick
      * @param unit           the time unit of the {@code tickDuration}
      * @throws NullPointerException     if either of {@code threadFactory} and {@code unit} is {@code null}
@@ -170,9 +170,9 @@ public class HashedWheelTimer implements Timer {
     /**
      * Creates a new timer.
      *
-     * @param threadFactory  a {@link java.util.concurrent.ThreadFactory} that creates a
+     * @param threadFactory  a {@link ThreadFactory} that creates a
      *                       background {@link Thread} which is dedicated to
-     *                       {@link com.github.mauricio.netty.util.TimerTask} execution.
+     *                       {@link TimerTask} execution.
      * @param tickDuration   the duration between tick
      * @param unit           the time unit of the {@code tickDuration}
      * @param ticksPerWheel  the size of the wheel

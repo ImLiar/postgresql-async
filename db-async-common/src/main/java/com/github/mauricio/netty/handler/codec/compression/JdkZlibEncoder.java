@@ -16,7 +16,11 @@
 package com.github.mauricio.netty.handler.codec.compression;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelFutureListener;
+import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.ChannelPromiseNotifier;
 import com.github.mauricio.netty.util.concurrent.EventExecutor;
 
 import java.util.concurrent.TimeUnit;
@@ -25,7 +29,7 @@ import java.util.zip.Deflater;
 
 
 /**
- * Compresses a {@link com.github.mauricio.netty.buffer.ByteBuf} using the deflate algorithm.
+ * Compresses a {@link ByteBuf} using the deflate algorithm.
  */
 public class JdkZlibEncoder extends ZlibEncoder {
 
@@ -44,7 +48,7 @@ public class JdkZlibEncoder extends ZlibEncoder {
 
     /**
      * Creates a new zlib encoder with the default compression level ({@code 6})
-     * and the default wrapper ({@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB}).
+     * and the default wrapper ({@link ZlibWrapper#ZLIB}).
      *
      * @throws CompressionException if failed to initialize zlib
      */
@@ -54,7 +58,7 @@ public class JdkZlibEncoder extends ZlibEncoder {
 
     /**
      * Creates a new zlib encoder with the specified {@code compressionLevel}
-     * and the default wrapper ({@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB}).
+     * and the default wrapper ({@link ZlibWrapper#ZLIB}).
      *
      * @param compressionLevel
      *        {@code 1} yields the fastest compression and {@code 9} yields the
@@ -109,7 +113,7 @@ public class JdkZlibEncoder extends ZlibEncoder {
     /**
      * Creates a new zlib encoder with the default compression level ({@code 6})
      * and the specified preset dictionary.  The wrapper is always
-     * {@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB} because it is the only format that supports
+     * {@link ZlibWrapper#ZLIB} because it is the only format that supports
      * the preset dictionary.
      *
      * @param dictionary  the preset dictionary
@@ -123,7 +127,7 @@ public class JdkZlibEncoder extends ZlibEncoder {
     /**
      * Creates a new zlib encoder with the specified {@code compressionLevel}
      * and the specified preset dictionary.  The wrapper is always
-     * {@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB} because it is the only format that supports
+     * {@link ZlibWrapper#ZLIB} because it is the only format that supports
      * the preset dictionary.
      *
      * @param compressionLevel
@@ -192,8 +196,20 @@ public class JdkZlibEncoder extends ZlibEncoder {
             return;
         }
 
-        byte[] inAry = new byte[uncompressed.readableBytes()];
-        uncompressed.readBytes(inAry);
+        int len = uncompressed.readableBytes();
+        int offset;
+        byte[] inAry;
+        if (uncompressed.hasArray()) {
+            // if it is backed by an array we not need to to do a copy at all
+            inAry = uncompressed.array();
+            offset = uncompressed.arrayOffset() + uncompressed.readerIndex();
+            // skip all bytes as we will consume all of them
+            uncompressed.skipBytes(len);
+        } else {
+            inAry = new byte[len];
+            uncompressed.readBytes(inAry);
+            offset = 0;
+        }
 
         int sizeEstimate = (int) Math.ceil(inAry.length * 1.001) + 12;
 
@@ -215,10 +231,10 @@ public class JdkZlibEncoder extends ZlibEncoder {
         }
 
         if (wrapper == ZlibWrapper.GZIP) {
-            crc.update(inAry);
+            crc.update(inAry, offset, len);
         }
 
-        deflater.setInput(inAry);
+        deflater.setInput(inAry, offset, len);
         while (!deflater.needsInput()) {
             deflate(out);
         }

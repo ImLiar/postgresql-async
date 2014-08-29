@@ -15,6 +15,7 @@
  */
 package com.github.mauricio.netty.handler.codec.compression;
 
+import static com.github.mauricio.netty.handler.codec.compression.Snappy.validateChecksum;
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufUtil;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
@@ -23,10 +24,8 @@ import com.github.mauricio.netty.handler.codec.ByteToMessageDecoder;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.github.mauricio.netty.handler.codec.compression.Snappy.validateChecksum;
-
 /**
- * Uncompresses a {@link com.github.mauricio.netty.buffer.ByteBuf} encoded with the Snappy framing format.
+ * Uncompresses a {@link ByteBuf} encoded with the Snappy framing format.
  *
  * See http://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
  *

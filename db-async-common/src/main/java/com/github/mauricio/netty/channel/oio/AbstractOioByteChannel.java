@@ -16,7 +16,12 @@
 package com.github.mauricio.netty.channel.oio;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelMetadata;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.channel.FileRegion;
 import com.github.mauricio.netty.channel.socket.ChannelInputShutdownEvent;
 import com.github.mauricio.netty.util.internal.StringUtil;
 
@@ -31,7 +36,7 @@ public abstract class AbstractOioByteChannel extends AbstractOioChannel {
     private static final ChannelMetadata METADATA = new ChannelMetadata(false);
 
     /**
-     * @see com.github.mauricio.netty.channel.oio.AbstractOioByteChannel#AbstractOioByteChannel(com.github.mauricio.netty.channel.Channel)
+     * @see AbstractOioByteChannel#AbstractOioByteChannel(Channel)
      */
     protected AbstractOioByteChannel(Channel parent) {
         super(parent);
@@ -179,7 +184,7 @@ public abstract class AbstractOioByteChannel extends AbstractOioChannel {
     /**
      * Read bytes from the underlying Socket.
      *
-     * @param buf           the {@link com.github.mauricio.netty.buffer.ByteBuf} into which the read bytes will be written
+     * @param buf           the {@link ByteBuf} into which the read bytes will be written
      * @return amount       the number of bytes read. This may return a negative amount if the underlying
      *                      Socket was closed
      * @throws Exception    is thrown if an error occurred
@@ -187,9 +192,9 @@ public abstract class AbstractOioByteChannel extends AbstractOioChannel {
     protected abstract int doReadBytes(ByteBuf buf) throws Exception;
 
     /**
-     * Write the data which is hold by the {@link com.github.mauricio.netty.buffer.ByteBuf} to the underlying Socket.
+     * Write the data which is hold by the {@link ByteBuf} to the underlying Socket.
      *
-     * @param buf           the {@link com.github.mauricio.netty.buffer.ByteBuf} which holds the data to transfer
+     * @param buf           the {@link ByteBuf} which holds the data to transfer
      * @throws Exception    is thrown if an error occurred
      */
     protected abstract void doWriteBytes(ByteBuf buf) throws Exception;

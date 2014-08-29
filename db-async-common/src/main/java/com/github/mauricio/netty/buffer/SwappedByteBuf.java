@@ -25,7 +25,7 @@ import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.Charset;
 
 /**
- * Wrapper which swap the {@link java.nio.ByteOrder} of a {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * Wrapper which swap the {@link ByteOrder} of a {@link ByteBuf}.
  */
 public final class SwappedByteBuf extends ByteBuf {
 

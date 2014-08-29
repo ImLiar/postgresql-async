@@ -19,7 +19,7 @@ import com.github.mauricio.netty.channel.Channel;
 import com.github.mauricio.netty.channel.ServerChannel;
 
 /**
- * Helper class which provides often used {@link com.github.mauricio.netty.channel.group.ChannelMatcher} implementations.
+ * Helper class which provides often used {@link ChannelMatcher} implementations.
  */
 public final class ChannelMatchers {
 
@@ -38,28 +38,28 @@ public final class ChannelMatchers {
     }
 
     /**
-     * Returns a {@link com.github.mauricio.netty.channel.group.ChannelMatcher} that matches all {@link com.github.mauricio.netty.channel.Channel}s.
+     * Returns a {@link ChannelMatcher} that matches all {@link Channel}s.
      */
     public static ChannelMatcher all() {
         return ALL_MATCHER;
     }
 
     /**
-     * Returns a {@link com.github.mauricio.netty.channel.group.ChannelMatcher} that matches all {@link com.github.mauricio.netty.channel.Channel}s except the given.
+     * Returns a {@link ChannelMatcher} that matches all {@link Channel}s except the given.
      */
     public static ChannelMatcher isNot(Channel channel) {
         return invert(is(channel));
     }
 
     /**
-     * Returns a {@link com.github.mauricio.netty.channel.group.ChannelMatcher} that matches the given {@link com.github.mauricio.netty.channel.Channel}.
+     * Returns a {@link ChannelMatcher} that matches the given {@link Channel}.
      */
     public static ChannelMatcher is(Channel channel) {
         return new InstanceMatcher(channel);
     }
 
     /**
-     * Returns a {@link com.github.mauricio.netty.channel.group.ChannelMatcher} that matches all {@link com.github.mauricio.netty.channel.Channel}s that are an instance of sub-type of
+     * Returns a {@link ChannelMatcher} that matches all {@link Channel}s that are an instance of sub-type of
      * the given class.
      */
     public static ChannelMatcher isInstanceOf(Class<? extends Channel> clazz) {
@@ -67,7 +67,7 @@ public final class ChannelMatchers {
     }
 
     /**
-     * Returns a {@link com.github.mauricio.netty.channel.group.ChannelMatcher} that matches all {@link com.github.mauricio.netty.channel.Channel}s that are <strong>not</strong> an
+     * Returns a {@link ChannelMatcher} that matches all {@link Channel}s that are <strong>not</strong> an
      * instance of sub-type of the given class.
      */
     public static ChannelMatcher isNotInstanceOf(Class<? extends Channel> clazz) {
@@ -75,29 +75,29 @@ public final class ChannelMatchers {
     }
 
     /**
-     * Returns a {@link com.github.mauricio.netty.channel.group.ChannelMatcher} that matches all {@link com.github.mauricio.netty.channel.Channel}s that are of type {@link com.github.mauricio.netty.channel.ServerChannel}.
+     * Returns a {@link ChannelMatcher} that matches all {@link Channel}s that are of type {@link ServerChannel}.
      */
     public static ChannelMatcher isServerChannel() {
          return SERVER_CHANNEL_MATCHER;
     }
 
     /**
-     * Returns a {@link com.github.mauricio.netty.channel.group.ChannelMatcher} that matches all {@link com.github.mauricio.netty.channel.Channel}s that are <strong>not</strong> of type
-     * {@link com.github.mauricio.netty.channel.ServerChannel}.
+     * Returns a {@link ChannelMatcher} that matches all {@link Channel}s that are <strong>not</strong> of type
+     * {@link ServerChannel}.
      */
     public static ChannelMatcher isNonServerChannel() {
         return NON_SERVER_CHANNEL_MATCHER;
     }
 
     /**
-     * Invert the given {@link com.github.mauricio.netty.channel.group.ChannelMatcher}.
+     * Invert the given {@link ChannelMatcher}.
      */
     public static ChannelMatcher invert(ChannelMatcher matcher) {
         return new InvertMatcher(matcher);
     }
 
     /**
-     * Return a composite of the given {@link com.github.mauricio.netty.channel.group.ChannelMatcher}s. This means all {@link com.github.mauricio.netty.channel.group.ChannelMatcher} must
+     * Return a composite of the given {@link ChannelMatcher}s. This means all {@link ChannelMatcher} must
      * return {@code true} to match.
      */
     public static ChannelMatcher compose(ChannelMatcher... matchers) {

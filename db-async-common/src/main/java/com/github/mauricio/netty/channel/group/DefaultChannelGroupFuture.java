@@ -18,9 +18,20 @@ package com.github.mauricio.netty.channel.group;
 import com.github.mauricio.netty.channel.Channel;
 import com.github.mauricio.netty.channel.ChannelFuture;
 import com.github.mauricio.netty.channel.ChannelFutureListener;
-import com.github.mauricio.netty.util.concurrent.*;
+import com.github.mauricio.netty.util.concurrent.BlockingOperationException;
+import com.github.mauricio.netty.util.concurrent.DefaultPromise;
+import com.github.mauricio.netty.util.concurrent.EventExecutor;
+import com.github.mauricio.netty.util.concurrent.Future;
+import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
+import com.github.mauricio.netty.util.concurrent.ImmediateEventExecutor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**

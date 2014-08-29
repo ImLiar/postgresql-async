@@ -17,7 +17,15 @@ package com.github.mauricio.netty.channel.socket.oio;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufHolder;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.AddressedEnvelope;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelMetadata;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 import com.github.mauricio.netty.channel.oio.AbstractOioMessageChannel;
 import com.github.mauricio.netty.channel.socket.DatagramChannel;
 import com.github.mauricio.netty.channel.socket.DatagramChannelConfig;
@@ -30,16 +38,22 @@ import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * An OIO datagram {@link com.github.mauricio.netty.channel.Channel} that sends and receives an
- * {@link com.github.mauricio.netty.channel.AddressedEnvelope AddressedEnvelope<ByteBuf, SocketAddress>}.
+ * An OIO datagram {@link Channel} that sends and receives an
+ * {@link AddressedEnvelope AddressedEnvelope<ByteBuf, SocketAddress>}.
  *
- * @see com.github.mauricio.netty.channel.AddressedEnvelope
- * @see com.github.mauricio.netty.channel.socket.DatagramPacket
+ * @see AddressedEnvelope
+ * @see DatagramPacket
  */
 public class OioDatagramChannel extends AbstractOioMessageChannel
                                 implements DatagramChannel {
@@ -63,16 +77,16 @@ public class OioDatagramChannel extends AbstractOioMessageChannel
     }
 
     /**
-     * Create a new instance with an new {@link java.net.MulticastSocket}.
+     * Create a new instance with an new {@link MulticastSocket}.
      */
     public OioDatagramChannel() {
         this(newSocket());
     }
 
     /**
-     * Create a new instance from the given {@link java.net.MulticastSocket}.
+     * Create a new instance from the given {@link MulticastSocket}.
      *
-     * @param socket    the {@link java.net.MulticastSocket} which is used by this instance
+     * @param socket    the {@link MulticastSocket} which is used by this instance
      */
     public OioDatagramChannel(MulticastSocket socket) {
         super(null);
@@ -112,8 +126,9 @@ public class OioDatagramChannel extends AbstractOioMessageChannel
 
     @Override
     public boolean isActive() {
-        return isOpen() && (config.getOption(ChannelOption.DATAGRAM_CHANNEL_ACTIVE_ON_REGISTRATION) && isRegistered())
-                || socket.isBound();
+        return isOpen()
+            && ((config.getOption(ChannelOption.DATAGRAM_CHANNEL_ACTIVE_ON_REGISTRATION) && isRegistered())
+                 || socket.isBound());
     }
 
     @Override

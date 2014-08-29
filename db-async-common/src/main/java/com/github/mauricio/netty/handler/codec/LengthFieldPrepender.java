@@ -24,7 +24,7 @@ import com.github.mauricio.netty.channel.ChannelHandlerContext;
  * An encoder that prepends the length of the message.  The length value is
  * prepended as a binary form.
  * <p>
- * For example, <tt>{@link com.github.mauricio.netty.handler.codec.LengthFieldPrepender}(2)</tt> will encode the
+ * For example, <tt>{@link LengthFieldPrepender}(2)</tt> will encode the
  * following 12-bytes string:
  * <pre>
  * +----------------+

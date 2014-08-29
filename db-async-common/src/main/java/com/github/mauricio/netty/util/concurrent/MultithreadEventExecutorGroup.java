@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Abstract base class for {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} implementations that handles their tasks with multiple threads at
+ * Abstract base class for {@link EventExecutorGroup} implementations that handles their tasks with multiple threads at
  * the same time.
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
@@ -33,13 +33,14 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     private final AtomicInteger childIndex = new AtomicInteger();
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+    private final EventExecutorChooser chooser;
 
     /**
      * Create a new instance.
      *
      * @param nThreads          the number of threads that will be used by this instance.
      * @param threadFactory     the ThreadFactory to use, or {@code null} if the default should be used.
-     * @param args              arguments which will passed to each {@link #newChild(java.util.concurrent.ThreadFactory, Object...)} call
+     * @param args              arguments which will passed to each {@link #newChild(ThreadFactory, Object...)} call
      */
     protected MultithreadEventExecutorGroup(int nThreads, ThreadFactory threadFactory, Object... args) {
         if (nThreads <= 0) {
@@ -51,6 +52,12 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         }
 
         children = new SingleThreadEventExecutor[nThreads];
+        if (isPowerOfTwo(children.length)) {
+            chooser = new PowerOfTwoEventExecutorChooser();
+        } else {
+            chooser = new GenericEventExecutorChooser();
+        }
+
         for (int i = 0; i < nThreads; i ++) {
             boolean success = false;
             try {
@@ -100,7 +107,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
     @Override
     public EventExecutor next() {
-        return children[Math.abs(childIndex.getAndIncrement() % children.length)];
+        return chooser.next();
     }
 
     @Override
@@ -109,7 +116,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
     }
 
     /**
-     * Return the number of {@link com.github.mauricio.netty.util.concurrent.EventExecutor} this implementation uses. This number is the maps
+     * Return the number of {@link EventExecutor} this implementation uses. This number is the maps
      * 1:1 to the threads it use.
      */
     public final int executorCount() {
@@ -127,7 +134,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
     /**
      * Create a new EventExecutor which will later then accessible via the {@link #next()}  method. This method will be
-     * called for each thread that will serve this {@link com.github.mauricio.netty.util.concurrent.MultithreadEventExecutorGroup}.
+     * called for each thread that will serve this {@link MultithreadEventExecutorGroup}.
      *
      */
     protected abstract EventExecutor newChild(
@@ -200,5 +207,27 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         }
         return isTerminated();
+    }
+
+    private static boolean isPowerOfTwo(int val) {
+        return (val & -val) == val;
+    }
+
+    private interface EventExecutorChooser {
+        EventExecutor next();
+    }
+
+    private final class PowerOfTwoEventExecutorChooser implements EventExecutorChooser {
+        @Override
+        public EventExecutor next() {
+            return children[childIndex.getAndIncrement() & children.length - 1];
+        }
+    }
+
+    private final class GenericEventExecutorChooser implements EventExecutorChooser {
+        @Override
+        public EventExecutor next() {
+            return children[Math.abs(childIndex.getAndIncrement() % children.length)];
+        }
     }
 }

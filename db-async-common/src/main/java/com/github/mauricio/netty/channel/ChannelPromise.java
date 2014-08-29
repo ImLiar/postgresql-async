@@ -20,7 +20,7 @@ import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 import com.github.mauricio.netty.util.concurrent.Promise;
 
 /**
- * Special {@link com.github.mauricio.netty.channel.ChannelFuture} which is writable.
+ * Special {@link ChannelFuture} which is writable.
  */
 public interface ChannelPromise extends ChannelFuture, Promise<Void> {
 

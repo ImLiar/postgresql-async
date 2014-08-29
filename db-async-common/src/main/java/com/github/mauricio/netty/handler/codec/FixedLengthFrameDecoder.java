@@ -21,14 +21,14 @@ import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import java.util.List;
 
 /**
- * A decoder that splits the received {@link com.github.mauricio.netty.buffer.ByteBuf}s by the fixed number
+ * A decoder that splits the received {@link ByteBuf}s by the fixed number
  * of bytes. For example, if you received the following four fragmented packets:
  * <pre>
  * +---+----+------+----+
  * | A | BC | DEFG | HI |
  * +---+----+------+----+
  * </pre>
- * A {@link com.github.mauricio.netty.handler.codec.FixedLengthFrameDecoder}{@code (3)} will decode them into the
+ * A {@link FixedLengthFrameDecoder}{@code (3)} will decode them into the
  * following three packets with the fixed length:
  * <pre>
  * +-----+-----+-----+
@@ -62,11 +62,11 @@ public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
     }
 
     /**
-     * Create a frame out of the {@link com.github.mauricio.netty.buffer.ByteBuf} and return it.
+     * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} belongs to
-     * @param   in              the {@link com.github.mauricio.netty.buffer.ByteBuf} from which to read data
-     * @return  frame           the {@link com.github.mauricio.netty.buffer.ByteBuf} which represent the frame or {@code null} if no frame could
+     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param   in              the {@link ByteBuf} from which to read data
+     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
      *                          be created.
      */
     protected Object decode(

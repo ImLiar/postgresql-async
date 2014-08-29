@@ -17,7 +17,7 @@
 package com.github.mauricio.netty.util.concurrent;
 
 /**
- * A {@link com.github.mauricio.netty.util.concurrent.Future} which is used to indicate the progress of an operation.
+ * A {@link Future} which is used to indicate the progress of an operation.
  */
 public interface ProgressiveFuture<V> extends Future<V> {
 

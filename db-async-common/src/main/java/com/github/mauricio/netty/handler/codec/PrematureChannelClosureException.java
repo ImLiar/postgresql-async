@@ -15,8 +15,10 @@
  */
 package com.github.mauricio.netty.handler.codec;
 
+import com.github.mauricio.netty.channel.Channel;
+
 /**
- * A {@link CodecException} which is thrown when a {@link com.github.mauricio.netty.channel.Channel} is closed unexpectedly before
+ * A {@link CodecException} which is thrown when a {@link Channel} is closed unexpectedly before
  * the codec finishes handling the current message, such as missing response while waiting for a
  * request.
  */

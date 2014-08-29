@@ -20,7 +20,7 @@ import com.github.mauricio.netty.channel.ServerChannel;
 import java.net.InetSocketAddress;
 
 /**
- * A TCP/IP {@link com.github.mauricio.netty.channel.ServerChannel} which accepts incoming TCP/IP connections.
+ * A TCP/IP {@link ServerChannel} which accepts incoming TCP/IP connections.
  */
 public interface ServerSocketChannel extends ServerChannel {
     @Override

@@ -16,8 +16,8 @@
 package com.github.mauricio.netty.channel;
 
 /**
- * {@link com.github.mauricio.netty.channel.SingleThreadEventLoop} which is used to handle OIO {@link com.github.mauricio.netty.channel.Channel}'s. So in general there will be
- * one {@link com.github.mauricio.netty.channel.ThreadPerChannelEventLoop} per {@link com.github.mauricio.netty.channel.Channel}.
+ * {@link SingleThreadEventLoop} which is used to handle OIO {@link Channel}'s. So in general there will be
+ * one {@link ThreadPerChannelEventLoop} per {@link Channel}.
  *
  */
 public class ThreadPerChannelEventLoop extends SingleThreadEventLoop {

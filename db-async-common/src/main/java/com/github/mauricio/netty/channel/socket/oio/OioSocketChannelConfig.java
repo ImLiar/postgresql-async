@@ -17,6 +17,7 @@ package com.github.mauricio.netty.channel.socket.oio;
 
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
 import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelOption;
 import com.github.mauricio.netty.channel.MessageSizeEstimator;
 import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 import com.github.mauricio.netty.channel.socket.SocketChannelConfig;
@@ -26,15 +27,15 @@ import com.github.mauricio.netty.channel.socket.SocketChannelConfig;
  *
  * <h3>Available options</h3>
  *
- * In addition to the options provided by {@link com.github.mauricio.netty.channel.socket.SocketChannelConfig},
- * {@link com.github.mauricio.netty.channel.socket.oio.OioSocketChannelConfig} allows the following options in the
+ * In addition to the options provided by {@link SocketChannelConfig},
+ * {@link OioSocketChannelConfig} allows the following options in the
  * option map:
  *
  * <table border="1" cellspacing="0" cellpadding="6">
  * <tr>
  * <th>Name</th><th>Associated setter method</th>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#SO_TIMEOUT}</td><td>{@link #setSoTimeout(int)}</td>
+ * <td>{@link ChannelOption#SO_TIMEOUT}</td><td>{@link #setSoTimeout(int)}</td>
  * </tr>
  * </table>
  */

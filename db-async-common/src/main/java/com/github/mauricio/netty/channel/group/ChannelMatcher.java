@@ -19,14 +19,14 @@ package com.github.mauricio.netty.channel.group;
 import com.github.mauricio.netty.channel.Channel;
 
 /**
- * Allows to only match some {@link com.github.mauricio.netty.channel.Channel}'s for operations in {@link com.github.mauricio.netty.channel.group.ChannelGroup}.
+ * Allows to only match some {@link Channel}'s for operations in {@link ChannelGroup}.
  *
  * {@link ChannelMatchers} provide you with helper methods for usual needed implementations.
  */
 public interface ChannelMatcher {
 
     /**
-     * Returns {@code true} if the operation should be also executed on the given {@link com.github.mauricio.netty.channel.Channel}.
+     * Returns {@code true} if the operation should be also executed on the given {@link Channel}.
      */
     boolean matches(Channel channel);
 }

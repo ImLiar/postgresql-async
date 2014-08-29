@@ -16,6 +16,7 @@
 package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -32,7 +33,7 @@ public class ThreadLocalMarshallerProvider implements MarshallerProvider {
     private final MarshallingConfiguration config;
 
     /**
-     * Create a new instance of the {@link com.github.mauricio.netty.handler.codec.marshalling.ThreadLocalMarshallerProvider}
+     * Create a new instance of the {@link ThreadLocalMarshallerProvider}
      *
      * @param factory   the {@link MarshallerFactory} to use to create {@link Marshaller}'s if needed
      * @param config    the {@link MarshallingConfiguration} to use

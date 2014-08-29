@@ -16,13 +16,22 @@
 package com.github.mauricio.netty.channel.socket;
 
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.DefaultChannelConfig;
+import com.github.mauricio.netty.channel.FixedRecvByteBufAllocator;
+import com.github.mauricio.netty.channel.MessageSizeEstimator;
+import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Map;
 
 import static com.github.mauricio.netty.channel.ChannelOption.*;

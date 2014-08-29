@@ -35,7 +35,7 @@ public interface DatagramChannel extends Channel {
     InetSocketAddress remoteAddress();
 
     /**
-     * Return {@code true} if the {@link com.github.mauricio.netty.channel.socket.DatagramChannel} is connected to the remote peer.
+     * Return {@code true} if the {@link DatagramChannel} is connected to the remote peer.
      */
     boolean isConnected();
 
@@ -64,7 +64,7 @@ public interface DatagramChannel extends Channel {
      * The given {@link ChannelFuture} will be notified and also returned.
      */
     ChannelFuture joinGroup(
-        InetSocketAddress multicastAddress, NetworkInterface networkInterface, ChannelPromise future);
+            InetSocketAddress multicastAddress, NetworkInterface networkInterface, ChannelPromise future);
 
     /**
      * Joins the specified multicast group at the specified interface and notifies the {@link ChannelFuture}
@@ -79,7 +79,7 @@ public interface DatagramChannel extends Channel {
      * The given {@link ChannelFuture} will be notified and also returned.
      */
     ChannelFuture joinGroup(
-        InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source, ChannelPromise future);
+            InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source, ChannelPromise future);
 
     /**
      * Leaves a multicast group and notifies the {@link ChannelFuture} once the operation completes.
@@ -106,7 +106,7 @@ public interface DatagramChannel extends Channel {
      * The given {@link ChannelFuture} will be notified and also returned.
      */
     ChannelFuture leaveGroup(
-        InetSocketAddress multicastAddress, NetworkInterface networkInterface, ChannelPromise future);
+            InetSocketAddress multicastAddress, NetworkInterface networkInterface, ChannelPromise future);
 
     /**
      * Leave the specified multicast group at the specified interface using the specified source and notifies
@@ -114,7 +114,7 @@ public interface DatagramChannel extends Channel {
      *
      */
     ChannelFuture leaveGroup(
-        InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source);
+            InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source);
 
     /**
      * Leave the specified multicast group at the specified interface using the specified source and notifies
@@ -123,8 +123,8 @@ public interface DatagramChannel extends Channel {
      * The given {@link ChannelFuture} will be notified and also returned.
      */
     ChannelFuture leaveGroup(
-        InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source,
-        ChannelPromise future);
+            InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source,
+            ChannelPromise future);
 
     /**
      * Block the given sourceToBlock address for the given multicastAddress on the given networkInterface and notifies
@@ -133,8 +133,8 @@ public interface DatagramChannel extends Channel {
      * The given {@link ChannelFuture} will be notified and also returned.
      */
     ChannelFuture block(
-        InetAddress multicastAddress, NetworkInterface networkInterface,
-        InetAddress sourceToBlock);
+            InetAddress multicastAddress, NetworkInterface networkInterface,
+            InetAddress sourceToBlock);
 
     /**
      * Block the given sourceToBlock address for the given multicastAddress on the given networkInterface and notifies
@@ -143,8 +143,8 @@ public interface DatagramChannel extends Channel {
      * The given {@link ChannelFuture} will be notified and also returned.
      */
     ChannelFuture block(
-        InetAddress multicastAddress, NetworkInterface networkInterface,
-        InetAddress sourceToBlock, ChannelPromise future);
+            InetAddress multicastAddress, NetworkInterface networkInterface,
+            InetAddress sourceToBlock, ChannelPromise future);
 
     /**
      * Block the given sourceToBlock address for the given multicastAddress and notifies the {@link ChannelFuture} once
@@ -161,5 +161,5 @@ public interface DatagramChannel extends Channel {
      * The given {@link ChannelFuture} will be notified and also returned.
      */
     ChannelFuture block(
-        InetAddress multicastAddress, InetAddress sourceToBlock, ChannelPromise future);
+            InetAddress multicastAddress, InetAddress sourceToBlock, ChannelPromise future);
 }

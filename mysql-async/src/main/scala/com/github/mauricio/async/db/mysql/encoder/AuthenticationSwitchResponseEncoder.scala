@@ -1,7 +1,7 @@
 package com.github.mauricio.async.db.mysql.encoder
 
 import com.github.mauricio.async.db.mysql.message.client.{AuthenticationSwitchResponse, ClientMessage}
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.async.db.mysql.encoder.auth.AuthenticationMethod
 import java.nio.charset.Charset

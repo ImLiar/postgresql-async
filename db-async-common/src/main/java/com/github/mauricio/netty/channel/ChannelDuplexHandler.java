@@ -19,7 +19,7 @@ import java.net.SocketAddress;
 
 /**
  * {@link ChannelHandler} implementation which represents a combination out of a {@link ChannelInboundHandler} and
- * the {@link com.github.mauricio.netty.channel.ChannelOutboundHandler}.
+ * the {@link ChannelOutboundHandler}.
  *
  * It is a good starting point if your {@link ChannelHandler} implementation needs to intercept operations and also
  * state updates.
@@ -27,8 +27,8 @@ import java.net.SocketAddress;
 public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implements ChannelOutboundHandler {
 
     /**
-     * Calls {@link ChannelHandlerContext#bind(java.net.SocketAddress, ChannelPromise)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#bind(SocketAddress, ChannelPromise)} to forward
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -39,8 +39,8 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
     }
 
     /**
-     * Calls {@link ChannelHandlerContext#connect(java.net.SocketAddress, java.net.SocketAddress, ChannelPromise)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * Calls {@link ChannelHandlerContext#connect(SocketAddress, SocketAddress, ChannelPromise)} to forward
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -52,7 +52,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
 
     /**
      * Calls {@link ChannelHandlerContext#disconnect(ChannelPromise)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -64,7 +64,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
 
     /**
      * Calls {@link ChannelHandlerContext#close(ChannelPromise)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -75,7 +75,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
 
     /**
      * Calls {@link ChannelHandlerContext#close(ChannelPromise)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -86,7 +86,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
 
     /**
      * Calls {@link ChannelHandlerContext#read()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -97,7 +97,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
 
     /**
      * Calls {@link ChannelHandlerContext#write(Object, ChannelPromise)} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */
@@ -108,7 +108,7 @@ public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implement
 
     /**
      * Calls {@link ChannelHandlerContext#flush()} to forward
-     * to the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link ChannelPipeline}.
+     * to the next {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      *
      * Sub-classes may override this method to change behavior.
      */

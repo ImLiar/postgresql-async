@@ -18,13 +18,13 @@ package com.github.mauricio.netty.util.concurrent;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Default implementation of {@link com.github.mauricio.netty.util.concurrent.MultithreadEventExecutorGroup} which will use {@link com.github.mauricio.netty.util.concurrent.DefaultEventExecutor} instances
+ * Default implementation of {@link MultithreadEventExecutorGroup} which will use {@link DefaultEventExecutor} instances
  * to handle the tasks.
  */
 public class DefaultEventExecutorGroup extends MultithreadEventExecutorGroup {
 
     /**
-     * @see {@link #DefaultEventExecutorGroup(int, java.util.concurrent.ThreadFactory)}
+     * @see {@link #DefaultEventExecutorGroup(int, ThreadFactory)}
      */
     public DefaultEventExecutorGroup(int nThreads) {
         this(nThreads, null);

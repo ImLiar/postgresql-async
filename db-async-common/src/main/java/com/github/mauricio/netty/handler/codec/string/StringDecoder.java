@@ -18,6 +18,9 @@ package com.github.mauricio.netty.handler.codec.string;
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.channel.ChannelHandler.Sharable;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.handler.codec.ByteToMessageDecoder;
+import com.github.mauricio.netty.handler.codec.DelimiterBasedFrameDecoder;
 import com.github.mauricio.netty.handler.codec.LineBasedFrameDecoder;
 import com.github.mauricio.netty.handler.codec.MessageToMessageDecoder;
 
@@ -25,25 +28,25 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 /**
- * Decodes a received {@link com.github.mauricio.netty.buffer.ByteBuf} into a {@link String}.  Please
- * note that this decoder must be used with a proper {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder}
- * such as {@link com.github.mauricio.netty.handler.codec.DelimiterBasedFrameDecoder} or {@link LineBasedFrameDecoder}
+ * Decodes a received {@link ByteBuf} into a {@link String}.  Please
+ * note that this decoder must be used with a proper {@link ByteToMessageDecoder}
+ * such as {@link DelimiterBasedFrameDecoder} or {@link LineBasedFrameDecoder}
  * if you are using a stream-based transport such as TCP/IP.  A typical setup for a
  * text-based line protocol in a TCP/IP socket would be:
  * <pre>
- * {@link com.github.mauricio.netty.channel.ChannelPipeline} pipeline = ...;
+ * {@link ChannelPipeline} pipeline = ...;
  *
  * // Decoders
  * pipeline.addLast("frameDecoder", new {@link LineBasedFrameDecoder}(80));
- * pipeline.addLast("stringDecoder", new {@link com.github.mauricio.netty.handler.codec.string.StringDecoder}(CharsetUtil.UTF_8));
+ * pipeline.addLast("stringDecoder", new {@link StringDecoder}(CharsetUtil.UTF_8));
  *
  * // Encoder
  * pipeline.addLast("stringEncoder", new {@link StringEncoder}(CharsetUtil.UTF_8));
  * </pre>
- * and then you can use a {@link String} instead of a {@link com.github.mauricio.netty.buffer.ByteBuf}
+ * and then you can use a {@link String} instead of a {@link ByteBuf}
  * as a message:
  * <pre>
- * void channelRead({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link String} msg) {
+ * void channelRead({@link ChannelHandlerContext} ctx, {@link String} msg) {
  *     ch.write("Did you say '" + msg + "'?\n");
  * }
  * </pre>

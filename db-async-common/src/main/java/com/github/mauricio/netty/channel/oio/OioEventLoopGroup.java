@@ -16,7 +16,12 @@
 package com.github.mauricio.netty.channel.oio;
 
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.EventLoopGroup;
+import com.github.mauricio.netty.channel.ThreadPerChannelEventLoopGroup;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -28,14 +33,14 @@ import java.util.concurrent.ThreadFactory;
 public class OioEventLoopGroup extends ThreadPerChannelEventLoopGroup {
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.oio.OioEventLoopGroup} with no limit in place.
+     * Create a new {@link OioEventLoopGroup} with no limit in place.
      */
     public OioEventLoopGroup() {
         this(0);
     }
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.oio.OioEventLoopGroup}.
+     * Create a new {@link OioEventLoopGroup}.
      *
      * @param maxChannels       the maximum number of channels to handle with this instance. Once you try to register
      *                          a new {@link Channel} and the maximum is exceed it will throw an
@@ -48,14 +53,14 @@ public class OioEventLoopGroup extends ThreadPerChannelEventLoopGroup {
     }
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.oio.OioEventLoopGroup}.
+     * Create a new {@link OioEventLoopGroup}.
      *
      * @param maxChannels       the maximum number of channels to handle with this instance. Once you try to register
      *                          a new {@link Channel} and the maximum is exceed it will throw an
      *                          {@link ChannelException} on the {@link #register(Channel)} and
      *                          {@link #register(Channel, ChannelPromise)} method.
      *                          Use {@code 0} to use no limit
-     * @param threadFactory     the {@link java.util.concurrent.ThreadFactory} used to create new {@link Thread} instances that handle the
+     * @param threadFactory     the {@link ThreadFactory} used to create new {@link Thread} instances that handle the
      *                          registered {@link Channel}s
      */
     public OioEventLoopGroup(int maxChannels, ThreadFactory threadFactory) {

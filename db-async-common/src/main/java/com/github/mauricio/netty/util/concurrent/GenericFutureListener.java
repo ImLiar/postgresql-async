@@ -18,15 +18,15 @@ package com.github.mauricio.netty.util.concurrent;
 import java.util.EventListener;
 
 /**
- * Listens to the result of a {@link com.github.mauricio.netty.util.concurrent.Future}.  The result of the asynchronous operation is notified once this listener
- * is added by calling {@link com.github.mauricio.netty.util.concurrent.Future#addListener(com.github.mauricio.netty.util.concurrent.GenericFutureListener)}.
+ * Listens to the result of a {@link Future}.  The result of the asynchronous operation is notified once this listener
+ * is added by calling {@link Future#addListener(GenericFutureListener)}.
  */
 public interface GenericFutureListener<F extends Future<?>> extends EventListener {
 
     /**
-     * Invoked when the operation associated with the {@link com.github.mauricio.netty.util.concurrent.Future} has been completed.
+     * Invoked when the operation associated with the {@link Future} has been completed.
      *
-     * @param future  the source {@link com.github.mauricio.netty.util.concurrent.Future} which called this callback
+     * @param future  the source {@link Future} which called this callback
      */
     void operationComplete(F future) throws Exception;
 }

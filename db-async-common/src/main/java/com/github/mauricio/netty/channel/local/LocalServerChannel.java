@@ -15,7 +15,13 @@
  */
 package com.github.mauricio.netty.channel.local;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.AbstractServerChannel;
+import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.channel.DefaultChannelConfig;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.ServerChannel;
+import com.github.mauricio.netty.channel.SingleThreadEventLoop;
 import com.github.mauricio.netty.util.concurrent.SingleThreadEventExecutor;
 
 import java.net.SocketAddress;

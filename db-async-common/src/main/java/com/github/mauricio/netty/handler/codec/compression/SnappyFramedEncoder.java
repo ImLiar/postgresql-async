@@ -20,10 +20,10 @@ import com.github.mauricio.netty.buffer.ByteBufUtil;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.MessageToByteEncoder;
 
-import static com.github.mauricio.netty.handler.codec.compression.Snappy.calculateChecksum;
+import static com.github.mauricio.netty.handler.codec.compression.Snappy.*;
 
 /**
- * Compresses a {@link com.github.mauricio.netty.buffer.ByteBuf} using the Snappy framing format.
+ * Compresses a {@link ByteBuf} using the Snappy framing format.
  *
  * See http://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
  */

@@ -16,7 +16,7 @@
 package com.github.mauricio.netty.handler.codec;
 
 /**
- * An {@link com.github.mauricio.netty.handler.codec.CodecException} which is thrown by an encoder.
+ * An {@link CodecException} which is thrown by an encoder.
  */
 public class EncoderException extends CodecException {
 

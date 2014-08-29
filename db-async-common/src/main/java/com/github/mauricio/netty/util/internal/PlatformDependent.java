@@ -21,6 +21,7 @@ import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -31,9 +32,14 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,7 +50,7 @@ import java.util.regex.Pattern;
  * {@code sun.misc.Unsafe} object.
  * <p>
  * You can disable the use of {@code sun.misc.Unsafe} if you specify
- * the system property <strong>io.netty.noUnsafe</strong>.
+ * the system property <strong>com.github.mauricio.netty.noUnsafe</strong>.
  */
 public final class PlatformDependent {
 
@@ -71,12 +77,16 @@ public final class PlatformDependent {
 
     private static final boolean HAS_JAVASSIST = hasJavassist0();
 
+    private static final File TMPDIR = tmpdir0();
+
+    private static final int BIT_MODE = bitMode0();
+
     static {
         if (logger.isDebugEnabled()) {
             logger.debug("-Dio.netty.noPreferDirect: {}", !DIRECT_BUFFER_PREFERRED);
         }
 
-        if (!hasUnsafe()) {
+        if (!hasUnsafe() && !isAndroid()) {
             logger.info(
                     "Your platform does not provide complete low-level API for accessing direct buffers reliably. " +
                     "Unless explicitly requested, heap buffer will always be preferred to avoid potential system " +
@@ -151,6 +161,20 @@ public final class PlatformDependent {
     }
 
     /**
+     * Returns the temporary directory.
+     */
+    public static File tmpdir() {
+        return TMPDIR;
+    }
+
+    /**
+     * Returns the bit mode of the current VM (usually 32 or 64.)
+     */
+    public static int bitMode() {
+        return BIT_MODE;
+    }
+
+    /**
      * Raises an exception bypassing compiler checks for checked exceptions.
      */
     public static void throwException(Throwable t) {
@@ -167,7 +191,7 @@ public final class PlatformDependent {
     }
 
     /**
-     * Creates a new fastest {@link java.util.concurrent.ConcurrentMap} implementaion for the current platform.
+     * Creates a new fastest {@link ConcurrentMap} implementaion for the current platform.
      */
     public static <K, V> ConcurrentMap<K, V> newConcurrentHashMap() {
         if (CAN_USE_CHM_V8) {
@@ -178,7 +202,7 @@ public final class PlatformDependent {
     }
 
     /**
-     * Creates a new fastest {@link java.util.concurrent.ConcurrentMap} implementaion for the current platform.
+     * Creates a new fastest {@link ConcurrentMap} implementaion for the current platform.
      */
     public static <K, V> ConcurrentMap<K, V> newConcurrentHashMap(int initialCapacity) {
         if (CAN_USE_CHM_V8) {
@@ -189,7 +213,7 @@ public final class PlatformDependent {
     }
 
     /**
-     * Creates a new fastest {@link java.util.concurrent.ConcurrentMap} implementaion for the current platform.
+     * Creates a new fastest {@link ConcurrentMap} implementaion for the current platform.
      */
     public static <K, V> ConcurrentMap<K, V> newConcurrentHashMap(int initialCapacity, float loadFactor) {
         if (CAN_USE_CHM_V8) {
@@ -200,7 +224,7 @@ public final class PlatformDependent {
     }
 
     /**
-     * Creates a new fastest {@link java.util.concurrent.ConcurrentMap} implementaion for the current platform.
+     * Creates a new fastest {@link ConcurrentMap} implementaion for the current platform.
      */
     public static <K, V> ConcurrentMap<K, V> newConcurrentHashMap(
             int initialCapacity, float loadFactor, int concurrencyLevel) {
@@ -212,7 +236,7 @@ public final class PlatformDependent {
     }
 
     /**
-     * Creates a new fastest {@link java.util.concurrent.ConcurrentMap} implementaion for the current platform.
+     * Creates a new fastest {@link ConcurrentMap} implementaion for the current platform.
      */
     public static <K, V> ConcurrentMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> map) {
         if (CAN_USE_CHM_V8) {
@@ -223,16 +247,12 @@ public final class PlatformDependent {
     }
 
     /**
-     * Try to deallocate the specified direct {@link java.nio.ByteBuffer}.  Please note this method does nothing if
+     * Try to deallocate the specified direct {@link ByteBuffer}.  Please note this method does nothing if
      * the current platform does not support this operation or the specified buffer is not a direct buffer.
      */
     public static void freeDirectBuffer(ByteBuffer buffer) {
-        if (buffer.isDirect()) {
-            if (hasUnsafe()) {
-                PlatformDependent0.freeDirectBufferUnsafe(buffer);
-            } else {
-                PlatformDependent0.freeDirectBuffer(buffer);
-            }
+        if (hasUnsafe()) {
+            PlatformDependent0.freeDirectBuffer(buffer);
         }
     }
 
@@ -242,6 +262,10 @@ public final class PlatformDependent {
 
     public static Object getObject(Object object, long fieldOffset) {
         return PlatformDependent0.getObject(object, fieldOffset);
+    }
+
+    public static Object getObjectVolatile(Object object, long fieldOffset) {
+        return PlatformDependent0.getObjectVolatile(object, fieldOffset);
     }
 
     public static int getInt(Object object, long fieldOffset) {
@@ -266,6 +290,10 @@ public final class PlatformDependent {
 
     public static long getLong(long address) {
         return PlatformDependent0.getLong(address);
+    }
+
+    public static void putOrderedObject(Object object, long address, Object value) {
+        PlatformDependent0.putOrderedObject(object, address, value);
     }
 
     public static void putByte(long address, byte value) {
@@ -296,12 +324,76 @@ public final class PlatformDependent {
         PlatformDependent0.copyMemory(null, srcAddr, dst, ARRAY_BASE_OFFSET + dstIndex, length);
     }
 
+    /**
+     * Create a new optimized {@link AtomicReferenceFieldUpdater} or {@code null} if it
+     * could not be created. Because of this the caller need to check for {@code null} and if {@code null} is returned
+     * use {@link AtomicReferenceFieldUpdater#newUpdater(Class, Class, String)} as fallback.
+     */
+    public static <U, W> AtomicReferenceFieldUpdater<U, W> newAtomicReferenceFieldUpdater(
+            Class<U> tclass, String fieldName) {
+        if (hasUnsafe()) {
+            try {
+                return PlatformDependent0.newAtomicReferenceFieldUpdater(tclass, fieldName);
+            } catch (Throwable ignore) {
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create a new optimized {@link AtomicIntegerFieldUpdater} or {@code null} if it
+     * could not be created. Because of this the caller need to check for {@code null} and if {@code null} is returned
+     * use {@link AtomicIntegerFieldUpdater#newUpdater(Class, String)} as fallback.
+     */
+    public static <T> AtomicIntegerFieldUpdater<T> newAtomicIntegerFieldUpdater(
+            Class<?> tclass, String fieldName) {
+        if (hasUnsafe()) {
+            try {
+                return PlatformDependent0.newAtomicIntegerFieldUpdater(tclass, fieldName);
+            } catch (Throwable ignore) {
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create a new optimized {@link AtomicLongFieldUpdater} or {@code null} if it
+     * could not be created. Because of this the caller need to check for {@code null} and if {@code null} is returned
+     * use {@link AtomicLongFieldUpdater#newUpdater(Class, String)} as fallback.
+     */
+    public static <T> AtomicLongFieldUpdater<T> newAtomicLongFieldUpdater(
+            Class<?> tclass, String fieldName) {
+        if (hasUnsafe()) {
+            try {
+                return PlatformDependent0.newAtomicLongFieldUpdater(tclass, fieldName);
+            } catch (Throwable ignore) {
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create a new {@link Queue} which is safe to use for multiple producers (different threads) and a single
+     * consumer (one thread!).
+     */
+    public static Queue<Runnable> newMpscQueue() {
+        if (hasUnsafe()) {
+            return new MpscLinkedQueue();
+        } else {
+            return new ConcurrentLinkedQueue<Runnable>();
+        }
+    }
+
     private static boolean isAndroid0() {
         boolean android;
         try {
             Class.forName("android.app.Application", false, ClassLoader.getSystemClassLoader());
             android = true;
         } catch (Exception e) {
+            // Failed to load the class uniquely available in Android.
             android = false;
         }
 
@@ -348,6 +440,7 @@ public final class PlatformDependent {
                     }
                 }
             } catch (Exception e) {
+                // Failed to run the command.
                 uid = null;
             } finally {
                 if (in != null) {
@@ -481,6 +574,7 @@ public final class PlatformDependent {
             logger.debug("sun.misc.Unsafe: {}", hasUnsafe ? "available" : "unavailable");
             return hasUnsafe;
         } catch (Throwable t) {
+            // Probably failed to initialize PlatformDependent0.
             return false;
         }
     }
@@ -555,6 +649,10 @@ public final class PlatformDependent {
     }
 
     private static boolean hasJavassist0() {
+        if (isAndroid()) {
+            return false;
+        }
+
         boolean noJavassist = SystemPropertyUtil.getBoolean("io.netty.noJavassist", false);
         logger.debug("-Dio.netty.noJavassist: {}", noJavassist);
 
@@ -568,11 +666,136 @@ public final class PlatformDependent {
             logger.debug("Javassist: available");
             return true;
         } catch (Throwable t) {
+            // Failed to generate a Javassist-based matcher.
             logger.debug("Javassist: unavailable");
             logger.debug(
                     "You don't have Javassist in your class path or you don't have enough permission " +
                     "to load dynamically generated classes.  Please check the configuration for better performance.");
             return false;
+        }
+    }
+
+    private static File tmpdir0() {
+        File f;
+        try {
+            f = toDirectory(SystemPropertyUtil.get("io.netty.tmpdir"));
+            if (f != null) {
+                logger.debug("-Dio.netty.tmpdir: {}", f);
+                return f;
+            }
+
+            f = toDirectory(SystemPropertyUtil.get("java.io.tmpdir"));
+            if (f != null) {
+                logger.debug("-Dio.netty.tmpdir: {} (java.io.tmpdir)", f);
+                return f;
+            }
+
+            // This shouldn't happen, but just in case ..
+            if (isWindows()) {
+                f = toDirectory(System.getenv("TEMP"));
+                if (f != null) {
+                    logger.debug("-Dio.netty.tmpdir: {} (%TEMP%)", f);
+                    return f;
+                }
+
+                String userprofile = System.getenv("USERPROFILE");
+                if (userprofile != null) {
+                    f = toDirectory(userprofile + "\\AppData\\Local\\Temp");
+                    if (f != null) {
+                        logger.debug("-Dio.netty.tmpdir: {} (%USERPROFILE%\\AppData\\Local\\Temp)", f);
+                        return f;
+                    }
+
+                    f = toDirectory(userprofile + "\\Local Settings\\Temp");
+                    if (f != null) {
+                        logger.debug("-Dio.netty.tmpdir: {} (%USERPROFILE%\\Local Settings\\Temp)", f);
+                        return f;
+                    }
+                }
+            } else {
+                f = toDirectory(System.getenv("TMPDIR"));
+                if (f != null) {
+                    logger.debug("-Dio.netty.tmpdir: {} ($TMPDIR)", f);
+                    return f;
+                }
+            }
+        } catch (Exception ignored) {
+            // Environment variable inaccessible
+        }
+
+        // Last resort.
+        if (isWindows()) {
+            f = new File("C:\\Windows\\Temp");
+        } else {
+            f = new File("/tmp");
+        }
+
+        logger.warn("Failed to get the temporary directory; falling back to: {}", f);
+        return f;
+    }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    private static File toDirectory(String path) {
+        if (path == null) {
+            return null;
+        }
+
+        File f = new File(path);
+        if (!f.exists()) {
+            f.mkdirs();
+        }
+
+        if (!f.isDirectory()) {
+            return null;
+        }
+
+        try {
+            return f.getAbsoluteFile();
+        } catch (Exception ignored) {
+            return f;
+        }
+    }
+
+    private static int bitMode0() {
+        // Check user-specified bit mode first.
+        int bitMode = SystemPropertyUtil.getInt("io.netty.bitMode", 0);
+        if (bitMode > 0) {
+            logger.debug("-Dio.netty.bitMode: {}", bitMode);
+            return bitMode;
+        }
+
+        // And then the vendor specific ones which is probably most reliable.
+        bitMode = SystemPropertyUtil.getInt("sun.arch.data.model", 0);
+        if (bitMode > 0) {
+            logger.debug("-Dio.netty.bitMode: {} (sun.arch.data.model)", bitMode);
+            return bitMode;
+        }
+        bitMode = SystemPropertyUtil.getInt("com.ibm.vm.bitmode", 0);
+        if (bitMode > 0) {
+            logger.debug("-Dio.netty.bitMode: {} (com.ibm.vm.bitmode)", bitMode);
+            return bitMode;
+        }
+
+        // os.arch also gives us a good hint.
+        String arch = SystemPropertyUtil.get("os.arch", "").toLowerCase(Locale.US).trim();
+        if ("amd64".equals(arch) || "x86_64".equals(arch)) {
+            bitMode = 64;
+        } else if ("i386".equals(arch) || "i486".equals(arch) || "i586".equals(arch) || "i686".equals(arch)) {
+            bitMode = 32;
+        }
+
+        if (bitMode > 0) {
+            logger.debug("-Dio.netty.bitMode: {} (os.arch: {})", bitMode, arch);
+        }
+
+        // Last resort: guess from VM name and then fall back to most common 64-bit mode.
+        String vm = SystemPropertyUtil.get("java.vm.name", "").toLowerCase(Locale.US);
+        Pattern BIT_PATTERN = Pattern.compile("([1-9][0-9]+)-?bit");
+        Matcher m = BIT_PATTERN.matcher(vm);
+        if (m.find()) {
+            return Integer.parseInt(m.group(1));
+        } else {
+            return 64;
         }
     }
 

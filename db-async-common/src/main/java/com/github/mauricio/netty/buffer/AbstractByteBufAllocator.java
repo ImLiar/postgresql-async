@@ -22,7 +22,7 @@ import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.StringUtil;
 
 /**
- * Skeletal {@link com.github.mauricio.netty.buffer.ByteBufAllocator} implementation to extend.
+ * Skeletal {@link ByteBufAllocator} implementation to extend.
  */
 public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     private static final int DEFAULT_INITIAL_CAPACITY = 256;
@@ -203,12 +203,12 @@ public abstract class AbstractByteBufAllocator implements ByteBufAllocator {
     }
 
     /**
-     * Create a heap {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initialCapacity and maxCapacity.
+     * Create a heap {@link ByteBuf} with the given initialCapacity and maxCapacity.
      */
     protected abstract ByteBuf newHeapBuffer(int initialCapacity, int maxCapacity);
 
     /**
-     * Create a direct {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initialCapacity and maxCapacity.
+     * Create a direct {@link ByteBuf} with the given initialCapacity and maxCapacity.
      */
     protected abstract ByteBuf newDirectBuffer(int initialCapacity, int maxCapacity);
 

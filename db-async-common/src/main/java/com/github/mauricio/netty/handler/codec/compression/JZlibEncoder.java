@@ -19,7 +19,11 @@ import com.jcraft.jzlib.Deflater;
 import com.jcraft.jzlib.JZlib;
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.Unpooled;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelFutureListener;
+import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.ChannelPromiseNotifier;
 import com.github.mauricio.netty.util.concurrent.EventExecutor;
 import com.github.mauricio.netty.util.internal.EmptyArrays;
 
@@ -27,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Compresses a {@link com.github.mauricio.netty.buffer.ByteBuf} using the deflate algorithm.
+ * Compresses a {@link ByteBuf} using the deflate algorithm.
  */
 public class JZlibEncoder extends ZlibEncoder {
 
@@ -39,7 +43,7 @@ public class JZlibEncoder extends ZlibEncoder {
     /**
      * Creates a new zlib encoder with the default compression level ({@code 6}),
      * default window bits ({@code 15}), default memory level ({@code 8}),
-     * and the default wrapper ({@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB}).
+     * and the default wrapper ({@link ZlibWrapper#ZLIB}).
      *
      * @throws CompressionException if failed to initialize zlib
      */
@@ -50,7 +54,7 @@ public class JZlibEncoder extends ZlibEncoder {
     /**
      * Creates a new zlib encoder with the specified {@code compressionLevel},
      * default window bits ({@code 15}), default memory level ({@code 8}),
-     * and the default wrapper ({@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB}).
+     * and the default wrapper ({@link ZlibWrapper#ZLIB}).
      *
      * @param compressionLevel
      *        {@code 1} yields the fastest compression and {@code 9} yields the
@@ -150,7 +154,7 @@ public class JZlibEncoder extends ZlibEncoder {
      * Creates a new zlib encoder with the default compression level ({@code 6}),
      * default window bits ({@code 15}), default memory level ({@code 8}),
      * and the specified preset dictionary.  The wrapper is always
-     * {@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB} because it is the only format that supports
+     * {@link ZlibWrapper#ZLIB} because it is the only format that supports
      * the preset dictionary.
      *
      * @param dictionary  the preset dictionary
@@ -165,7 +169,7 @@ public class JZlibEncoder extends ZlibEncoder {
      * Creates a new zlib encoder with the specified {@code compressionLevel},
      * default window bits ({@code 15}), default memory level ({@code 8}),
      * and the specified preset dictionary.  The wrapper is always
-     * {@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB} because it is the only format that supports
+     * {@link ZlibWrapper#ZLIB} because it is the only format that supports
      * the preset dictionary.
      *
      * @param compressionLevel
@@ -184,7 +188,7 @@ public class JZlibEncoder extends ZlibEncoder {
      * Creates a new zlib encoder with the specified {@code compressionLevel},
      * the specified {@code windowBits}, the specified {@code memLevel},
      * and the specified preset dictionary.  The wrapper is always
-     * {@link com.github.mauricio.netty.handler.codec.compression.ZlibWrapper#ZLIB} because it is the only format that supports
+     * {@link ZlibWrapper#ZLIB} because it is the only format that supports
      * the preset dictionary.
      *
      * @param compressionLevel

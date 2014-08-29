@@ -16,7 +16,7 @@
 package com.github.mauricio.netty.channel;
 
 /**
- * ChannelFutureListener implementation which takes other {@link com.github.mauricio.netty.channel.ChannelFuture}(s) and notifies them on completion.
+ * ChannelFutureListener implementation which takes other {@link ChannelFuture}(s) and notifies them on completion.
  */
 public final class ChannelPromiseNotifier implements ChannelFutureListener {
 

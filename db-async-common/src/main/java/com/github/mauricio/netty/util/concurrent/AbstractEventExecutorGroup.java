@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 
 
 /**
- * Abstract base class for {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} implementations.
+ * Abstract base class for {@link EventExecutorGroup} implementations.
  */
 public abstract class AbstractEventExecutorGroup implements EventExecutorGroup {
 
@@ -70,14 +70,14 @@ public abstract class AbstractEventExecutorGroup implements EventExecutorGroup {
     }
 
     /**
-     * @deprecated {@link #shutdownGracefully(long, long, java.util.concurrent.TimeUnit)} or {@link #shutdownGracefully()} instead.
+     * @deprecated {@link #shutdownGracefully(long, long, TimeUnit)} or {@link #shutdownGracefully()} instead.
      */
     @Override
     @Deprecated
     public abstract void shutdown();
 
     /**
-     * @deprecated {@link #shutdownGracefully(long, long, java.util.concurrent.TimeUnit)} or {@link #shutdownGracefully()} instead.
+     * @deprecated {@link #shutdownGracefully(long, long, TimeUnit)} or {@link #shutdownGracefully()} instead.
      */
     @Override
     @Deprecated

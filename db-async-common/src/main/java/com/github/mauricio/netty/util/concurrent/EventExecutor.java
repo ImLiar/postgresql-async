@@ -16,9 +16,9 @@
 package com.github.mauricio.netty.util.concurrent;
 
 /**
- * The {@link com.github.mauricio.netty.util.concurrent.EventExecutor} is a special {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} which comes
+ * The {@link EventExecutor} is a special {@link EventExecutorGroup} which comes
  * with some handy methods to see if a {@link Thread} is executed in a event loop.
- * Beside this it also extends the {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} to allow a generic way to
+ * Beside this it also extends the {@link EventExecutorGroup} to allow a generic way to
  * access methods.
  *
  */
@@ -31,7 +31,7 @@ public interface EventExecutor extends EventExecutorGroup {
     EventExecutor next();
 
     /**
-     * Return the {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} which is the parent of this {@link com.github.mauricio.netty.util.concurrent.EventExecutor},
+     * Return the {@link EventExecutorGroup} which is the parent of this {@link EventExecutor},
      */
     EventExecutorGroup parent();
 
@@ -47,25 +47,25 @@ public interface EventExecutor extends EventExecutorGroup {
     boolean inEventLoop(Thread thread);
 
     /**
-     * Return a new {@link com.github.mauricio.netty.util.concurrent.Promise}.
+     * Return a new {@link Promise}.
      */
     <V> Promise<V> newPromise();
 
     /**
-     * Create a new {@link com.github.mauricio.netty.util.concurrent.ProgressivePromise}.
+     * Create a new {@link ProgressivePromise}.
      */
     <V> ProgressivePromise<V> newProgressivePromise();
 
     /**
-     * Create a new {@link com.github.mauricio.netty.util.concurrent.Future} which is marked as successes already. So {@link com.github.mauricio.netty.util.concurrent.Future#isSuccess()}
-     * will return {@code true}. All {@link com.github.mauricio.netty.util.concurrent.FutureListener} added to it will be notified directly. Also
+     * Create a new {@link Future} which is marked as successes already. So {@link Future#isSuccess()}
+     * will return {@code true}. All {@link FutureListener} added to it will be notified directly. Also
      * every call of blocking methods will just return without blocking.
      */
     <V> Future<V> newSucceededFuture(V result);
 
     /**
-     * Create a new {@link com.github.mauricio.netty.util.concurrent.Future} which is marked as fakued already. So {@link com.github.mauricio.netty.util.concurrent.Future#isSuccess()}
-     * will return {@code false}. All {@link com.github.mauricio.netty.util.concurrent.FutureListener} added to it will be notified directly. Also
+     * Create a new {@link Future} which is marked as fakued already. So {@link Future#isSuccess()}
+     * will return {@code false}. All {@link FutureListener} added to it will be notified directly. Also
      * every call of blocking methods will just return without blocking.
      */
     <V> Future<V> newFailedFuture(Throwable cause);

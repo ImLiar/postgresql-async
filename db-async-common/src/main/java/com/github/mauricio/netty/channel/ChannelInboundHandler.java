@@ -22,12 +22,12 @@ package com.github.mauricio.netty.channel;
 public interface ChannelInboundHandler extends ChannelHandler {
 
     /**
-     * The {@link com.github.mauricio.netty.channel.Channel} of the {@link ChannelHandlerContext} was registered with its {@link EventLoop}
+     * The {@link Channel} of the {@link ChannelHandlerContext} was registered with its {@link EventLoop}
      */
     void channelRegistered(ChannelHandlerContext ctx) throws Exception;
 
     /**
-     * The {@link com.github.mauricio.netty.channel.Channel} of the {@link ChannelHandlerContext} was unregistered from its {@link EventLoop}
+     * The {@link Channel} of the {@link ChannelHandlerContext} was unregistered from its {@link EventLoop}
      *
      * @deprecated use {@link #channelInactive(ChannelHandlerContext)}
      */
@@ -35,25 +35,25 @@ public interface ChannelInboundHandler extends ChannelHandler {
     void channelUnregistered(ChannelHandlerContext ctx) throws Exception;
 
     /**
-     * The {@link com.github.mauricio.netty.channel.Channel} of the {@link ChannelHandlerContext} is now active
+     * The {@link Channel} of the {@link ChannelHandlerContext} is now active
      */
     void channelActive(ChannelHandlerContext ctx) throws Exception;
 
     /**
-     * The {@link com.github.mauricio.netty.channel.Channel} of the {@link ChannelHandlerContext} was registered is now inactive and reached its
+     * The {@link Channel} of the {@link ChannelHandlerContext} was registered is now inactive and reached its
      * end of lifetime.
      */
     void channelInactive(ChannelHandlerContext ctx) throws Exception;
 
     /**
-     * Invoked when the current {@link com.github.mauricio.netty.channel.Channel} has read a message from the peer.
+     * Invoked when the current {@link Channel} has read a message from the peer.
      */
     void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception;
 
     /**
      * Invoked when the last message read by the current read operation has been consumed by
-     * {@link #channelRead(ChannelHandlerContext, Object)}.  If {@link com.github.mauricio.netty.channel.ChannelOption#AUTO_READ} is off, no further
-     * attempt to read an inbound data from the current {@link com.github.mauricio.netty.channel.Channel} will be made until
+     * {@link #channelRead(ChannelHandlerContext, Object)}.  If {@link ChannelOption#AUTO_READ} is off, no further
+     * attempt to read an inbound data from the current {@link Channel} will be made until
      * {@link ChannelHandlerContext#read()} is called.
      */
     void channelReadComplete(ChannelHandlerContext ctx) throws Exception;
@@ -64,8 +64,8 @@ public interface ChannelInboundHandler extends ChannelHandler {
     void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception;
 
     /**
-     * Gets called once the writable state of a {@link com.github.mauricio.netty.channel.Channel} changed. You can check the state with
-     * {@link com.github.mauricio.netty.channel.Channel#isWritable()}.
+     * Gets called once the writable state of a {@link Channel} changed. You can check the state with
+     * {@link Channel#isWritable()}.
      */
     void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception;
 

@@ -19,10 +19,11 @@ import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.channel.ChannelHandler.Sharable;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.MessageToByteEncoder;
+
 import org.jboss.marshalling.Marshaller;
 
 /**
- * {@link com.github.mauricio.netty.handler.codec.MessageToByteEncoder} implementation which uses JBoss Marshalling to marshal
+ * {@link MessageToByteEncoder} implementation which uses JBoss Marshalling to marshal
  * an Object. Be aware that this encoder is not compatible with an other client that just use
  * JBoss Marshalling as it includes the size of every {@link Object} that gets serialized in
  * front of the {@link Object} itself.
@@ -42,7 +43,7 @@ public class MarshallingEncoder extends MessageToByteEncoder<Object> {
     /**
      * Creates a new encoder.
      *
-     * @param provider the {@link com.github.mauricio.netty.handler.codec.marshalling.MarshallerProvider} to use
+     * @param provider the {@link MarshallerProvider} to use
      */
     public MarshallingEncoder(MarshallerProvider provider) {
         this.provider = provider;

@@ -19,7 +19,7 @@ package com.github.mauricio.netty.util.concurrent;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A skeletal {@link com.github.mauricio.netty.util.concurrent.Future} implementation which represents a {@link com.github.mauricio.netty.util.concurrent.Future} which has been completed already.
+ * A skeletal {@link Future} implementation which represents a {@link Future} which has been completed already.
  */
 public abstract class CompleteFuture<V> extends AbstractFuture<V> {
 
@@ -28,14 +28,14 @@ public abstract class CompleteFuture<V> extends AbstractFuture<V> {
     /**
      * Creates a new instance.
      *
-     * @param executor the {@link com.github.mauricio.netty.util.concurrent.EventExecutor} associated with this future
+     * @param executor the {@link EventExecutor} associated with this future
      */
     protected CompleteFuture(EventExecutor executor) {
         this.executor = executor;
     }
 
     /**
-     * Return the {@link com.github.mauricio.netty.util.concurrent.EventExecutor} which is used by this {@link com.github.mauricio.netty.util.concurrent.CompleteFuture}.
+     * Return the {@link EventExecutor} which is used by this {@link CompleteFuture}.
      */
     protected EventExecutor executor() {
         return executor;

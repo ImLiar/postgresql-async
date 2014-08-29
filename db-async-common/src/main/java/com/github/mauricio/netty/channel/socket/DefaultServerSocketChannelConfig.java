@@ -16,7 +16,11 @@
 package com.github.mauricio.netty.channel.socket;
 
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.DefaultChannelConfig;
+import com.github.mauricio.netty.channel.MessageSizeEstimator;
+import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 import com.github.mauricio.netty.util.NetUtil;
 
 import java.net.ServerSocket;
@@ -26,7 +30,7 @@ import java.util.Map;
 import static com.github.mauricio.netty.channel.ChannelOption.*;
 
 /**
- * The default {@link com.github.mauricio.netty.channel.socket.ServerSocketChannelConfig} implementation.
+ * The default {@link ServerSocketChannelConfig} implementation.
  */
 public class DefaultServerSocketChannelConfig extends DefaultChannelConfig
                                               implements ServerSocketChannelConfig {

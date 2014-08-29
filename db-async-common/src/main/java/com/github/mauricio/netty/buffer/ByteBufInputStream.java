@@ -15,19 +15,23 @@
  */
 package com.github.mauricio.netty.buffer;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * An {@link java.io.InputStream} which reads data from a {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * An {@link InputStream} which reads data from a {@link ByteBuf}.
  * <p>
  * A read operation against this stream will occur at the {@code readerIndex}
  * of its underlying buffer and the {@code readerIndex} will increase during
  * the read operation.  Please note that it only reads up to the number of
  * readable bytes determined at the moment of construction.  Therefore,
- * updating {@link com.github.mauricio.netty.buffer.ByteBuf#writerIndex()} will not affect the return
+ * updating {@link ByteBuf#writerIndex()} will not affect the return
  * value of {@link #available()}.
  * <p>
- * This stream implements {@link java.io.DataInput} for your convenience.
+ * This stream implements {@link DataInput} for your convenience.
  * The endianness of the stream is not always big endian but depends on
  * the endianness of the underlying buffer.
  *

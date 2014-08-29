@@ -21,8 +21,8 @@ import com.github.mauricio.netty.util.concurrent.Future;
 import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 
 /**
- * A skeletal {@link com.github.mauricio.netty.channel.ChannelFuture} implementation which represents a
- * {@link com.github.mauricio.netty.channel.ChannelFuture} which has been completed already.
+ * A skeletal {@link ChannelFuture} implementation which represents a
+ * {@link ChannelFuture} which has been completed already.
  */
 abstract class CompleteChannelFuture extends CompleteFuture<Void> implements ChannelFuture {
 
@@ -31,7 +31,7 @@ abstract class CompleteChannelFuture extends CompleteFuture<Void> implements Cha
     /**
      * Creates a new instance.
      *
-     * @param channel the {@link com.github.mauricio.netty.channel.Channel} associated with this future
+     * @param channel the {@link Channel} associated with this future
      */
     protected CompleteChannelFuture(Channel channel, EventExecutor executor) {
         super(executor);

@@ -29,7 +29,7 @@ import java.nio.channels.NetworkChannel;
 import java.util.Enumeration;
 
 /**
- * The default {@link com.github.mauricio.netty.channel.socket.nio.NioDatagramChannelConfig} implementation.
+ * The default {@link NioDatagramChannelConfig} implementation.
  */
 class NioDatagramChannelConfig extends DefaultDatagramChannelConfig {
 

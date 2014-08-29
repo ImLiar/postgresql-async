@@ -16,9 +16,12 @@
 package com.github.mauricio.netty.handler.codec;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelOutboundHandler;
 import com.github.mauricio.netty.channel.ChannelOutboundHandlerAdapter;
+import com.github.mauricio.netty.channel.ChannelPipeline;
 import com.github.mauricio.netty.channel.ChannelPromise;
 import com.github.mauricio.netty.util.ReferenceCountUtil;
+import com.github.mauricio.netty.util.ReferenceCounted;
 import com.github.mauricio.netty.util.internal.RecyclableArrayList;
 import com.github.mauricio.netty.util.internal.StringUtil;
 import com.github.mauricio.netty.util.internal.TypeParameterMatcher;
@@ -26,25 +29,25 @@ import com.github.mauricio.netty.util.internal.TypeParameterMatcher;
 import java.util.List;
 
 /**
- * {@link com.github.mauricio.netty.channel.ChannelOutboundHandlerAdapter} which encodes from one message to an other message
+ * {@link ChannelOutboundHandlerAdapter} which encodes from one message to an other message
  *
  * For example here is an implementation which decodes an {@link Integer} to an {@link String}.
  *
  * <pre>
  *     public class IntegerToStringEncoder extends
- *             {@link com.github.mauricio.netty.handler.codec.MessageToMessageEncoder}&lt;{@link Integer}&gt; {
+ *             {@link MessageToMessageEncoder}&lt;{@link Integer}&gt; {
  *
  *         {@code @Override}
- *         public void encode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link Integer} message, List&lt;Object&gt; out)
+ *         public void encode({@link ChannelHandlerContext} ctx, {@link Integer} message, List&lt;Object&gt; out)
  *                 throws {@link Exception} {
  *             out.add(message.toString());
  *         }
  *     }
  * </pre>
  *
- * Be aware that you need to call {@link com.github.mauricio.netty.util.ReferenceCounted#retain()} on messages that are just passed through if they
- * are of type {@link com.github.mauricio.netty.util.ReferenceCounted}. This is needed as the {@link com.github.mauricio.netty.handler.codec.MessageToMessageEncoder} will call
- * {@link com.github.mauricio.netty.util.ReferenceCounted#release()} on encoded messages.
+ * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
+ * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageEncoder} will call
+ * {@link ReferenceCounted#release()} on encoded messages.
  */
 public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerAdapter {
 
@@ -68,7 +71,7 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
 
     /**
      * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link com.github.mauricio.netty.channel.ChannelPipeline}.
+     * {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      */
     public boolean acceptOutboundMessage(Object msg) throws Exception {
         return matcher.match(msg);
@@ -120,9 +123,9 @@ public abstract class MessageToMessageEncoder<I> extends ChannelOutboundHandlerA
      * Encode from one message to an other. This method will be called for each written message that can be handled
      * by this encoder.
      *
-     * @param ctx           the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.MessageToMessageEncoder} belongs to
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToMessageEncoder} belongs to
      * @param msg           the message to encode to an other one
-     * @param out           the {@link java.util.List} into which the encoded msg should be added
+     * @param out           the {@link List} into which the encoded msg should be added
      *                      needs to do some kind of aggragation
      * @throws Exception    is thrown if an error accour
      */

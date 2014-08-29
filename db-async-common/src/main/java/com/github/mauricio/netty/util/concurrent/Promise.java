@@ -16,7 +16,7 @@
 package com.github.mauricio.netty.util.concurrent;
 
 /**
- * Special {@link com.github.mauricio.netty.util.concurrent.Future} which is writable.
+ * Special {@link Future} which is writable.
  */
 public interface Promise<V> extends Future<V> {
 

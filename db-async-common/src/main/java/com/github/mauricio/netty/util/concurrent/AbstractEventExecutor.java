@@ -25,7 +25,7 @@ import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Abstract base class for {@link com.github.mauricio.netty.util.concurrent.EventExecutor} implementations.
+ * Abstract base class for {@link EventExecutor} implementations.
  */
 public abstract class AbstractEventExecutor extends AbstractExecutorService implements EventExecutor {
 
@@ -50,14 +50,14 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
     }
 
     /**
-     * @deprecated {@link #shutdownGracefully(long, long, java.util.concurrent.TimeUnit)} or {@link #shutdownGracefully()} instead.
+     * @deprecated {@link #shutdownGracefully(long, long, TimeUnit)} or {@link #shutdownGracefully()} instead.
      */
     @Override
     @Deprecated
     public abstract void shutdown();
 
     /**
-     * @deprecated {@link #shutdownGracefully(long, long, java.util.concurrent.TimeUnit)} or {@link #shutdownGracefully()} instead.
+     * @deprecated {@link #shutdownGracefully(long, long, TimeUnit)} or {@link #shutdownGracefully()} instead.
      */
     @Override
     @Deprecated

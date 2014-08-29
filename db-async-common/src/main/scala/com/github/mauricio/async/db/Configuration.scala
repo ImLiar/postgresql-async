@@ -19,9 +19,9 @@ package com.github.mauricio.async.db
 import java.nio.charset.Charset
 import scala.Predef._
 import scala.{None, Option, Int}
-import io.netty.util.CharsetUtil
-import io.netty.buffer.AbstractByteBufAllocator
-import io.netty.buffer.PooledByteBufAllocator
+import com.github.mauricio.netty.util.CharsetUtil
+import com.github.mauricio.netty.buffer.AbstractByteBufAllocator
+import com.github.mauricio.netty.buffer.PooledByteBufAllocator
 import scala.concurrent.duration._
 
 object Configuration {

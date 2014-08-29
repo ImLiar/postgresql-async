@@ -24,12 +24,12 @@ import java.net.NetworkInterface;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * A {@link com.github.mauricio.netty.channel.ChannelOption} allows to configure a {@link ChannelConfig} in a type-safe
- * way. Which {@link com.github.mauricio.netty.channel.ChannelOption} is supported depends on the actual implementation
+ * A {@link ChannelOption} allows to configure a {@link ChannelConfig} in a type-safe
+ * way. Which {@link ChannelOption} is supported depends on the actual implementation
  * of {@link ChannelConfig} and may depend on the nature of the transport it belongs
  * to.
  *
- * @param <T>   the type of the value which is valid for the {@link com.github.mauricio.netty.channel.ChannelOption}
+ * @param <T>   the type of the value which is valid for the {@link ChannelOption}
  */
 @SuppressWarnings("deprecation")
 public class ChannelOption<T> extends UniqueName {
@@ -50,9 +50,9 @@ public class ChannelOption<T> extends UniqueName {
     public static final ChannelOption<Boolean> AUTO_READ = valueOf("AUTO_READ");
 
     /**
-     * @deprecated From version 5.0, {@link com.github.mauricio.netty.channel.Channel} will not be closed on write failure.
+     * @deprecated From version 5.0, {@link Channel} will not be closed on write failure.
      *
-     * {@code true} if and only if the {@link com.github.mauricio.netty.channel.Channel} is closed automatically and immediately on write failure.
+     * {@code true} if and only if the {@link Channel} is closed automatically and immediately on write failure.
      * The default is {@code false}.
      */
     @Deprecated
@@ -85,7 +85,7 @@ public class ChannelOption<T> extends UniqueName {
             valueOf("DATAGRAM_CHANNEL_ACTIVE_ON_REGISTRATION");
 
     /**
-     * Creates a new {@link com.github.mauricio.netty.channel.ChannelOption} with the specified {@code name}.
+     * Creates a new {@link ChannelOption} with the specified {@code name}.
      */
     public static <T> ChannelOption<T> valueOf(String name) {
         return new ChannelOption<T>(name);
@@ -100,7 +100,7 @@ public class ChannelOption<T> extends UniqueName {
     }
 
     /**
-     * Validate the value which is set for the {@link com.github.mauricio.netty.channel.ChannelOption}. Sub-classes
+     * Validate the value which is set for the {@link ChannelOption}. Sub-classes
      * may override this for special checks.
      */
     public void validate(T value) {

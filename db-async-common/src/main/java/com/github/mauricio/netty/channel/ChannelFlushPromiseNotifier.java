@@ -19,7 +19,7 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 /**
- * This implementation allows to register {@link com.github.mauricio.netty.channel.ChannelFuture} instances which will get notified once some amount of
+ * This implementation allows to register {@link ChannelFuture} instances which will get notified once some amount of
  * data was written and so a checkpoint was reached.
  */
 public final class ChannelFlushPromiseNotifier {
@@ -31,9 +31,9 @@ public final class ChannelFlushPromiseNotifier {
     /**
      * Create a new instance
      *
-     * @param tryNotify if {@code true} the {@link com.github.mauricio.netty.channel.ChannelPromise}s will get notified with
-     *                  {@link com.github.mauricio.netty.channel.ChannelPromise#trySuccess()} and {@link com.github.mauricio.netty.channel.ChannelPromise#tryFailure(Throwable)}.
-     *                  Otherwise {@link com.github.mauricio.netty.channel.ChannelPromise#setSuccess()} and {@link com.github.mauricio.netty.channel.ChannelPromise#setFailure(Throwable)}
+     * @param tryNotify if {@code true} the {@link ChannelPromise}s will get notified with
+     *                  {@link ChannelPromise#trySuccess()} and {@link ChannelPromise#tryFailure(Throwable)}.
+     *                  Otherwise {@link ChannelPromise#setSuccess()} and {@link ChannelPromise#setFailure(Throwable)}
      *                  is used
      */
     public ChannelFlushPromiseNotifier(boolean tryNotify) {
@@ -41,15 +41,15 @@ public final class ChannelFlushPromiseNotifier {
     }
 
     /**
-     * Create a new instance which will use {@link com.github.mauricio.netty.channel.ChannelPromise#setSuccess()} and
-     * {@link com.github.mauricio.netty.channel.ChannelPromise#setFailure(Throwable)} to notify the {@link com.github.mauricio.netty.channel.ChannelPromise}s.
+     * Create a new instance which will use {@link ChannelPromise#setSuccess()} and
+     * {@link ChannelPromise#setFailure(Throwable)} to notify the {@link ChannelPromise}s.
      */
     public ChannelFlushPromiseNotifier() {
         this(false);
     }
 
     /**
-     * Add a {@link com.github.mauricio.netty.channel.ChannelPromise} to this {@link com.github.mauricio.netty.channel.ChannelFlushPromiseNotifier} which will be notified after the given
+     * Add a {@link ChannelPromise} to this {@link ChannelFlushPromiseNotifier} which will be notified after the given
      * pendingDataSize was reached.
      */
     public ChannelFlushPromiseNotifier add(ChannelPromise promise, int pendingDataSize) {
@@ -82,17 +82,17 @@ public final class ChannelFlushPromiseNotifier {
     }
 
     /**
-     * Return the current write counter of this {@link com.github.mauricio.netty.channel.ChannelFlushPromiseNotifier}
+     * Return the current write counter of this {@link ChannelFlushPromiseNotifier}
      */
     public long writeCounter() {
         return writeCounter;
     }
 
     /**
-     * Notify all {@link com.github.mauricio.netty.channel.ChannelFuture}s that were registered with {@link #add(com.github.mauricio.netty.channel.ChannelPromise, int)} and
+     * Notify all {@link ChannelFuture}s that were registered with {@link #add(ChannelPromise, int)} and
      * their pendingDatasize is smaller after the the current writeCounter returned by {@link #writeCounter()}.
      *
-     * After a {@link com.github.mauricio.netty.channel.ChannelFuture} was notified it will be removed from this {@link com.github.mauricio.netty.channel.ChannelFlushPromiseNotifier} and
+     * After a {@link ChannelFuture} was notified it will be removed from this {@link ChannelFlushPromiseNotifier} and
      * so not receive anymore notification.
      */
     public ChannelFlushPromiseNotifier notifyFlushFutures() {
@@ -101,15 +101,15 @@ public final class ChannelFlushPromiseNotifier {
     }
 
     /**
-     * Notify all {@link com.github.mauricio.netty.channel.ChannelFuture}s that were registered with {@link #add(com.github.mauricio.netty.channel.ChannelPromise, int)} and
+     * Notify all {@link ChannelFuture}s that were registered with {@link #add(ChannelPromise, int)} and
      * their pendingDatasize isis smaller then the current writeCounter returned by {@link #writeCounter()}.
      *
-     * After a {@link com.github.mauricio.netty.channel.ChannelFuture} was notified it will be removed from this {@link com.github.mauricio.netty.channel.ChannelFlushPromiseNotifier} and
+     * After a {@link ChannelFuture} was notified it will be removed from this {@link ChannelFlushPromiseNotifier} and
      * so not receive anymore notification.
      *
-     * The rest of the remaining {@link com.github.mauricio.netty.channel.ChannelFuture}s will be failed with the given {@link Throwable}.
+     * The rest of the remaining {@link ChannelFuture}s will be failed with the given {@link Throwable}.
      *
-     * So after this operation this {@link com.github.mauricio.netty.channel.ChannelFutureListener} is empty.
+     * So after this operation this {@link ChannelFutureListener} is empty.
      */
     public ChannelFlushPromiseNotifier notifyFlushFutures(Throwable cause) {
         notifyFlushFutures();
@@ -128,20 +128,20 @@ public final class ChannelFlushPromiseNotifier {
     }
 
     /**
-     * Notify all {@link com.github.mauricio.netty.channel.ChannelFuture}s that were registered with {@link #add(com.github.mauricio.netty.channel.ChannelPromise, int)} and
+     * Notify all {@link ChannelFuture}s that were registered with {@link #add(ChannelPromise, int)} and
      * their pendingDatasize is smaller then the current writeCounter returned by {@link #writeCounter()} using
      * the given cause1.
      *
-     * After a {@link com.github.mauricio.netty.channel.ChannelFuture} was notified it will be removed from this {@link com.github.mauricio.netty.channel.ChannelFlushPromiseNotifier} and
+     * After a {@link ChannelFuture} was notified it will be removed from this {@link ChannelFlushPromiseNotifier} and
      * so not receive anymore notification.
      *
-     * The rest of the remaining {@link com.github.mauricio.netty.channel.ChannelFuture}s will be failed with the given {@link Throwable}.
+     * The rest of the remaining {@link ChannelFuture}s will be failed with the given {@link Throwable}.
      *
-     * So after this operation this {@link com.github.mauricio.netty.channel.ChannelFutureListener} is empty.
+     * So after this operation this {@link ChannelFutureListener} is empty.
      *
-     * @param cause1    the {@link Throwable} which will be used to fail all of the {@link com.github.mauricio.netty.channel.ChannelFuture}s whichs
+     * @param cause1    the {@link Throwable} which will be used to fail all of the {@link ChannelFuture}s whichs
      *                  pendingDataSize is smaller then the current writeCounter returned by {@link #writeCounter()}
-     * @param cause2    the {@link Throwable} which will be used to fail the remaining {@link com.github.mauricio.netty.channel.ChannelFuture}s
+     * @param cause2    the {@link Throwable} which will be used to fail the remaining {@link ChannelFuture}s
      */
     public ChannelFlushPromiseNotifier notifyFlushFutures(Throwable cause1, Throwable cause2) {
         notifyFlushFutures0(cause1);

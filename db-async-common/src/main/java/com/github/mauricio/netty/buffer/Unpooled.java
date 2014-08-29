@@ -26,19 +26,19 @@ import java.util.List;
 
 
 /**
- * Creates a new {@link com.github.mauricio.netty.buffer.ByteBuf} by allocating new space or by wrapping
+ * Creates a new {@link ByteBuf} by allocating new space or by wrapping
  * or copying existing byte arrays, byte buffers and a string.
  *
  * <h3>Use static import</h3>
  * This classes is intended to be used with Java 5 static import statement:
  *
  * <pre>
- * import static io.netty.buffer.{@link com.github.mauricio.netty.buffer.Unpooled}.*;
+ * import static com.github.mauricio.netty.buffer.{@link Unpooled}.*;
  *
- * {@link com.github.mauricio.netty.buffer.ByteBuf} heapBuffer    = buffer(128);
- * {@link com.github.mauricio.netty.buffer.ByteBuf} directBuffer  = directBuffer(256);
- * {@link com.github.mauricio.netty.buffer.ByteBuf} wrappedBuffer = wrappedBuffer(new byte[128], new byte[256]);
- * {@link com.github.mauricio.netty.buffer.ByteBuf} copiedBuffe r = copiedBuffer({@link java.nio.ByteBuffer}.allocate(128));
+ * {@link ByteBuf} heapBuffer    = buffer(128);
+ * {@link ByteBuf} directBuffer  = directBuffer(256);
+ * {@link ByteBuf} wrappedBuffer = wrappedBuffer(new byte[128], new byte[256]);
+ * {@link ByteBuf} copiedBuffe r = copiedBuffer({@link ByteBuffer}.allocate(128));
  * </pre>
  *
  * <h3>Allocating a new buffer</h3>
@@ -851,7 +851,7 @@ public final class Unpooled {
     }
 
     /**
-     * Return a unreleasable view on the given {@link com.github.mauricio.netty.buffer.ByteBuf} which will just ignore release and retain calls.
+     * Return a unreleasable view on the given {@link ByteBuf} which will just ignore release and retain calls.
      */
     public static ByteBuf unreleasableBuffer(ByteBuf buf) {
         return new UnreleasableByteBuf(buf);

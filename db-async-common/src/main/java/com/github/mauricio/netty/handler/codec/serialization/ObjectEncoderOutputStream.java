@@ -19,11 +19,15 @@ import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufOutputStream;
 import com.github.mauricio.netty.buffer.Unpooled;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 
 /**
- * An {@link java.io.ObjectOutput} which is interoperable with {@link com.github.mauricio.netty.handler.codec.serialization.ObjectDecoder}
- * and {@link com.github.mauricio.netty.handler.codec.serialization.ObjectDecoderInputStream}.
+ * An {@link ObjectOutput} which is interoperable with {@link ObjectDecoder}
+ * and {@link ObjectDecoderInputStream}.
  */
 public class ObjectEncoderOutputStream extends OutputStream implements
         ObjectOutput {
@@ -32,11 +36,11 @@ public class ObjectEncoderOutputStream extends OutputStream implements
     private final int estimatedLength;
 
     /**
-     * Creates a new {@link java.io.ObjectOutput} with the estimated length of 512
+     * Creates a new {@link ObjectOutput} with the estimated length of 512
      * bytes.
      *
      * @param out
-     *        the {@link java.io.OutputStream} where the serialized form will be
+     *        the {@link OutputStream} where the serialized form will be
      *        written out
      */
     public ObjectEncoderOutputStream(OutputStream out) {
@@ -44,10 +48,10 @@ public class ObjectEncoderOutputStream extends OutputStream implements
     }
 
     /**
-     * Creates a new {@link java.io.ObjectOutput}.
+     * Creates a new {@link ObjectOutput}.
      *
      * @param out
-     *        the {@link java.io.OutputStream} where the serialized form will be
+     *        the {@link OutputStream} where the serialized form will be
      *        written out
      *
      * @param estimatedLength

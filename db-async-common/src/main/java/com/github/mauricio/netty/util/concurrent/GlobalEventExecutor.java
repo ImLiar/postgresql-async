@@ -25,11 +25,12 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Single-thread singleton {@link com.github.mauricio.netty.util.concurrent.EventExecutor}.  It starts the thread automatically and stops it when there is no
+ * Single-thread singleton {@link EventExecutor}.  It starts the thread automatically and stops it when there is no
  * task pending in the task queue for 1 second.  Please note it is not scalable to schedule large number of tasks to
  * this executor; use a dedicated executor.
  */
@@ -142,7 +143,7 @@ public final class GlobalEventExecutor extends AbstractEventExecutor {
     }
 
     /**
-     * Add a task to the task queue, or throws a {@link java.util.concurrent.RejectedExecutionException} if this instance was shutdown
+     * Add a task to the task queue, or throws a {@link RejectedExecutionException} if this instance was shutdown
      * before.
      */
     private void addTask(Runnable task) {

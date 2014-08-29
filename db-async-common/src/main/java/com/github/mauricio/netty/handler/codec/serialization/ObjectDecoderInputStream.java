@@ -15,10 +15,15 @@
  */
 package com.github.mauricio.netty.handler.codec.serialization;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.StreamCorruptedException;
 
 /**
- * An {@link java.io.ObjectInput} which is interoperable with {@link ObjectEncoder}
+ * An {@link ObjectInput} which is interoperable with {@link ObjectEncoder}
  * and {@link ObjectEncoderOutputStream}.
  */
 public class ObjectDecoderInputStream extends InputStream implements
@@ -29,10 +34,10 @@ public class ObjectDecoderInputStream extends InputStream implements
     private final ClassResolver classResolver;
 
     /**
-     * Creates a new {@link java.io.ObjectInput}.
+     * Creates a new {@link ObjectInput}.
      *
      * @param in
-     *        the {@link java.io.InputStream} where the serialized form will be
+     *        the {@link InputStream} where the serialized form will be
      *        read from
      */
     public ObjectDecoderInputStream(InputStream in) {
@@ -40,10 +45,10 @@ public class ObjectDecoderInputStream extends InputStream implements
     }
 
     /**
-     * Creates a new {@link java.io.ObjectInput}.
+     * Creates a new {@link ObjectInput}.
      *
      * @param in
-     *        the {@link java.io.InputStream} where the serialized form will be
+     *        the {@link InputStream} where the serialized form will be
      *        read from
      * @param classLoader
      *        the {@link ClassLoader} which will load the class of the
@@ -54,25 +59,25 @@ public class ObjectDecoderInputStream extends InputStream implements
     }
 
     /**
-     * Creates a new {@link java.io.ObjectInput}.
+     * Creates a new {@link ObjectInput}.
      *
      * @param in
-     *        the {@link java.io.InputStream} where the serialized form will be
+     *        the {@link InputStream} where the serialized form will be
      *        read from
      * @param maxObjectSize
      *        the maximum byte length of the serialized object.  if the length
      *        of the received object is greater than this value,
-     *        a {@link java.io.StreamCorruptedException} will be raised.
+     *        a {@link StreamCorruptedException} will be raised.
      */
     public ObjectDecoderInputStream(InputStream in, int maxObjectSize) {
         this(in, null, maxObjectSize);
     }
 
     /**
-     * Creates a new {@link java.io.ObjectInput}.
+     * Creates a new {@link ObjectInput}.
      *
      * @param in
-     *        the {@link java.io.InputStream} where the serialized form will be
+     *        the {@link InputStream} where the serialized form will be
      *        read from
      * @param classLoader
      *        the {@link ClassLoader} which will load the class of the
@@ -80,7 +85,7 @@ public class ObjectDecoderInputStream extends InputStream implements
      * @param maxObjectSize
      *        the maximum byte length of the serialized object.  if the length
      *        of the received object is greater than this value,
-     *        a {@link java.io.StreamCorruptedException} will be raised.
+     *        a {@link StreamCorruptedException} will be raised.
      */
     public ObjectDecoderInputStream(InputStream in, ClassLoader classLoader, int maxObjectSize) {
         if (in == null) {
@@ -188,7 +193,7 @@ public class ObjectDecoderInputStream extends InputStream implements
     }
 
     /**
-     * @deprecated Use {@link java.io.BufferedReader#readLine()} instead.
+     * @deprecated Use {@link BufferedReader#readLine()} instead.
      */
     @Override
     @Deprecated

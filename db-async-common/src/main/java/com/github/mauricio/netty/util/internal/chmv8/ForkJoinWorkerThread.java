@@ -24,15 +24,15 @@ package com.github.mauricio.netty.util.internal.chmv8;
 
 
 /**
- * A thread managed by a {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool}, which executes
- * {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask}s.
+ * A thread managed by a {@link ForkJoinPool}, which executes
+ * {@link ForkJoinTask}s.
  * This class is subclassable solely for the sake of adding
  * functionality -- there are no overridable methods dealing with
  * scheduling or execution.  However, you can override initialization
  * and termination methods surrounding the main task processing loop.
  * If you do create such a subclass, you will also need to supply a
- * custom {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool.ForkJoinWorkerThreadFactory} to
- * {@linkplain com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool#ForkJoinPool use it} in a {@code ForkJoinPool}.
+ * custom {@link ForkJoinPool.ForkJoinWorkerThreadFactory} to
+ * {@linkplain ForkJoinPool#ForkJoinPool use it} in a {@code ForkJoinPool}.
  *
  * @since 1.7
  * @author Doug Lea
@@ -117,7 +117,7 @@ public class ForkJoinWorkerThread extends Thread {
     /**
      * This method is required to be public, but should never be
      * called explicitly. It performs the main run loop to execute
-     * {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask}s.
+     * {@link ForkJoinTask}s.
      */
     public void run() {
         Throwable exception = null;

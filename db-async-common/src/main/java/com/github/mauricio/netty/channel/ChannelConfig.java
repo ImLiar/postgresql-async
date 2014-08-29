@@ -16,61 +16,64 @@
 package com.github.mauricio.netty.channel;
 
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
+import com.github.mauricio.netty.channel.socket.SocketChannelConfig;
 
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 
 /**
- * A set of configuration properties of a {@link com.github.mauricio.netty.channel.Channel}.
+ * A set of configuration properties of a {@link Channel}.
  * <p>
  * Please down-cast to more specific configuration type such as
- * {@link com.github.mauricio.netty.channel.socket.SocketChannelConfig} or use {@link #setOptions(java.util.Map)} to set the
+ * {@link SocketChannelConfig} or use {@link #setOptions(Map)} to set the
  * transport-specific properties:
  * <pre>
- * {@link com.github.mauricio.netty.channel.Channel} ch = ...;
- * {@link com.github.mauricio.netty.channel.socket.SocketChannelConfig} cfg = <strong>({@link com.github.mauricio.netty.channel.socket.SocketChannelConfig}) ch.getConfig();</strong>
+ * {@link Channel} ch = ...;
+ * {@link SocketChannelConfig} cfg = <strong>({@link SocketChannelConfig}) ch.getConfig();</strong>
  * cfg.setTcpNoDelay(false);
  * </pre>
  *
  * <h3>Option map</h3>
  *
  * An option map property is a dynamic write-only property which allows
- * the configuration of a {@link com.github.mauricio.netty.channel.Channel} without down-casting its associated
- * {@link com.github.mauricio.netty.channel.ChannelConfig}.  To update an option map, please call {@link #setOptions(java.util.Map)}.
+ * the configuration of a {@link Channel} without down-casting its associated
+ * {@link ChannelConfig}.  To update an option map, please call {@link #setOptions(Map)}.
  * <p>
- * All {@link com.github.mauricio.netty.channel.ChannelConfig} has the following options:
+ * All {@link ChannelConfig} has the following options:
  *
  * <table border="1" cellspacing="0" cellpadding="6">
  * <tr>
  * <th>Name</th><th>Associated setter method</th>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#CONNECT_TIMEOUT_MILLIS}</td><td>{@link #setConnectTimeoutMillis(int)}</td>
+ * <td>{@link ChannelOption#CONNECT_TIMEOUT_MILLIS}</td><td>{@link #setConnectTimeoutMillis(int)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#WRITE_SPIN_COUNT}</td><td>{@link #setWriteSpinCount(int)}</td>
+ * <td>{@link ChannelOption#WRITE_SPIN_COUNT}</td><td>{@link #setWriteSpinCount(int)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#ALLOCATOR}</td><td>{@link #setAllocator(com.github.mauricio.netty.buffer.ByteBufAllocator)}</td>
+ * <td>{@link ChannelOption#ALLOCATOR}</td><td>{@link #setAllocator(ByteBufAllocator)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#AUTO_READ}</td><td>{@link #setAutoRead(boolean)}</td>
+ * <td>{@link ChannelOption#AUTO_READ}</td><td>{@link #setAutoRead(boolean)}</td>
  * </tr>
  * </table>
  * <p>
- * More options are available in the sub-types of {@link com.github.mauricio.netty.channel.ChannelConfig}.  For
+ * More options are available in the sub-types of {@link ChannelConfig}.  For
  * example, you can configure the parameters which are specific to a TCP/IP
- * socket as explained in {@link com.github.mauricio.netty.channel.socket.SocketChannelConfig}.
+ * socket as explained in {@link SocketChannelConfig}.
  */
 public interface ChannelConfig {
 
     /**
-     * Return all set {@link com.github.mauricio.netty.channel.ChannelOption}'s.
+     * Return all set {@link ChannelOption}'s.
      */
     Map<ChannelOption<?>, Object> getOptions();
 
     /**
-     * Sets the configuration properties from the specified {@link java.util.Map}.
+     * Sets the configuration properties from the specified {@link Map}.
      */
     boolean setOptions(Map<ChannelOption<?>, ?> options);
 
     /**
-     * Return the value of the given {@link com.github.mauricio.netty.channel.ChannelOption}
+     * Return the value of the given {@link ChannelOption}
      */
     <T> T getOption(ChannelOption<T> option);
 
@@ -98,7 +101,7 @@ public interface ChannelConfig {
 
     /**
      * Returns the connect timeout of the channel in milliseconds.  If the
-     * {@link com.github.mauricio.netty.channel.Channel} does not support connect operation, this property is not
+     * {@link Channel} does not support connect operation, this property is not
      * used at all, and therefore will be ignored.
      *
      * @return the connect timeout in milliseconds.  {@code 0} if disabled.
@@ -107,7 +110,7 @@ public interface ChannelConfig {
 
     /**
      * Sets the connect timeout of the channel in milliseconds.  If the
-     * {@link com.github.mauricio.netty.channel.Channel} does not support connect operation, this property is not
+     * {@link Channel} does not support connect operation, this property is not
      * used at all, and therefore will be ignored.
      *
      * @param connectTimeoutMillis the connect timeout in milliseconds.
@@ -117,7 +120,7 @@ public interface ChannelConfig {
 
     /**
      * Returns the maximum number of messages to read per read loop.
-     * a {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelRead(com.github.mauricio.netty.channel.ChannelHandlerContext, Object) channelRead()} event.
+     * a {@link ChannelInboundHandler#channelRead(ChannelHandlerContext, Object) channelRead()} event.
      * If this value is greater than 1, an event loop might attempt to read multiple times to procure multiple messages.
      */
     int getMaxMessagesPerRead();
@@ -130,7 +133,7 @@ public interface ChannelConfig {
 
     /**
      * Returns the maximum loop count for a write operation until
-     * {@link java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)} returns a non-zero value.
+     * {@link WritableByteChannel#write(ByteBuffer)} returns a non-zero value.
      * It is similar to what a spin lock is used for in concurrency programming.
      * It improves memory utilization and write throughput depending on
      * the platform that JVM runs on.  The default value is {@code 16}.
@@ -139,7 +142,7 @@ public interface ChannelConfig {
 
     /**
      * Sets the maximum loop count for a write operation until
-     * {@link java.nio.channels.WritableByteChannel#write(java.nio.ByteBuffer)} returns a non-zero value.
+     * {@link WritableByteChannel#write(ByteBuffer)} returns a non-zero value.
      * It is similar to what a spin lock is used for in concurrency programming.
      * It improves memory utilization and write throughput depending on
      * the platform that JVM runs on.  The default value is {@code 16}.
@@ -150,54 +153,54 @@ public interface ChannelConfig {
     ChannelConfig setWriteSpinCount(int writeSpinCount);
 
     /**
-     * Returns {@link com.github.mauricio.netty.buffer.ByteBufAllocator} which is used for the channel
+     * Returns {@link ByteBufAllocator} which is used for the channel
      * to allocate buffers.
      */
     ByteBufAllocator getAllocator();
 
     /**
-     * Set the {@link com.github.mauricio.netty.buffer.ByteBufAllocator} which is used for the channel
+     * Set the {@link ByteBufAllocator} which is used for the channel
      * to allocate buffers.
      */
     ChannelConfig setAllocator(ByteBufAllocator allocator);
 
     /**
-     * Returns {@link com.github.mauricio.netty.channel.RecvByteBufAllocator} which is used for the channel
+     * Returns {@link RecvByteBufAllocator} which is used for the channel
      * to allocate receive buffers.
      */
     RecvByteBufAllocator getRecvByteBufAllocator();
 
     /**
-     * Set the {@link com.github.mauricio.netty.buffer.ByteBufAllocator} which is used for the channel
+     * Set the {@link ByteBufAllocator} which is used for the channel
      * to allocate receive buffers.
      */
     ChannelConfig setRecvByteBufAllocator(RecvByteBufAllocator allocator);
 
     /**
-     * Returns {@code true} if and only if {@link com.github.mauricio.netty.channel.ChannelHandlerContext#read()} will be invoked automatically so that
+     * Returns {@code true} if and only if {@link ChannelHandlerContext#read()} will be invoked automatically so that
      * a user application doesn't need to call it at all. The default value is {@code true}.
      */
     boolean isAutoRead();
 
     /**
-     * Sets if {@link com.github.mauricio.netty.channel.ChannelHandlerContext#read()} will be invoked automatically so that a user application doesn't
+     * Sets if {@link ChannelHandlerContext#read()} will be invoked automatically so that a user application doesn't
      * need to call it at all. The default value is {@code true}.
      */
     ChannelConfig setAutoRead(boolean autoRead);
 
     /**
-     * @deprecated From version 5.0, {@link com.github.mauricio.netty.channel.Channel} will not be closed on write failure.
+     * @deprecated From version 5.0, {@link Channel} will not be closed on write failure.
      *
-     * Returns {@code true} if and only if the {@link com.github.mauricio.netty.channel.Channel} will be closed automatically and immediately on
+     * Returns {@code true} if and only if the {@link Channel} will be closed automatically and immediately on
      * write failure.  The default is {@code false}.
      */
     @Deprecated
     boolean isAutoClose();
 
     /**
-     * @deprecated From version 5.0, {@link com.github.mauricio.netty.channel.Channel} will not be closed on write failure.
+     * @deprecated From version 5.0, {@link Channel} will not be closed on write failure.
      *
-     * Sets whether the {@link com.github.mauricio.netty.channel.Channel} should be closed automatically and immediately on write faillure.
+     * Sets whether the {@link Channel} should be closed automatically and immediately on write faillure.
      * The default is {@code false}.
      */
     @Deprecated
@@ -205,14 +208,14 @@ public interface ChannelConfig {
 
     /**
      * Returns the high water mark of the write buffer.  If the number of bytes
-     * queued in the write buffer exceeds this value, {@link com.github.mauricio.netty.channel.Channel#isWritable()}
+     * queued in the write buffer exceeds this value, {@link Channel#isWritable()}
      * will start to return {@code false}.
      */
     int getWriteBufferHighWaterMark();
 
     /**
      * Sets the high water mark of the write buffer.  If the number of bytes
-     * queued in the write buffer exceeds this value, {@link com.github.mauricio.netty.channel.Channel#isWritable()}
+     * queued in the write buffer exceeds this value, {@link Channel#isWritable()}
      * will start to return {@code false}.
      */
     ChannelConfig setWriteBufferHighWaterMark(int writeBufferHighWaterMark);
@@ -221,7 +224,7 @@ public interface ChannelConfig {
      * Returns the low water mark of the write buffer.  Once the number of bytes
      * queued in the write buffer exceeded the
      * {@linkplain #setWriteBufferHighWaterMark(int) high water mark} and then
-     * dropped down below this value, {@link com.github.mauricio.netty.channel.Channel#isWritable()} will start to return
+     * dropped down below this value, {@link Channel#isWritable()} will start to return
      * {@code true} again.
      */
     int getWriteBufferLowWaterMark();
@@ -230,19 +233,19 @@ public interface ChannelConfig {
      * Sets the low water mark of the write buffer.  Once the number of bytes
      * queued in the write buffer exceeded the
      * {@linkplain #setWriteBufferHighWaterMark(int) high water mark} and then
-     * dropped down below this value, {@link com.github.mauricio.netty.channel.Channel#isWritable()} will start to return
+     * dropped down below this value, {@link Channel#isWritable()} will start to return
      * {@code true} again.
      */
     ChannelConfig setWriteBufferLowWaterMark(int writeBufferLowWaterMark);
 
     /**
-     * Returns {@link com.github.mauricio.netty.channel.MessageSizeEstimator} which is used for the channel
+     * Returns {@link MessageSizeEstimator} which is used for the channel
      * to detect the size of a message.
      */
     MessageSizeEstimator getMessageSizeEstimator();
 
     /**
-     * Set the {@link com.github.mauricio.netty.buffer.ByteBufAllocator} which is used for the channel
+     * Set the {@link ByteBufAllocator} which is used for the channel
      * to detect the size of a message.
      */
     ChannelConfig setMessageSizeEstimator(MessageSizeEstimator estimator);

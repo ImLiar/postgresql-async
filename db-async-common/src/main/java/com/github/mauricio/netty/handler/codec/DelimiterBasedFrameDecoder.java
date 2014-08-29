@@ -21,7 +21,7 @@ import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import java.util.List;
 
 /**
- * A decoder that splits the received {@link com.github.mauricio.netty.buffer.ByteBuf}s by one or more
+ * A decoder that splits the received {@link ByteBuf}s by one or more
  * delimiters.  It is particularly useful for decoding the frames which ends
  * with a delimiter such as {@link Delimiters#nulDelimiter() NUL} or
  * {@linkplain Delimiters#lineDelimiter() newline characters}.
@@ -32,7 +32,7 @@ import java.util.List;
  *
  * <h3>Specifying more than one delimiter</h3>
  * <p>
- * {@link com.github.mauricio.netty.handler.codec.DelimiterBasedFrameDecoder} allows you to specify more than one
+ * {@link DelimiterBasedFrameDecoder} allows you to specify more than one
  * delimiter.  If more than one delimiter is found in the buffer, it chooses
  * the delimiter which produces the shortest frame.  For example, if you have
  * the following data in the buffer:
@@ -41,7 +41,7 @@ import java.util.List;
  * | ABC\nDEF\r\n |
  * +--------------+
  * </pre>
- * a {@link com.github.mauricio.netty.handler.codec.DelimiterBasedFrameDecoder}({@link Delimiters#lineDelimiter() Delimiters.lineDelimiter()})
+ * a {@link DelimiterBasedFrameDecoder}({@link Delimiters#lineDelimiter() Delimiters.lineDelimiter()})
  * will choose {@code '\n'} as the first delimiter and produce two frames:
  * <pre>
  * +-----+-----+
@@ -70,7 +70,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param maxFrameLength  the maximum length of the decoded frame.
-     *                        A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                        A {@link TooLongFrameException} is thrown if
      *                        the length of the frame exceeds this value.
      * @param delimiter  the delimiter
      */
@@ -82,7 +82,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param maxFrameLength  the maximum length of the decoded frame.
-     *                        A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                        A {@link TooLongFrameException} is thrown if
      *                        the length of the frame exceeds this value.
      * @param stripDelimiter  whether the decoded frame should strip out the
      *                        delimiter or not
@@ -97,15 +97,15 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param maxFrameLength  the maximum length of the decoded frame.
-     *                        A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                        A {@link TooLongFrameException} is thrown if
      *                        the length of the frame exceeds this value.
      * @param stripDelimiter  whether the decoded frame should strip out the
      *                        delimiter or not
-     * @param failFast  If <tt>true</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is
+     * @param failFast  If <tt>true</tt>, a {@link TooLongFrameException} is
      *                  thrown as soon as the decoder notices the length of the
      *                  frame will exceed <tt>maxFrameLength</tt> regardless of
      *                  whether the entire frame has been read.
-     *                  If <tt>false</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is
+     *                  If <tt>false</tt>, a {@link TooLongFrameException} is
      *                  thrown after the entire frame that exceeds
      *                  <tt>maxFrameLength</tt> has been read.
      * @param delimiter  the delimiter
@@ -121,7 +121,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param maxFrameLength  the maximum length of the decoded frame.
-     *                        A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                        A {@link TooLongFrameException} is thrown if
      *                        the length of the frame exceeds this value.
      * @param delimiters  the delimiters
      */
@@ -133,7 +133,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param maxFrameLength  the maximum length of the decoded frame.
-     *                        A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                        A {@link TooLongFrameException} is thrown if
      *                        the length of the frame exceeds this value.
      * @param stripDelimiter  whether the decoded frame should strip out the
      *                        delimiter or not
@@ -148,15 +148,15 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param maxFrameLength  the maximum length of the decoded frame.
-     *                        A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                        A {@link TooLongFrameException} is thrown if
      *                        the length of the frame exceeds this value.
      * @param stripDelimiter  whether the decoded frame should strip out the
      *                        delimiter or not
-     * @param failFast  If <tt>true</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is
+     * @param failFast  If <tt>true</tt>, a {@link TooLongFrameException} is
      *                  thrown as soon as the decoder notices the length of the
      *                  frame will exceed <tt>maxFrameLength</tt> regardless of
      *                  whether the entire frame has been read.
-     *                  If <tt>false</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is
+     *                  If <tt>false</tt>, a {@link TooLongFrameException} is
      *                  thrown after the entire frame that exceeds
      *                  <tt>maxFrameLength</tt> has been read.
      * @param delimiters  the delimiters
@@ -220,11 +220,11 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
     }
 
     /**
-     * Create a frame out of the {@link com.github.mauricio.netty.buffer.ByteBuf} and return it.
+     * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} belongs to
-     * @param   buffer          the {@link com.github.mauricio.netty.buffer.ByteBuf} from which to read data
-     * @return  frame           the {@link com.github.mauricio.netty.buffer.ByteBuf} which represent the frame or {@code null} if no frame could
+     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param   buffer          the {@link ByteBuf} from which to read data
+     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
      *                          be created.
      */
     protected Object decode(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {

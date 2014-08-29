@@ -15,7 +15,12 @@
  */
 package com.github.mauricio.netty.channel.embedded;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.DefaultChannelPromise;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.EventLoopGroup;
 import com.github.mauricio.netty.util.concurrent.AbstractEventExecutor;
 import com.github.mauricio.netty.util.concurrent.Future;
 

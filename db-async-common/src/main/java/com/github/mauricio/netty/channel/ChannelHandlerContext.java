@@ -16,11 +16,17 @@
 package com.github.mauricio.netty.channel;
 
 
+import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
+import com.github.mauricio.netty.util.Attribute;
+import com.github.mauricio.netty.util.AttributeKey;
 import com.github.mauricio.netty.util.AttributeMap;
 import com.github.mauricio.netty.util.concurrent.EventExecutor;
+import com.github.mauricio.netty.util.concurrent.FutureListener;
 
+import java.net.ConnectException;
 import java.net.SocketAddress;
+import java.nio.channels.Channels;
 
 /**
  * Enables a {@link ChannelHandler} to interact with its {@link ChannelPipeline}
@@ -37,18 +43,18 @@ import java.net.SocketAddress;
  *
  * You can get the {@link ChannelPipeline} your handler belongs to by calling
  * {@link #pipeline()}.  A non-trivial application could insert, remove, or
- * replace handlers in the pipeline dynamically in runtime.
+ * replace handlers in the pipeline dynamically at runtime.
  *
  * <h3>Retrieving for later use</h3>
  *
- * You can keep the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} for later use, such as
+ * You can keep the {@link ChannelHandlerContext} for later use, such as
  * triggering an event outside the handler methods, even from a different thread.
  * <pre>
- * public class MyHandler extends {@link com.github.mauricio.netty.channel.ChannelDuplexHandler} {
+ * public class MyHandler extends {@link ChannelDuplexHandler} {
  *
- *     <b>private {@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx;</b>
+ *     <b>private {@link ChannelHandlerContext} ctx;</b>
  *
- *     public void beforeAdd({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx) {
+ *     public void beforeAdd({@link ChannelHandlerContext} ctx) {
  *         <b>this.ctx = ctx;</b>
  *     }
  *
@@ -61,7 +67,7 @@ import java.net.SocketAddress;
  *
  * <h3>Storing stateful information</h3>
  *
- * {@link #attr(com.github.mauricio.netty.util.AttributeKey)} allow you to
+ * {@link #attr(AttributeKey)} allow you to
  * store and access stateful information that is related with a handler and its
  * context.  Please refer to {@link ChannelHandler} to learn various recommended
  * ways to manage stateful information.
@@ -70,25 +76,25 @@ import java.net.SocketAddress;
  *
  * Please note that a {@link ChannelHandler} instance can be added to more than
  * one {@link ChannelPipeline}.  It means a single {@link ChannelHandler}
- * instance can have more than one {@link com.github.mauricio.netty.channel.ChannelHandlerContext} and therefore
+ * instance can have more than one {@link ChannelHandlerContext} and therefore
  * the single instance can be invoked with different
- * {@link com.github.mauricio.netty.channel.ChannelHandlerContext}s if it is added to one or more
+ * {@link ChannelHandlerContext}s if it is added to one or more
  * {@link ChannelPipeline}s more than once.
  * <p>
- * For example, the following handler will have as many independent attachments
+ * For example, the following handler will have as many independent {@link AttributeKey}s
  * as how many times it is added to pipelines, regardless if it is added to the
  * same pipeline multiple times or added to different pipelines multiple times:
  * <pre>
  * public class FactorialHandler extends {@link ChannelInboundHandlerAdapter}&lt{@link Integer}&gt {
  *
- *   private final {@link com.github.mauricio.netty.util.AttributeKey}&lt{@link Integer}&gt counter =
- *           new {@link com.github.mauricio.netty.util.AttributeKey}&lt{@link Integer}&gt("counter");
+ *   private final {@link AttributeKey}&lt{@link Integer}&gt counter =
+ *           new {@link AttributeKey}&lt{@link Integer}&gt("counter");
  *
  *   // This handler will receive a sequence of increasing integers starting
  *   // from 1.
  *   {@code @Override}
- *   public void channelRead({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link Integer} integer) {
- *     {@link com.github.mauricio.netty.util.Attribute}&lt{@link Integer}&gt attr = ctx.getAttr(counter);
+ *   public void channelRead({@link ChannelHandlerContext} ctx, {@link Integer} integer) {
+ *     {@link Attribute}&lt{@link Integer}&gt attr = ctx.getAttr(counter);
  *     Integer a = ctx.getAttr(counter).get();
  *
  *     if (a == null) {
@@ -101,15 +107,15 @@ import java.net.SocketAddress;
  *
  * // Different context objects are given to "f1", "f2", "f3", and "f4" even if
  * // they refer to the same handler instance.  Because the FactorialHandler
- * // stores its state in a context object (as an attachment), the factorial is
+ * // stores its state in a context object (as an (using an {@link AttributeKey}), the factorial is
  * // calculated correctly 4 times once the two pipelines (p1 and p2) are active.
  * FactorialHandler fh = new FactorialHandler();
  *
- * {@link ChannelPipeline} p1 = {@link java.nio.channels.Channels}.pipeline();
+ * {@link ChannelPipeline} p1 = {@link Channels}.pipeline();
  * p1.addLast("f1", fh);
  * p1.addLast("f2", fh);
  *
- * {@link ChannelPipeline} p2 = {@link java.nio.channels.Channels}.pipeline();
+ * {@link ChannelPipeline} p2 = {@link Channels}.pipeline();
  * p2.addLast("f3", fh);
  * p2.addLast("f4", fh);
  * </pre>
@@ -125,26 +131,26 @@ public interface ChannelHandlerContext
          extends AttributeMap {
 
     /**
-     * Return the {@link com.github.mauricio.netty.channel.Channel} which is bound to the {@link com.github.mauricio.netty.channel.ChannelHandlerContext}.
+     * Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
      */
     Channel channel();
 
     /**
-     * The {@link com.github.mauricio.netty.util.concurrent.EventExecutor} that is used to dispatch the events. This can also be used to directly
+     * The {@link EventExecutor} that is used to dispatch the events. This can also be used to directly
      * submit tasks that get executed in the event loop. For more information please refer to the
-     * {@link com.github.mauricio.netty.util.concurrent.EventExecutor} javadoc.
+     * {@link EventExecutor} javadoc.
      */
     EventExecutor executor();
 
     /**
-     * The unique name of the {@link com.github.mauricio.netty.channel.ChannelHandlerContext}.The name was used when then {@link ChannelHandler}
+     * The unique name of the {@link ChannelHandlerContext}.The name was used when then {@link ChannelHandler}
      * was added to the {@link ChannelPipeline}. This name can also be used to access the registered
      * {@link ChannelHandler} from the {@link ChannelPipeline}.
      */
     String name();
 
     /**
-     * The {@link ChannelHandler} that is bound this {@link com.github.mauricio.netty.channel.ChannelHandlerContext}.
+     * The {@link ChannelHandler} that is bound this {@link ChannelHandlerContext}.
      */
     ChannelHandler handler();
 
@@ -156,269 +162,269 @@ public interface ChannelHandlerContext
     boolean isRemoved();
 
     /**
-     * A {@link com.github.mauricio.netty.channel.Channel} was registered to its {@link EventLoop}.
+     * A {@link Channel} was registered to its {@link EventLoop}.
      *
-     * This will result in having the  {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelRegistered(com.github.mauricio.netty.channel.ChannelHandlerContext)} method
-     * called of the next  {@link com.github.mauricio.netty.channel.ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * This will result in having the  {@link ChannelInboundHandler#channelRegistered(ChannelHandlerContext)} method
+     * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelHandlerContext fireChannelRegistered();
 
     /**
-     * A {@link com.github.mauricio.netty.channel.Channel} was unregistered from its {@link EventLoop}.
+     * A {@link Channel} was unregistered from its {@link EventLoop}.
      *
-     * This will result in having the  {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelUnregistered(com.github.mauricio.netty.channel.ChannelHandlerContext)} method
-     * called of the next  {@link com.github.mauricio.netty.channel.ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * This will result in having the  {@link ChannelInboundHandler#channelUnregistered(ChannelHandlerContext)} method
+     * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     @Deprecated
     ChannelHandlerContext fireChannelUnregistered();
 
     /**
-     * A {@link com.github.mauricio.netty.channel.Channel} is active now, which means it is connected.
+     * A {@link Channel} is active now, which means it is connected.
      *
-     * This will result in having the  {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelActive(com.github.mauricio.netty.channel.ChannelHandlerContext)} method
-     * called of the next  {@link com.github.mauricio.netty.channel.ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * This will result in having the  {@link ChannelInboundHandler#channelActive(ChannelHandlerContext)} method
+     * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelHandlerContext fireChannelActive();
 
     /**
-     * A {@link com.github.mauricio.netty.channel.Channel} is inactive now, which means it is closed.
+     * A {@link Channel} is inactive now, which means it is closed.
      *
-     * This will result in having the  {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelInactive(com.github.mauricio.netty.channel.ChannelHandlerContext)} method
-     * called of the next  {@link com.github.mauricio.netty.channel.ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * This will result in having the  {@link ChannelInboundHandler#channelInactive(ChannelHandlerContext)} method
+     * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelHandlerContext fireChannelInactive();
 
     /**
-     * A {@link com.github.mauricio.netty.channel.Channel} received an {@link Throwable} in one of its inbound operations.
+     * A {@link Channel} received an {@link Throwable} in one of its inbound operations.
      *
-     * This will result in having the  {@link com.github.mauricio.netty.channel.ChannelInboundHandler#exceptionCaught(com.github.mauricio.netty.channel.ChannelHandlerContext, Throwable)}
-     * method  called of the next  {@link com.github.mauricio.netty.channel.ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * This will result in having the  {@link ChannelInboundHandler#exceptionCaught(ChannelHandlerContext, Throwable)}
+     * method  called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelHandlerContext fireExceptionCaught(Throwable cause);
 
     /**
-     * A {@link com.github.mauricio.netty.channel.Channel} received an user defined event.
+     * A {@link Channel} received an user defined event.
      *
-     * This will result in having the  {@link com.github.mauricio.netty.channel.ChannelInboundHandler#userEventTriggered(com.github.mauricio.netty.channel.ChannelHandlerContext, Object)}
-     * method  called of the next  {@link com.github.mauricio.netty.channel.ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * This will result in having the  {@link ChannelInboundHandler#userEventTriggered(ChannelHandlerContext, Object)}
+     * method  called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelHandlerContext fireUserEventTriggered(Object event);
 
     /**
-     * A {@link com.github.mauricio.netty.channel.Channel} received a message.
+     * A {@link Channel} received a message.
      *
-     * This will result in having the {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelRead(com.github.mauricio.netty.channel.ChannelHandlerContext, Object)}
-     * method  called of the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * This will result in having the {@link ChannelInboundHandler#channelRead(ChannelHandlerContext, Object)}
+     * method  called of the next {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelHandlerContext fireChannelRead(Object msg);
 
     /**
-     * Triggers an {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelWritabilityChanged(com.github.mauricio.netty.channel.ChannelHandlerContext)}
-     * event to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Triggers an {@link ChannelInboundHandler#channelWritabilityChanged(ChannelHandlerContext)}
+     * event to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      */
     ChannelHandlerContext fireChannelReadComplete();
 
     /**
-     * Triggers an {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelWritabilityChanged(com.github.mauricio.netty.channel.ChannelHandlerContext)}
-     * event to the next {@link com.github.mauricio.netty.channel.ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * Triggers an {@link ChannelInboundHandler#channelWritabilityChanged(ChannelHandlerContext)}
+     * event to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      */
     ChannelHandlerContext fireChannelWritabilityChanged();
 
     /**
-     * Request to bind to the given {@link java.net.SocketAddress} and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation
+     * Request to bind to the given {@link SocketAddress} and notify the {@link ChannelFuture} once the operation
      * completes, either because the operation was successful or because of an error.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#bind(com.github.mauricio.netty.channel.ChannelHandlerContext, java.net.SocketAddress, com.github.mauricio.netty.channel.ChannelPromise)} method
-     * called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#bind(ChannelHandlerContext, SocketAddress, ChannelPromise)} method
+     * called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture bind(SocketAddress localAddress);
 
     /**
-     * Request to connect to the given {@link java.net.SocketAddress} and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation
+     * Request to connect to the given {@link SocketAddress} and notify the {@link ChannelFuture} once the operation
      * completes, either because the operation was successful or because of an error.
      * <p>
-     * If the connection fails because of a connection timeout, the {@link com.github.mauricio.netty.channel.ChannelFuture} will get failed with
-     * a {@link ConnectTimeoutException}. If it fails because of connection refused a {@link java.net.ConnectException}
+     * If the connection fails because of a connection timeout, the {@link ChannelFuture} will get failed with
+     * a {@link ConnectTimeoutException}. If it fails because of connection refused a {@link ConnectException}
      * will be used.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#connect(com.github.mauricio.netty.channel.ChannelHandlerContext, java.net.SocketAddress, java.net.SocketAddress, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture connect(SocketAddress remoteAddress);
 
     /**
-     * Request to connect to the given {@link java.net.SocketAddress} while bind to the localAddress and notify the
-     * {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes, either because the operation was successful or because of
+     * Request to connect to the given {@link SocketAddress} while bind to the localAddress and notify the
+     * {@link ChannelFuture} once the operation completes, either because the operation was successful or because of
      * an error.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#connect(com.github.mauricio.netty.channel.ChannelHandlerContext, java.net.SocketAddress, java.net.SocketAddress, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture connect(SocketAddress remoteAddress, SocketAddress localAddress);
 
     /**
-     * Request to disconnect from the remote peer and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes,
+     * Request to disconnect from the remote peer and notify the {@link ChannelFuture} once the operation completes,
      * either because the operation was successful or because of an error.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#disconnect(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#disconnect(ChannelHandlerContext, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture disconnect();
 
     /**
-     * Request to close the {@link com.github.mauricio.netty.channel.Channel} and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes,
+     * Request to close the {@link Channel} and notify the {@link ChannelFuture} once the operation completes,
      * either because the operation was successful or because of
      * an error.
      *
      * After it is closed it is not possible to reuse it again.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#close(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#close(ChannelHandlerContext, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture close();
 
     /**
-     * Request to deregister from the previous assigned {@link com.github.mauricio.netty.util.concurrent.EventExecutor} and notify the
-     * {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes, either because the operation was successful or because of
+     * Request to deregister from the previous assigned {@link EventExecutor} and notify the
+     * {@link ChannelFuture} once the operation completes, either because the operation was successful or because of
      * an error.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#deregister(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#deregister(ChannelHandlerContext, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      *
      */
     @Deprecated
     ChannelFuture deregister();
 
     /**
-     * Request to bind to the given {@link java.net.SocketAddress} and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation
+     * Request to bind to the given {@link SocketAddress} and notify the {@link ChannelFuture} once the operation
      * completes, either because the operation was successful or because of an error.
      *
-     * The given {@link com.github.mauricio.netty.channel.ChannelPromise} will be notified.
+     * The given {@link ChannelPromise} will be notified.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#bind(com.github.mauricio.netty.channel.ChannelHandlerContext, java.net.SocketAddress, com.github.mauricio.netty.channel.ChannelPromise)} method
-     * called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#bind(ChannelHandlerContext, SocketAddress, ChannelPromise)} method
+     * called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture bind(SocketAddress localAddress, ChannelPromise promise);
 
     /**
-     * Request to connect to the given {@link java.net.SocketAddress} and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation
+     * Request to connect to the given {@link SocketAddress} and notify the {@link ChannelFuture} once the operation
      * completes, either because the operation was successful or because of an error.
      *
-     * The given {@link com.github.mauricio.netty.channel.ChannelFuture} will be notified.
+     * The given {@link ChannelFuture} will be notified.
      *
      * <p>
-     * If the connection fails because of a connection timeout, the {@link com.github.mauricio.netty.channel.ChannelFuture} will get failed with
-     * a {@link ConnectTimeoutException}. If it fails because of connection refused a {@link java.net.ConnectException}
+     * If the connection fails because of a connection timeout, the {@link ChannelFuture} will get failed with
+     * a {@link ConnectTimeoutException}. If it fails because of connection refused a {@link ConnectException}
      * will be used.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#connect(com.github.mauricio.netty.channel.ChannelHandlerContext, java.net.SocketAddress, java.net.SocketAddress, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture connect(SocketAddress remoteAddress, ChannelPromise promise);
 
     /**
-     * Request to connect to the given {@link java.net.SocketAddress} while bind to the localAddress and notify the
-     * {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes, either because the operation was successful or because of
+     * Request to connect to the given {@link SocketAddress} while bind to the localAddress and notify the
+     * {@link ChannelFuture} once the operation completes, either because the operation was successful or because of
      * an error.
      *
-     * The given {@link com.github.mauricio.netty.channel.ChannelPromise} will be notified and also returned.
+     * The given {@link ChannelPromise} will be notified and also returned.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#connect(com.github.mauricio.netty.channel.ChannelHandlerContext, java.net.SocketAddress, java.net.SocketAddress, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise);
 
     /**
-     * Request to disconnect from the remote peer and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes,
+     * Request to disconnect from the remote peer and notify the {@link ChannelFuture} once the operation completes,
      * either because the operation was successful or because of an error.
      *
-     * The given {@link com.github.mauricio.netty.channel.ChannelPromise} will be notified.
+     * The given {@link ChannelPromise} will be notified.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#disconnect(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#disconnect(ChannelHandlerContext, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture disconnect(ChannelPromise promise);
 
     /**
-     * Request to close the {@link com.github.mauricio.netty.channel.Channel} and notify the {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes,
+     * Request to close the {@link Channel} and notify the {@link ChannelFuture} once the operation completes,
      * either because the operation was successful or because of
      * an error.
      *
      * After it is closed it is not possible to reuse it again.
-     * The given {@link com.github.mauricio.netty.channel.ChannelPromise} will be notified.
+     * The given {@link ChannelPromise} will be notified.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#close(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#close(ChannelHandlerContext, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelFuture close(ChannelPromise promise);
 
     /**
-     * Request to deregister from the previous assigned {@link com.github.mauricio.netty.util.concurrent.EventExecutor} and notify the
-     * {@link com.github.mauricio.netty.channel.ChannelFuture} once the operation completes, either because the operation was successful or because of
+     * Request to deregister from the previous assigned {@link EventExecutor} and notify the
+     * {@link ChannelFuture} once the operation completes, either because the operation was successful or because of
      * an error.
      *
-     * The given {@link com.github.mauricio.netty.channel.ChannelPromise} will be notified.
+     * The given {@link ChannelPromise} will be notified.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#deregister(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.channel.ChannelPromise)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#deregister(ChannelHandlerContext, ChannelPromise)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     @Deprecated
     ChannelFuture deregister(ChannelPromise promise);
 
     /**
-     * Request to Read data from the {@link com.github.mauricio.netty.channel.Channel} into the first inbound buffer, triggers an
-     * {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelRead(com.github.mauricio.netty.channel.ChannelHandlerContext, Object)} event if data was
+     * Request to Read data from the {@link Channel} into the first inbound buffer, triggers an
+     * {@link ChannelInboundHandler#channelRead(ChannelHandlerContext, Object)} event if data was
      * read, and triggers a
-     * {@link com.github.mauricio.netty.channel.ChannelInboundHandler#channelReadComplete(com.github.mauricio.netty.channel.ChannelHandlerContext) channelReadComplete} event so the
+     * {@link ChannelInboundHandler#channelReadComplete(ChannelHandlerContext) channelReadComplete} event so the
      * handler can decide to continue reading.  If there's a pending read operation already, this method does nothing.
      * <p>
      * This will result in having the
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler#read(com.github.mauricio.netty.channel.ChannelHandlerContext)}
-     * method called of the next {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
-     * {@link com.github.mauricio.netty.channel.Channel}.
+     * {@link ChannelOutboundHandler#read(ChannelHandlerContext)}
+     * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
+     * {@link Channel}.
      */
     ChannelHandlerContext read();
 
     /**
-     * Request to write a message via this {@link com.github.mauricio.netty.channel.ChannelHandlerContext} through the {@link ChannelPipeline}.
+     * Request to write a message via this {@link ChannelHandlerContext} through the {@link ChannelPipeline}.
      * This method will not request to actual flush, so be sure to call {@link #flush()}
      * once you want to request to flush all pending data to the actual transport.
      */
     ChannelFuture write(Object msg);
 
     /**
-     * Request to write a message via this {@link com.github.mauricio.netty.channel.ChannelHandlerContext} through the {@link ChannelPipeline}.
+     * Request to write a message via this {@link ChannelHandlerContext} through the {@link ChannelPipeline}.
      * This method will not request to actual flush, so be sure to call {@link #flush()}
      * once you want to request to flush all pending data to the actual transport.
      */
@@ -430,7 +436,7 @@ public interface ChannelHandlerContext
     ChannelHandlerContext flush();
 
     /**
-     * Shortcut for call {@link #write(Object, com.github.mauricio.netty.channel.ChannelPromise)} and {@link #flush()}.
+     * Shortcut for call {@link #write(Object, ChannelPromise)} and {@link #flush()}.
      */
     ChannelFuture writeAndFlush(Object msg, ChannelPromise promise);
 
@@ -445,30 +451,30 @@ public interface ChannelHandlerContext
     ChannelPipeline pipeline();
 
     /**
-     * Return the assigned {@link com.github.mauricio.netty.buffer.ByteBufAllocator} which will be used to allocate {@link com.github.mauricio.netty.buffer.ByteBuf}s.
+     * Return the assigned {@link ByteBufAllocator} which will be used to allocate {@link ByteBuf}s.
      */
     ByteBufAllocator alloc();
 
     /**
-     * Return a new {@link com.github.mauricio.netty.channel.ChannelPromise}.
+     * Return a new {@link ChannelPromise}.
      */
     ChannelPromise newPromise();
 
     /**
-     * Return an new {@link com.github.mauricio.netty.channel.ChannelProgressivePromise}
+     * Return an new {@link ChannelProgressivePromise}
      */
     ChannelProgressivePromise newProgressivePromise();
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.ChannelFuture} which is marked as succeeded already. So {@link com.github.mauricio.netty.channel.ChannelFuture#isSuccess()}
-     * will return {@code true}. All {@link com.github.mauricio.netty.util.concurrent.FutureListener} added to it will be notified directly. Also
+     * Create a new {@link ChannelFuture} which is marked as succeeded already. So {@link ChannelFuture#isSuccess()}
+     * will return {@code true}. All {@link FutureListener} added to it will be notified directly. Also
      * every call of blocking methods will just return without blocking.
      */
     ChannelFuture newSucceededFuture();
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.ChannelFuture} which is marked as failed already. So {@link com.github.mauricio.netty.channel.ChannelFuture#isSuccess()}
-     * will return {@code false}. All {@link com.github.mauricio.netty.util.concurrent.FutureListener} added to it will be notified directly. Also
+     * Create a new {@link ChannelFuture} which is marked as failed already. So {@link ChannelFuture#isSuccess()}
+     * will return {@code false}. All {@link FutureListener} added to it will be notified directly. Also
      * every call of blocking methods will just return without blocking.
      */
     ChannelFuture newFailedFuture(Throwable cause);
@@ -477,10 +483,10 @@ public interface ChannelHandlerContext
      * Return a special ChannelPromise which can be reused for different operations.
      * <p>
      * It's only supported to use
-     * it for {@link com.github.mauricio.netty.channel.ChannelHandlerContext#write(Object, com.github.mauricio.netty.channel.ChannelPromise)}.
+     * it for {@link ChannelHandlerContext#write(Object, ChannelPromise)}.
      * </p>
      * <p>
-     * Be aware that the returned {@link com.github.mauricio.netty.channel.ChannelPromise} will not support most operations and should only be used
+     * Be aware that the returned {@link ChannelPromise} will not support most operations and should only be used
      * if you want to save an object allocation for every write operation. You will not be able to detect if the
      * operation  was complete, only if it failed as the implementation will call
      * {@link ChannelPipeline#fireExceptionCaught(Throwable)} in this case.

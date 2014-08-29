@@ -20,12 +20,12 @@ import com.github.mauricio.netty.util.ReferenceCountUtil;
 import java.net.SocketAddress;
 
 /**
- * A skeletal server-side {@link com.github.mauricio.netty.channel.Channel} implementation.  A server-side
- * {@link com.github.mauricio.netty.channel.Channel} does not allow the following operations:
+ * A skeletal server-side {@link Channel} implementation.  A server-side
+ * {@link Channel} does not allow the following operations:
  * <ul>
- * <li>{@link #connect(java.net.SocketAddress, com.github.mauricio.netty.channel.ChannelPromise)}</li>
- * <li>{@link #disconnect(com.github.mauricio.netty.channel.ChannelPromise)}</li>
- * <li>{@link #write(Object, com.github.mauricio.netty.channel.ChannelPromise)}</li>
+ * <li>{@link #connect(SocketAddress, ChannelPromise)}</li>
+ * <li>{@link #disconnect(ChannelPromise)}</li>
+ * <li>{@link #write(Object, ChannelPromise)}</li>
  * <li>{@link #flush()}</li>
  * <li>and the shortcut methods which calls the methods mentioned above
  * </ul>
@@ -89,7 +89,7 @@ public abstract class AbstractServerChannel extends AbstractChannel implements S
         }
 
         private void reject(ChannelPromise promise) {
-            promise.setFailure(new UnsupportedOperationException());
+            safeSetFailure(promise, new UnsupportedOperationException());
         }
     }
 }

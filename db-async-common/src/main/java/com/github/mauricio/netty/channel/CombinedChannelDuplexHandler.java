@@ -18,7 +18,7 @@ package com.github.mauricio.netty.channel;
 import java.net.SocketAddress;
 
 /**
- *  Combines a {@link ChannelInboundHandler} and a {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} into one {@link ChannelHandler}.
+ *  Combines a {@link ChannelInboundHandler} and a {@link ChannelOutboundHandler} into one {@link ChannelHandler}.
  *
  */
 public class CombinedChannelDuplexHandler<I extends ChannelInboundHandler, O extends ChannelOutboundHandler>
@@ -29,7 +29,7 @@ public class CombinedChannelDuplexHandler<I extends ChannelInboundHandler, O ext
 
     /**
      * Creates a new uninitialized instance. A class that extends this handler must invoke
-     * {@link #init(ChannelInboundHandler, com.github.mauricio.netty.channel.ChannelOutboundHandler)} before adding this handler into a
+     * {@link #init(ChannelInboundHandler, ChannelOutboundHandler)} before adding this handler into a
      * {@link ChannelPipeline}.
      */
     protected CombinedChannelDuplexHandler() { }

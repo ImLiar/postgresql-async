@@ -20,9 +20,10 @@ import com.github.mauricio.netty.channel.ChannelFuture;
 import com.github.mauricio.netty.channel.ChannelPromise;
 
 import java.net.InetSocketAddress;
+import java.net.Socket;
 
 /**
- * A TCP/IP socket {@link com.github.mauricio.netty.channel.Channel}.
+ * A TCP/IP socket {@link Channel}.
  */
 public interface SocketChannel extends Channel {
     @Override
@@ -38,24 +39,24 @@ public interface SocketChannel extends Channel {
     /**
      * Returns {@code true} if and only if the remote peer shut down its output so that no more
      * data is received from this channel.  Note that the semantic of this method is different from
-     * that of {@link java.net.Socket#shutdownInput()} and {@link java.net.Socket#isInputShutdown()}.
+     * that of {@link Socket#shutdownInput()} and {@link Socket#isInputShutdown()}.
      */
     boolean isInputShutdown();
 
     /**
-     * @see java.net.Socket#isOutputShutdown()
+     * @see Socket#isOutputShutdown()
      */
     boolean isOutputShutdown();
 
     /**
-     * @see java.net.Socket#shutdownOutput()
+     * @see Socket#shutdownOutput()
      */
     ChannelFuture shutdownOutput();
 
     /**
-     * @see java.net.Socket#shutdownOutput()
+     * @see Socket#shutdownOutput()
      *
-     * Will notify the given {@link com.github.mauricio.netty.channel.ChannelPromise}
+     * Will notify the given {@link ChannelPromise}
      */
     ChannelFuture shutdownOutput(ChannelPromise future);
 }

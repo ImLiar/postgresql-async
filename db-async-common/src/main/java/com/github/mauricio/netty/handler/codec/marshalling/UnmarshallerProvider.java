@@ -16,16 +16,17 @@
 package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+
 import org.jboss.marshalling.Unmarshaller;
 
 /**
- * This provider is responsible to get an {@link Unmarshaller} for a {@link com.github.mauricio.netty.channel.ChannelHandlerContext}
+ * This provider is responsible to get an {@link Unmarshaller} for a {@link ChannelHandlerContext}
  *
  */
 public interface UnmarshallerProvider {
 
     /**
-     * Get the {@link Unmarshaller} for the given {@link com.github.mauricio.netty.channel.ChannelHandlerContext}
+     * Get the {@link Unmarshaller} for the given {@link ChannelHandlerContext}
      */
     Unmarshaller getUnmarshaller(ChannelHandlerContext ctx) throws Exception;
 }

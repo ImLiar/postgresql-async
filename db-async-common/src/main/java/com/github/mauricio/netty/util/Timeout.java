@@ -16,35 +16,35 @@
 package com.github.mauricio.netty.util;
 
 /**
- * A handle associated with a {@link com.github.mauricio.netty.util.TimerTask} that is returned by a
- * {@link com.github.mauricio.netty.util.Timer}.
+ * A handle associated with a {@link TimerTask} that is returned by a
+ * {@link Timer}.
  */
 public interface Timeout {
 
     /**
-     * Returns the {@link com.github.mauricio.netty.util.Timer} that created this handle.
+     * Returns the {@link Timer} that created this handle.
      */
     Timer timer();
 
     /**
-     * Returns the {@link com.github.mauricio.netty.util.TimerTask} which is associated with this handle.
+     * Returns the {@link TimerTask} which is associated with this handle.
      */
     TimerTask task();
 
     /**
-     * Returns {@code true} if and only if the {@link com.github.mauricio.netty.util.TimerTask} associated
+     * Returns {@code true} if and only if the {@link TimerTask} associated
      * with this handle has been expired.
      */
     boolean isExpired();
 
     /**
-     * Returns {@code true} if and only if the {@link com.github.mauricio.netty.util.TimerTask} associated
+     * Returns {@code true} if and only if the {@link TimerTask} associated
      * with this handle has been cancelled.
      */
     boolean isCancelled();
 
     /**
-     * Attempts to cancel the {@link com.github.mauricio.netty.util.TimerTask} associated with this handle.
+     * Attempts to cancel the {@link TimerTask} associated with this handle.
      * If the task has been executed or cancelled already, it will return with
      * no side effect.
      *

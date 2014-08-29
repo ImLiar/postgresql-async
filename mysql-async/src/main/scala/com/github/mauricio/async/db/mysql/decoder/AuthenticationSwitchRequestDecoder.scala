@@ -1,7 +1,7 @@
 package com.github.mauricio.async.db.mysql.decoder
 
 import java.nio.charset.Charset
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{AuthenticationSwitchRequest, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 
