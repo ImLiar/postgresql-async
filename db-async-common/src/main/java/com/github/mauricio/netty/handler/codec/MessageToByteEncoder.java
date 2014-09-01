@@ -18,23 +18,25 @@ package com.github.mauricio.netty.handler.codec;
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.Unpooled;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelOutboundHandler;
 import com.github.mauricio.netty.channel.ChannelOutboundHandlerAdapter;
+import com.github.mauricio.netty.channel.ChannelPipeline;
 import com.github.mauricio.netty.channel.ChannelPromise;
 import com.github.mauricio.netty.util.ReferenceCountUtil;
 import com.github.mauricio.netty.util.internal.TypeParameterMatcher;
 
 
 /**
- * {@link com.github.mauricio.netty.channel.ChannelOutboundHandlerAdapter} which encodes message in a stream-like fashion from one message to an
- * {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * {@link ChannelOutboundHandlerAdapter} which encodes message in a stream-like fashion from one message to an
+ * {@link ByteBuf}.
  *
  *
- * Example implementation which encodes {@link Integer}s to a {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * Example implementation which encodes {@link Integer}s to a {@link ByteBuf}.
  *
  * <pre>
- *     public class IntegerEncoder extends {@link com.github.mauricio.netty.handler.codec.MessageToByteEncoder}&lt;{@link Integer}&gt; {
+ *     public class IntegerEncoder extends {@link MessageToByteEncoder}&lt;{@link Integer}&gt; {
  *         {@code @Override}
- *         public void encode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link Integer} msg, {@link com.github.mauricio.netty.buffer.ByteBuf} out)
+ *         public void encode({@link ChannelHandlerContext} ctx, {@link Integer} msg, {@link ByteBuf} out)
  *                 throws {@link Exception} {
  *             out.writeInt(msg);
  *         }
@@ -63,9 +65,9 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     /**
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
      *
-     * @param preferDirect          {@code true} if a direct {@link com.github.mauricio.netty.buffer.ByteBuf} should be tried to be used as target for
+     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
      *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link com.github.mauricio.netty.buffer.ByteBuf}, which is backed by an byte array.
+     *                              {@link ByteBuf}, which is backed by an byte array.
      */
     protected MessageToByteEncoder(boolean preferDirect) {
         matcher = TypeParameterMatcher.find(this, MessageToByteEncoder.class, "I");
@@ -76,9 +78,9 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
      * Create a new instance
      *
      * @param outboundMessageType   The tpye of messages to match
-     * @param preferDirect          {@code true} if a direct {@link com.github.mauricio.netty.buffer.ByteBuf} should be tried to be used as target for
+     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
      *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link com.github.mauricio.netty.buffer.ByteBuf}, which is backed by an byte array.
+     *                              {@link ByteBuf}, which is backed by an byte array.
      */
     protected MessageToByteEncoder(Class<? extends I> outboundMessageType, boolean preferDirect) {
         matcher = TypeParameterMatcher.get(outboundMessageType);
@@ -87,7 +89,7 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
 
     /**
      * Returns {@code true} if the given message should be handled. If {@code false} it will be passed to the next
-     * {@link com.github.mauricio.netty.channel.ChannelOutboundHandler} in the {@link com.github.mauricio.netty.channel.ChannelPipeline}.
+     * {@link ChannelOutboundHandler} in the {@link ChannelPipeline}.
      */
     public boolean acceptOutboundMessage(Object msg) throws Exception {
         return matcher.match(msg);
@@ -133,12 +135,12 @@ public abstract class MessageToByteEncoder<I> extends ChannelOutboundHandlerAdap
     }
 
     /**
-     * Encode a message into a {@link com.github.mauricio.netty.buffer.ByteBuf}. This method will be called for each written message that can be handled
+     * Encode a message into a {@link ByteBuf}. This method will be called for each written message that can be handled
      * by this encoder.
      *
-     * @param ctx           the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.MessageToByteEncoder} belongs to
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
      * @param msg           the message to encode
-     * @param out           the {@link com.github.mauricio.netty.buffer.ByteBuf} into which the encoded message will be written
+     * @param out           the {@link ByteBuf} into which the encoded message will be written
      * @throws Exception    is thrown if an error accour
      */
     protected abstract void encode(ChannelHandlerContext ctx, I msg, ByteBuf out) throws Exception;

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Abstract {@link com.github.mauricio.netty.util.concurrent.Future} implementation which does not allow for cancellation.
+ * Abstract {@link Future} implementation which does not allow for cancellation.
  *
  * @param <V>
  */

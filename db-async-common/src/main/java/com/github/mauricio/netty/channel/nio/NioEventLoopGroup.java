@@ -15,44 +15,46 @@
  */
 package com.github.mauricio.netty.channel.nio;
 
+import com.github.mauricio.netty.channel.Channel;
 import com.github.mauricio.netty.channel.MultithreadEventLoopGroup;
 import com.github.mauricio.netty.util.concurrent.EventExecutor;
 
+import java.nio.channels.Selector;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * {@link MultithreadEventLoopGroup} implementations which is used for NIO {@link java.nio.channels.Selector} based {@link com.github.mauricio.netty.channel.Channel}s.
+ * {@link MultithreadEventLoopGroup} implementations which is used for NIO {@link Selector} based {@link Channel}s.
  */
 public class NioEventLoopGroup extends MultithreadEventLoopGroup {
 
     /**
-     * Create a new instance using the default number of threads, the default {@link java.util.concurrent.ThreadFactory} and
-     * the {@link java.nio.channels.spi.SelectorProvider} which is returned by {@link java.nio.channels.spi.SelectorProvider#provider()}.
+     * Create a new instance using the default number of threads, the default {@link ThreadFactory} and
+     * the {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
      */
     public NioEventLoopGroup() {
         this(0);
     }
 
     /**
-     * Create a new instance using the specified number of threads, {@link java.util.concurrent.ThreadFactory} and the
-     * {@link java.nio.channels.spi.SelectorProvider} which is returned by {@link java.nio.channels.spi.SelectorProvider#provider()}.
+     * Create a new instance using the specified number of threads, {@link ThreadFactory} and the
+     * {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
      */
     public NioEventLoopGroup(int nThreads) {
         this(nThreads, null);
     }
 
     /**
-     * Create a new instance using the specified number of threads, the given {@link java.util.concurrent.ThreadFactory} and the
-     * {@link java.nio.channels.spi.SelectorProvider} which is returned by {@link java.nio.channels.spi.SelectorProvider#provider()}.
+     * Create a new instance using the specified number of threads, the given {@link ThreadFactory} and the
+     * {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
      */
     public NioEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
         this(nThreads, threadFactory, SelectorProvider.provider());
     }
 
     /**
-     * Create a new instance using the specified number of threads, the given {@link java.util.concurrent.ThreadFactory} and the given
-     * {@link java.nio.channels.spi.SelectorProvider}.
+     * Create a new instance using the specified number of threads, the given {@link ThreadFactory} and the given
+     * {@link SelectorProvider}.
      */
     public NioEventLoopGroup(
             int nThreads, ThreadFactory threadFactory, final SelectorProvider selectorProvider) {
@@ -70,7 +72,7 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     }
 
     /**
-     * Replaces the current {@link java.nio.channels.Selector}s of the child event loops with newly created {@link java.nio.channels.Selector}s to work
+     * Replaces the current {@link Selector}s of the child event loops with newly created {@link Selector}s to work
      * around the  infamous epoll 100% CPU bug.
      */
     public void rebuildSelectors() {

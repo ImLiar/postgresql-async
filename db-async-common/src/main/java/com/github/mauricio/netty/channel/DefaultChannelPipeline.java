@@ -25,7 +25,15 @@ import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.net.SocketAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -530,7 +538,7 @@ final class DefaultChannelPipeline implements ChannelPipeline {
      * thrown instead.</p>
      *
      * @param future wait for this future
-     * @see java.util.concurrent.Future#get()
+     * @see Future#get()
      * @throws Error if the task threw this.
      * @throws RuntimeException if the task threw this.
      * @throws ChannelPipelineException with a {@link Throwable} as a cause, if the task threw another type of

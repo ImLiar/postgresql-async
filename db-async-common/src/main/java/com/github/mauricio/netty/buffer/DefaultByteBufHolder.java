@@ -19,7 +19,7 @@ import com.github.mauricio.netty.util.IllegalReferenceCountException;
 import com.github.mauricio.netty.util.internal.StringUtil;
 
 /**
- * Default implementation of a {@link ByteBufHolder} that holds it's data in a {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * Default implementation of a {@link ByteBufHolder} that holds it's data in a {@link ByteBuf}.
  *
  */
 public class DefaultByteBufHolder implements ByteBufHolder {

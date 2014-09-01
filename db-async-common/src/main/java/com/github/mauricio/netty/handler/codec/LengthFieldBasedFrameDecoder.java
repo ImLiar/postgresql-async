@@ -17,17 +17,18 @@ package com.github.mauricio.netty.handler.codec;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.handler.codec.serialization.ObjectDecoder;
 
 import java.nio.ByteOrder;
 import java.util.List;
 
 /**
- * A decoder that splits the received {@link com.github.mauricio.netty.buffer.ByteBuf}s dynamically by the
+ * A decoder that splits the received {@link ByteBuf}s dynamically by the
  * value of the length field in the message.  It is particularly useful when you
  * decode a binary message which has an integer header field that represents the
  * length of the message body or the whole message.
  * <p>
- * {@link com.github.mauricio.netty.handler.codec.LengthFieldBasedFrameDecoder} has many configuration parameters so
+ * {@link LengthFieldBasedFrameDecoder} has many configuration parameters so
  * that it can decode any message with a length field, which is often seen in
  * proprietary client-server protocols. Here are some example that will give
  * you the basic idea on which option does what.
@@ -55,7 +56,7 @@ import java.util.List;
  * <h3>2 bytes length field at offset 0, strip header</h3>
  *
  * Because we can get the length of the content by calling
- * {@link com.github.mauricio.netty.buffer.ByteBuf#readableBytes()}, you might want to strip the length
+ * {@link ByteBuf#readableBytes()}, you might want to strip the length
  * field by specifying <tt>initialBytesToStrip</tt>.  In this example, we
  * specified <tt>2</tt>, that is same with the length of the length field, to
  * strip the first two bytes.
@@ -178,7 +179,7 @@ import java.util.List;
  * | 0xCA | 0x0010 | 0xFE | "HELLO, WORLD" |      | 0xFE | "HELLO, WORLD" |
  * +------+--------+------+----------------+      +------+----------------+
  * </pre>
- * @see com.github.mauricio.netty.handler.codec.LengthFieldPrepender
+ * @see LengthFieldPrepender
  */
 public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
 
@@ -199,7 +200,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      *
      * @param maxFrameLength
      *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} will be
+     *        greater than this value, {@link TooLongFrameException} will be
      *        thrown.
      * @param lengthFieldOffset
      *        the offset of the length field
@@ -217,7 +218,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      *
      * @param maxFrameLength
      *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} will be
+     *        greater than this value, {@link TooLongFrameException} will be
      *        thrown.
      * @param lengthFieldOffset
      *        the offset of the length field
@@ -243,7 +244,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      *
      * @param maxFrameLength
      *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} will be
+     *        greater than this value, {@link TooLongFrameException} will be
      *        thrown.
      * @param lengthFieldOffset
      *        the offset of the length field
@@ -254,10 +255,10 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * @param initialBytesToStrip
      *        the number of first bytes to strip out from the decoded frame
      * @param failFast
-     *        If <tt>true</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown as
+     *        If <tt>true</tt>, a {@link TooLongFrameException} is thrown as
      *        soon as the decoder notices the length of the frame will exceed
      *        <tt>maxFrameLength</tt> regardless of whether the entire frame
-     *        has been read.  If <tt>false</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException}
+     *        has been read.  If <tt>false</tt>, a {@link TooLongFrameException}
      *        is thrown after the entire frame that exceeds <tt>maxFrameLength</tt>
      *        has been read.
      */
@@ -273,10 +274,10 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * Creates a new instance.
      *
      * @param byteOrder
-     *        the {@link java.nio.ByteOrder} of the length field
+     *        the {@link ByteOrder} of the length field
      * @param maxFrameLength
      *        the maximum length of the frame.  If the length of the frame is
-     *        greater than this value, {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} will be
+     *        greater than this value, {@link TooLongFrameException} will be
      *        thrown.
      * @param lengthFieldOffset
      *        the offset of the length field
@@ -287,10 +288,10 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * @param initialBytesToStrip
      *        the number of first bytes to strip out from the decoded frame
      * @param failFast
-     *        If <tt>true</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown as
+     *        If <tt>true</tt>, a {@link TooLongFrameException} is thrown as
      *        soon as the decoder notices the length of the frame will exceed
      *        <tt>maxFrameLength</tt> regardless of whether the entire frame
-     *        has been read.  If <tt>false</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException}
+     *        has been read.  If <tt>false</tt>, a {@link TooLongFrameException}
      *        is thrown after the entire frame that exceeds <tt>maxFrameLength</tt>
      *        has been read.
      */
@@ -346,11 +347,11 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
     }
 
     /**
-     * Create a frame out of the {@link com.github.mauricio.netty.buffer.ByteBuf} and return it.
+     * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} belongs to
-     * @param   in              the {@link com.github.mauricio.netty.buffer.ByteBuf} from which to read data
-     * @return  frame           the {@link com.github.mauricio.netty.buffer.ByteBuf} which represent the frame or {@code null} if no frame could
+     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param   in              the {@link ByteBuf} from which to read data
+     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
      *                          be created.
      */
     protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
@@ -431,7 +432,7 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * decode the length field encoded differently.  Note that this method must not modify the state of the specified
      * buffer (e.g. {@code readerIndex}, {@code writerIndex}, and the content of the buffer.)
      *
-     * @throws com.github.mauricio.netty.handler.codec.DecoderException if failed to decode the specified region
+     * @throws DecoderException if failed to decode the specified region
      */
     protected long getUnadjustedFrameLength(ByteBuf buf, int offset, int length, ByteOrder order) {
         buf = buf.order(order);
@@ -482,11 +483,11 @@ public class LengthFieldBasedFrameDecoder extends ByteToMessageDecoder {
      * Extract the sub-region of the specified buffer.
      * <p>
      * If you are sure that the frame and its content are not accessed after
-     * the current {@link #decode(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.buffer.ByteBuf)}
+     * the current {@link #decode(ChannelHandlerContext, ByteBuf)}
      * call returns, you can even avoid memory copy by returning the sliced
      * sub-region (i.e. <tt>return buffer.slice(index, length)</tt>).
      * It's often useful when you convert the extracted frame into an object.
-     * Refer to the source code of {@link com.github.mauricio.netty.handler.codec.serialization.ObjectDecoder} to see how this method
+     * Refer to the source code of {@link ObjectDecoder} to see how this method
      * is overridden to avoid memory copy.
      */
     protected ByteBuf extractFrame(ChannelHandlerContext ctx, ByteBuf buffer, int index, int length) {

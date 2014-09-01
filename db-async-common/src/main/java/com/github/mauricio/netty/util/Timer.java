@@ -19,13 +19,13 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Schedules {@link com.github.mauricio.netty.util.TimerTask}s for one-time future execution in a background
+ * Schedules {@link TimerTask}s for one-time future execution in a background
  * thread.
  */
 public interface Timer {
 
     /**
-     * Schedules the specified {@link com.github.mauricio.netty.util.TimerTask} for one-time execution after
+     * Schedules the specified {@link TimerTask} for one-time execution after
      * the specified delay.
      *
      * @return a handle which is associated with the specified task
@@ -36,7 +36,7 @@ public interface Timer {
     Timeout newTimeout(TimerTask task, long delay, TimeUnit unit);
 
     /**
-     * Releases all resources acquired by this {@link com.github.mauricio.netty.util.Timer} and cancels all
+     * Releases all resources acquired by this {@link Timer} and cancels all
      * tasks which were scheduled but not executed yet.
      *
      * @return the handles associated with the tasks which were canceled by

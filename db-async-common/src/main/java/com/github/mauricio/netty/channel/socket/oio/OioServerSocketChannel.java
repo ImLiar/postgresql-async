@@ -24,7 +24,11 @@ import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -55,16 +59,16 @@ public class OioServerSocketChannel extends AbstractOioMessageChannel
     private final OioServerSocketChannelConfig config;
 
     /**
-     * Create a new instance with an new {@link java.net.Socket}
+     * Create a new instance with an new {@link Socket}
      */
     public OioServerSocketChannel() {
         this(newServerSocket());
     }
 
     /**
-     * Create a new instance from the given {@link java.net.ServerSocket}
+     * Create a new instance from the given {@link ServerSocket}
      *
-     * @param socket    the {@link java.net.ServerSocket} which is used by this instance
+     * @param socket    the {@link ServerSocket} which is used by this instance
      */
     public OioServerSocketChannel(ServerSocket socket) {
         super(null);

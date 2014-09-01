@@ -15,6 +15,7 @@
  */
 package com.github.mauricio.netty.util.concurrent;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -161,7 +162,7 @@ public interface Future<V> extends java.util.concurrent.Future<V> {
     /**
      * {@inheritDoc}
      *
-     * If the cancellation was successful it will fail the future with an {@link java.util.concurrent.CancellationException}.
+     * If the cancellation was successful it will fail the future with an {@link CancellationException}.
      */
     @Override
     boolean cancel(boolean mayInterruptIfRunning);

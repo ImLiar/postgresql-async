@@ -21,106 +21,108 @@ package com.github.mauricio.netty.buffer;
  */
 public interface ByteBufAllocator {
 
+    ByteBufAllocator DEFAULT = ByteBufUtil.DEFAULT_ALLOCATOR;
+
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.ByteBuf}. If it is a direct or heap buffer
+     * Allocate a {@link ByteBuf}. If it is a direct or heap buffer
      * depends on the actual implementation.
      */
     ByteBuf buffer();
 
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initial capacity.
+     * Allocate a {@link ByteBuf} with the given initial capacity.
      * If it is a direct or heap buffer depends on the actual implementation.
      */
     ByteBuf buffer(int initialCapacity);
 
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initial capacity and the given
+     * Allocate a {@link ByteBuf} with the given initial capacity and the given
      * maximal capacity. If it is a direct or heap buffer depends on the actual
      * implementation.
      */
     ByteBuf buffer(int initialCapacity, int maxCapacity);
 
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.ByteBuf} whose initial capacity is 0, preferably a direct buffer which is suitable for I/O.
+     * Allocate a {@link ByteBuf} whose initial capacity is 0, preferably a direct buffer which is suitable for I/O.
      */
     ByteBuf ioBuffer();
 
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.ByteBuf}, preferably a direct buffer which is suitable for I/O.
+     * Allocate a {@link ByteBuf}, preferably a direct buffer which is suitable for I/O.
      */
     ByteBuf ioBuffer(int initialCapacity);
 
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.ByteBuf}, preferably a direct buffer which is suitable for I/O.
+     * Allocate a {@link ByteBuf}, preferably a direct buffer which is suitable for I/O.
      */
     ByteBuf ioBuffer(int initialCapacity, int maxCapacity);
 
     /**
-     * Allocate a heap {@link com.github.mauricio.netty.buffer.ByteBuf}.
+     * Allocate a heap {@link ByteBuf}.
      */
     ByteBuf heapBuffer();
 
     /**
-     * Allocate a heap {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initial capacity.
+     * Allocate a heap {@link ByteBuf} with the given initial capacity.
      */
     ByteBuf heapBuffer(int initialCapacity);
 
     /**
-     * Allocate a heap {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initial capacity and the given
+     * Allocate a heap {@link ByteBuf} with the given initial capacity and the given
      * maximal capacity.
      */
     ByteBuf heapBuffer(int initialCapacity, int maxCapacity);
 
     /**
-     * Allocate a direct {@link com.github.mauricio.netty.buffer.ByteBuf}.
+     * Allocate a direct {@link ByteBuf}.
      */
     ByteBuf directBuffer();
 
     /**
-     * Allocate a direct {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initial capacity.
+     * Allocate a direct {@link ByteBuf} with the given initial capacity.
      */
     ByteBuf directBuffer(int initialCapacity);
 
     /**
-     * Allocate a direct {@link com.github.mauricio.netty.buffer.ByteBuf} with the given initial capacity and the given
+     * Allocate a direct {@link ByteBuf} with the given initial capacity and the given
      * maximal capacity.
      */
     ByteBuf directBuffer(int initialCapacity, int maxCapacity);
 
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Allocate a {@link CompositeByteBuf}.
      * If it is a direct or heap buffer depends on the actual implementation.
      */
     CompositeByteBuf compositeBuffer();
 
     /**
-     * Allocate a {@link com.github.mauricio.netty.buffer.CompositeByteBuf} with the given maximum number of components that can be stored in it.
+     * Allocate a {@link CompositeByteBuf} with the given maximum number of components that can be stored in it.
      * If it is a direct or heap buffer depends on the actual implementation.
      */
     CompositeByteBuf compositeBuffer(int maxNumComponents);
 
     /**
-     * Allocate a heap {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Allocate a heap {@link CompositeByteBuf}.
      */
     CompositeByteBuf compositeHeapBuffer();
 
     /**
-     * Allocate a heap {@link com.github.mauricio.netty.buffer.CompositeByteBuf} with the given maximum number of components that can be stored in it.
+     * Allocate a heap {@link CompositeByteBuf} with the given maximum number of components that can be stored in it.
      */
     CompositeByteBuf compositeHeapBuffer(int maxNumComponents);
 
     /**
-     * Allocate a direct {@link com.github.mauricio.netty.buffer.CompositeByteBuf}.
+     * Allocate a direct {@link CompositeByteBuf}.
      */
     CompositeByteBuf compositeDirectBuffer();
 
     /**
-     * Allocate a direct {@link com.github.mauricio.netty.buffer.CompositeByteBuf} with the given maximum number of components that can be stored in it.
+     * Allocate a direct {@link CompositeByteBuf} with the given maximum number of components that can be stored in it.
      */
     CompositeByteBuf compositeDirectBuffer(int maxNumComponents);
 
     /**
-     * Returns {@code true} if direct {@link com.github.mauricio.netty.buffer.ByteBuf}'s are pooled
+     * Returns {@code true} if direct {@link ByteBuf}'s are pooled
      */
     boolean isDirectBufferPooled();
 }

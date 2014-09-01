@@ -19,25 +19,26 @@ import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 import sun.misc.Cleaner;
 import sun.misc.Unsafe;
+import sun.nio.ch.DirectBuffer;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
- * The {@link com.github.mauricio.netty.util.internal.PlatformDependent} operations which requires access to {@code sun.misc.*}.
+ * The {@link PlatformDependent} operations which requires access to {@code sun.misc.*}.
  */
 final class PlatformDependent0 {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(PlatformDependent0.class);
     private static final Unsafe UNSAFE;
     private static final boolean BIG_ENDIAN = ByteOrder.nativeOrder() == ByteOrder.BIG_ENDIAN;
-
-    private static final long CLEANER_FIELD_OFFSET;
     private static final long ADDRESS_FIELD_OFFSET;
-    private static final Field CLEANER_FIELD;
 
     /**
      * {@code true} if and only if the platform supports unaligned access.
@@ -47,40 +48,40 @@ final class PlatformDependent0 {
     private static final boolean UNALIGNED;
 
     static {
-        ByteBuffer direct = ByteBuffer.allocateDirect(1);
-        Field cleanerField;
+        boolean directBufferFreeable = false;
         try {
-            cleanerField = direct.getClass().getDeclaredField("cleaner");
-            cleanerField.setAccessible(true);
-            Cleaner cleaner = (Cleaner) cleanerField.get(direct);
-            cleaner.clean();
+            Class<?> cls = Class.forName("sun.nio.ch.DirectBuffer", false, PlatformDependent0.class.getClassLoader());
+            Method method = cls.getMethod("cleaner");
+            if ("sun.misc.Cleaner".equals(method.getReturnType().getName())) {
+                directBufferFreeable = true;
+            }
         } catch (Throwable t) {
-            cleanerField = null;
+            // We don't have sun.nio.ch.DirectBuffer.cleaner().
         }
-        CLEANER_FIELD = cleanerField;
-        logger.debug("java.nio.ByteBuffer.cleaner: {}", cleanerField != null? "available" : "unavailable");
+        logger.debug("sun.nio.ch.DirectBuffer.cleaner(): {}", directBufferFreeable? "available" : "unavailable");
 
         Field addressField;
         try {
             addressField = Buffer.class.getDeclaredField("address");
             addressField.setAccessible(true);
             if (addressField.getLong(ByteBuffer.allocate(1)) != 0) {
+                // A heap buffer must have 0 address.
                 addressField = null;
             } else {
-                direct = ByteBuffer.allocateDirect(1);
+                ByteBuffer direct = ByteBuffer.allocateDirect(1);
                 if (addressField.getLong(direct) == 0) {
+                    // A direct buffer must have non-zero address.
                     addressField = null;
                 }
-                Cleaner cleaner = (Cleaner) cleanerField.get(direct);
-                cleaner.clean();
             }
         } catch (Throwable t) {
+            // Failed to access the address field.
             addressField = null;
         }
         logger.debug("java.nio.Buffer.address: {}", addressField != null? "available" : "unavailable");
 
         Unsafe unsafe;
-        if (addressField != null && cleanerField != null) {
+        if (addressField != null && directBufferFreeable) {
             try {
                 Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
                 unsafeField.setAccessible(true);
@@ -104,6 +105,7 @@ final class PlatformDependent0 {
                     throw e;
                 }
             } catch (Throwable cause) {
+                // Unsafe.copyMemory(Object, long, Object, long, long) unavailable.
                 unsafe = null;
             }
         } else {
@@ -111,16 +113,14 @@ final class PlatformDependent0 {
             // Let's just pretend unsafe is unavailable for overall simplicity.
             unsafe = null;
         }
+
         UNSAFE = unsafe;
 
         if (unsafe == null) {
-            CLEANER_FIELD_OFFSET = -1;
             ADDRESS_FIELD_OFFSET = -1;
             UNALIGNED = false;
         } else {
             ADDRESS_FIELD_OFFSET = objectFieldOffset(addressField);
-            CLEANER_FIELD_OFFSET = objectFieldOffset(cleanerField);
-
             boolean unaligned;
             try {
                 Class<?> bitsClass = Class.forName("java.nio.Bits", false, ClassLoader.getSystemClassLoader());
@@ -147,26 +147,12 @@ final class PlatformDependent0 {
         UNSAFE.throwException(t);
     }
 
-    static void freeDirectBufferUnsafe(ByteBuffer buffer) {
-        Cleaner cleaner;
-        try {
-            cleaner = (Cleaner) getObject(buffer, CLEANER_FIELD_OFFSET);
-            if (cleaner == null) {
-                throw new IllegalArgumentException(
-                        "attempted to deallocate the buffer which was allocated via JNIEnv->NewDirectByteBuffer()");
-            }
-            cleaner.clean();
-        } catch (Throwable t) {
-            // Nothing we can do here.
-        }
-    }
-
     static void freeDirectBuffer(ByteBuffer buffer) {
-        if (CLEANER_FIELD == null) {
+        if (!(buffer instanceof DirectBuffer)) {
             return;
         }
         try {
-            Cleaner cleaner = (Cleaner) CLEANER_FIELD.get(buffer);
+            Cleaner cleaner = ((DirectBuffer) buffer).cleaner();
             if (cleaner == null) {
                 throw new IllegalArgumentException(
                         "attempted to deallocate the buffer which was allocated via JNIEnv->NewDirectByteBuffer()");
@@ -187,6 +173,10 @@ final class PlatformDependent0 {
 
     static Object getObject(Object object, long fieldOffset) {
         return UNSAFE.getObject(object, fieldOffset);
+    }
+
+    static Object getObjectVolatile(Object object, long fieldOffset) {
+        return UNSAFE.getObjectVolatile(object, fieldOffset);
     }
 
     static int getInt(Object object, long fieldOffset) {
@@ -255,6 +245,10 @@ final class PlatformDependent0 {
         }
     }
 
+    static void putOrderedObject(Object object, long address, Object value) {
+        UNSAFE.putOrderedObject(object, address, value);
+    }
+
     static void putByte(long address, byte value) {
         UNSAFE.putByte(address, value);
     }
@@ -319,6 +313,22 @@ final class PlatformDependent0 {
         UNSAFE.copyMemory(src, srcOffset, dst, dstOffset, length);
     }
 
+    static <U, W> AtomicReferenceFieldUpdater<U, W> newAtomicReferenceFieldUpdater(
+            Class<U> tclass, String fieldName) throws Exception {
+        return new UnsafeAtomicReferenceFieldUpdater<U, W>(UNSAFE, tclass, fieldName);
+    }
+
+    static <T> AtomicIntegerFieldUpdater<T> newAtomicIntegerFieldUpdater(
+            Class<?> tclass, String fieldName) throws Exception {
+        return new UnsafeAtomicIntegerFieldUpdater<T>(UNSAFE, tclass, fieldName);
+    }
+
+    static <T> AtomicLongFieldUpdater<T> newAtomicLongFieldUpdater(
+            Class<?> tclass, String fieldName) throws Exception {
+        return new UnsafeAtomicLongFieldUpdater<T>(UNSAFE, tclass, fieldName);
+    }
+
     private PlatformDependent0() {
     }
+
 }

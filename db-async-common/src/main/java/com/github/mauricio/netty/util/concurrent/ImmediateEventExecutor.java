@@ -18,7 +18,7 @@ package com.github.mauricio.netty.util.concurrent;
 import java.util.concurrent.TimeUnit;
 
 /**
- * {@link com.github.mauricio.netty.util.concurrent.AbstractEventExecutor} which execute tasks in the callers thread.
+ * {@link AbstractEventExecutor} which execute tasks in the callers thread.
  */
 public final class ImmediateEventExecutor extends AbstractEventExecutor {
     public static final ImmediateEventExecutor INSTANCE = new ImmediateEventExecutor();

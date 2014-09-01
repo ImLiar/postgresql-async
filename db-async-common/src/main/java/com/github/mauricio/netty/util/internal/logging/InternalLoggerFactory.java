@@ -16,17 +16,18 @@
 package com.github.mauricio.netty.util.internal.logging;
 
 /**
- * Creates an {@link com.github.mauricio.netty.util.internal.logging.InternalLogger} or changes the default factory
+ * Creates an {@link InternalLogger} or changes the default factory
  * implementation.  This factory allows you to choose what logging framework
- * Netty should use.  The default factory is {@link com.github.mauricio.netty.util.internal.logging.JdkLoggerFactory}.
- * You can change it to your preferred logging framework before other Netty
- * classes are loaded:
+ * Netty should use.  The default factory is {@link Slf4JLoggerFactory}.  If SLF4J
+ * is not available, {@link Log4JLoggerFactory} is used.  If Log4J is not available,
+ * {@link JdkLoggerFactory} is used.  You can change it to your preferred
+ * logging framework before other Netty classes are loaded:
  * <pre>
- * {@link com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory}.setDefaultFactory(new {@link com.github.mauricio.netty.util.internal.logging.Log4JLoggerFactory}());
+ * {@link InternalLoggerFactory}.setDefaultFactory(new {@link Log4JLoggerFactory}());
  * </pre>
  * Please note that the new default factory is effective only for the classes
  * which were loaded after the default factory is changed.  Therefore,
- * {@link #setDefaultFactory(com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory)} should be called as early
+ * {@link #setDefaultFactory(InternalLoggerFactory)} should be called as early
  * as possible and shouldn't be called more than once.
  */
 public abstract class InternalLoggerFactory {
@@ -54,7 +55,7 @@ public abstract class InternalLoggerFactory {
 
     /**
      * Returns the default factory.  The initial default factory is
-     * {@link com.github.mauricio.netty.util.internal.logging.JdkLoggerFactory}.
+     * {@link JdkLoggerFactory}.
      */
     public static InternalLoggerFactory getDefaultFactory() {
         return defaultFactory;

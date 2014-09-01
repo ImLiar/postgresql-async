@@ -21,7 +21,7 @@ import com.github.mauricio.netty.channel.ChannelPromise;
 import com.github.mauricio.netty.handler.codec.MessageToByteEncoder;
 
 /**
- * Compresses a {@link com.github.mauricio.netty.buffer.ByteBuf} using the deflate algorithm.
+ * Compresses a {@link ByteBuf} using the deflate algorithm.
  */
 public abstract class ZlibEncoder extends MessageToByteEncoder<ByteBuf> {
 
@@ -36,16 +36,16 @@ public abstract class ZlibEncoder extends MessageToByteEncoder<ByteBuf> {
     public abstract boolean isClosed();
 
     /**
-     * Close this {@link com.github.mauricio.netty.handler.codec.compression.ZlibEncoder} and so finish the encoding.
+     * Close this {@link ZlibEncoder} and so finish the encoding.
      *
-     * The returned {@link com.github.mauricio.netty.channel.ChannelFuture} will be notified once the
+     * The returned {@link ChannelFuture} will be notified once the
      * operation completes.
      */
     public abstract ChannelFuture close();
 
     /**
-     * Close this {@link com.github.mauricio.netty.handler.codec.compression.ZlibEncoder} and so finish the encoding.
-     * The given {@link com.github.mauricio.netty.channel.ChannelFuture} will be notified once the operation
+     * Close this {@link ZlibEncoder} and so finish the encoding.
+     * The given {@link ChannelFuture} will be notified once the operation
      * completes and will also be returned.
      */
     public abstract ChannelFuture close(ChannelPromise promise);

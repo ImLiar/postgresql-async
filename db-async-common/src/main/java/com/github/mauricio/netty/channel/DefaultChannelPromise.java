@@ -22,8 +22,8 @@ import com.github.mauricio.netty.util.concurrent.Future;
 import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 
 /**
- * The default {@link com.github.mauricio.netty.channel.ChannelPromise} implementation.  It is recommended to use {@link com.github.mauricio.netty.channel.Channel#newPromise()} to create
- * a new {@link com.github.mauricio.netty.channel.ChannelPromise} rather than calling the constructor explicitly.
+ * The default {@link ChannelPromise} implementation.  It is recommended to use {@link Channel#newPromise()} to create
+ * a new {@link ChannelPromise} rather than calling the constructor explicitly.
  */
 public class DefaultChannelPromise extends DefaultPromise<Void> implements ChannelPromise, FlushCheckpoint {
 
@@ -34,7 +34,7 @@ public class DefaultChannelPromise extends DefaultPromise<Void> implements Chann
      * Creates a new instance.
      *
      * @param channel
-     *        the {@link com.github.mauricio.netty.channel.Channel} associated with this future
+     *        the {@link Channel} associated with this future
      */
     public DefaultChannelPromise(Channel channel) {
         this.channel = channel;
@@ -44,7 +44,7 @@ public class DefaultChannelPromise extends DefaultPromise<Void> implements Chann
      * Creates a new instance.
      *
      * @param channel
-     *        the {@link com.github.mauricio.netty.channel.Channel} associated with this future
+     *        the {@link Channel} associated with this future
      */
     public DefaultChannelPromise(Channel channel, EventExecutor executor) {
         super(executor);

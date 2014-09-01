@@ -15,13 +15,17 @@
  */
 package com.github.mauricio.netty.channel.oio;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.AbstractChannel;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.ThreadPerChannelEventLoop;
 
 import java.net.ConnectException;
 import java.net.SocketAddress;
 
 /**
- * Abstract base class for {@link com.github.mauricio.netty.channel.Channel} implementations that use Old-Blocking-IO
+ * Abstract base class for {@link Channel} implementations that use Old-Blocking-IO
  */
 public abstract class AbstractOioChannel extends AbstractChannel {
 
@@ -38,7 +42,7 @@ public abstract class AbstractOioChannel extends AbstractChannel {
     };
 
     /**
-     * @see AbstractChannel#AbstractChannel(com.github.mauricio.netty.channel.Channel)
+     * @see AbstractChannel#AbstractChannel(Channel)
      */
     protected AbstractOioChannel(Channel parent) {
         super(parent);
@@ -54,19 +58,14 @@ public abstract class AbstractOioChannel extends AbstractChannel {
         public void connect(
                 final SocketAddress remoteAddress,
                 final SocketAddress localAddress, final ChannelPromise promise) {
-            if (!ensureOpen(promise)) {
-                return;
-            }
-
-            if (!promise.setUncancellable()) {
-                close(voidPromise());
+            if (!promise.setUncancellable() || !ensureOpen(promise)) {
                 return;
             }
 
             try {
                 boolean wasActive = isActive();
                 doConnect(remoteAddress, localAddress);
-                promise.setSuccess();
+                safeSetSuccess(promise);
                 if (!wasActive && isActive()) {
                     pipeline().fireChannelActive();
                 }
@@ -76,7 +75,7 @@ public abstract class AbstractOioChannel extends AbstractChannel {
                     newT.setStackTrace(t.getStackTrace());
                     t = newT;
                 }
-                promise.setFailure(t);
+                safeSetFailure(promise, t);
                 closeIfClosed();
             }
         }

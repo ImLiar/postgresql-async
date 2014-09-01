@@ -18,8 +18,8 @@ package com.github.mauricio.netty.util.concurrent;
 import com.github.mauricio.netty.util.internal.PlatformDependent;
 
 /**
- * The {@link com.github.mauricio.netty.util.concurrent.CompleteFuture} which is failed already.  It is
- * recommended to use {@link com.github.mauricio.netty.util.concurrent.EventExecutor#newFailedFuture(Throwable)}
+ * The {@link CompleteFuture} which is failed already.  It is
+ * recommended to use {@link EventExecutor#newFailedFuture(Throwable)}
  * instead of calling the constructor of this future.
  */
 public final class FailedFuture<V> extends CompleteFuture<V> {
@@ -29,7 +29,7 @@ public final class FailedFuture<V> extends CompleteFuture<V> {
     /**
      * Creates a new instance.
      *
-     * @param executor the {@link com.github.mauricio.netty.util.concurrent.EventExecutor} associated with this future
+     * @param executor the {@link EventExecutor} associated with this future
      * @param cause   the cause of failure
      */
     public FailedFuture(EventExecutor executor, Throwable cause) {

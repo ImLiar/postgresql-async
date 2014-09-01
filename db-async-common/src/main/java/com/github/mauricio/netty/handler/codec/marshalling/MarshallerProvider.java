@@ -16,15 +16,16 @@
 package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+
 import org.jboss.marshalling.Marshaller;
 
 /**
- * This provider is responsible to get a {@link Marshaller} for the given {@link com.github.mauricio.netty.channel.ChannelHandlerContext}.
+ * This provider is responsible to get a {@link Marshaller} for the given {@link ChannelHandlerContext}.
  */
 public interface MarshallerProvider {
 
     /**
-     * Get a {@link Marshaller} for the given {@link com.github.mauricio.netty.channel.ChannelHandlerContext}
+     * Get a {@link Marshaller} for the given {@link ChannelHandlerContext}
      */
     Marshaller getMarshaller(ChannelHandlerContext ctx) throws Exception;
 }

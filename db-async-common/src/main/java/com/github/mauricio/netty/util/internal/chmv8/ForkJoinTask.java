@@ -36,32 +36,33 @@ import java.util.concurrent.Future;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Abstract base class for tasks that run within a {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool}.
+ * Abstract base class for tasks that run within a {@link ForkJoinPool}.
  * A {@code ForkJoinTask} is a thread-like entity that is much
  * lighter weight than a normal thread.  Huge numbers of tasks and
  * subtasks may be hosted by a small number of actual threads in a
  * ForkJoinPool, at the price of some usage limitations.
  *
  * <p>A "main" {@code ForkJoinTask} begins execution when it is
- * explicitly submitted to a {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool}, or, if not already
+ * explicitly submitted to a {@link ForkJoinPool}, or, if not already
  * engaged in a ForkJoin computation, commenced in the {@link
- * com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool#commonPool()} via {@link #fork}, {@link #invoke}, or
+ * ForkJoinPool#commonPool()} via {@link #fork}, {@link #invoke}, or
  * related methods.  Once started, it will usually in turn start other
  * subtasks.  As indicated by the name of this class, many programs
  * using {@code ForkJoinTask} employ only methods {@link #fork} and
  * {@link #join}, or derivatives such as {@link
- * #invokeAll(com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask...) invokeAll}.  However, this class also
+ * #invokeAll(ForkJoinTask...) invokeAll}.  However, this class also
  * provides a number of other methods that can come into play in
  * advanced usages, as well as extension mechanics that allow support
  * of new forms of fork/join processing.
  *
- * <p>A {@code ForkJoinTask} is a lightweight form of {@link java.util.concurrent.Future}.
+ * <p>A {@code ForkJoinTask} is a lightweight form of {@link Future}.
  * The efficiency of {@code ForkJoinTask}s stems from a set of
  * restrictions (that are only partially statically enforceable)
  * reflecting their main use as computational tasks calculating pure
@@ -80,7 +81,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * thrown. However, computations may still encounter unchecked
  * exceptions, that are rethrown to callers attempting to join
  * them. These exceptions may additionally include {@link
- * java.util.concurrent.RejectedExecutionException} stemming from internal resource
+ * RejectedExecutionException} stemming from internal resource
  * exhaustion, such as failure to allocate internal task
  * queues. Rethrown exceptions behave in the same way as regular
  * exceptions, but, when possible, contain stack traces (as displayed
@@ -93,18 +94,18 @@ import java.util.concurrent.locks.ReentrantLock;
  * of few if any <em>other</em> tasks should be dependent on a task
  * that blocks on external synchronization or I/O. Event-style async
  * tasks that are never joined (for example, those subclassing {@link
- * com.github.mauricio.netty.util.internal.chmv8.CountedCompleter}) often fall into this category.  (2) To minimize
+ * CountedCompleter}) often fall into this category.  (2) To minimize
  * resource impact, tasks should be small; ideally performing only the
  * (possibly) blocking action. (3) Unless the {@link
- * com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool.ManagedBlocker} API is used, or the number of possibly
+ * ForkJoinPool.ManagedBlocker} API is used, or the number of possibly
  * blocked tasks is known to be less than the pool's {@link
- * com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool#getParallelism} level, the pool cannot guarantee that
+ * ForkJoinPool#getParallelism} level, the pool cannot guarantee that
  * enough threads will be available to ensure progress or good
  * performance.
  *
  * <p>The primary method for awaiting completion and extracting
  * results of a task is {@link #join}, but there are several variants:
- * The {@link java.util.concurrent.Future#get} methods support interruptible and/or timed
+ * The {@link Future#get} methods support interruptible and/or timed
  * waits for completion and report results using {@code Future}
  * conventions. Method {@link #invoke} is semantically
  * equivalent to {@code fork(); join()} but always attempts to begin
@@ -140,7 +141,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * particular style of fork/join processing, typically {@link
  * RecursiveAction} for most computations that do not return results,
  * {@link RecursiveTask} for those that do, and {@link
- * com.github.mauricio.netty.util.internal.chmv8.CountedCompleter} for those in which completed actions trigger
+ * CountedCompleter} for those in which completed actions trigger
  * other actions.  Normally, a concrete ForkJoinTask subclass declares
  * fields comprising its parameters, established in a constructor, and
  * then defines a {@code compute} method that somehow uses the control
@@ -186,7 +187,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * overwhelm processing.
  *
  * <p>This class provides {@code adapt} methods for {@link Runnable}
- * and {@link java.util.concurrent.Callable}, that may be of use when mixing execution of
+ * and {@link Callable}, that may be of use when mixing execution of
  * {@code ForkJoinTasks} with other kinds of tasks. When all tasks are
  * of this form, consider using a pool constructed in <em>asyncMode</em>.
  *
@@ -665,7 +666,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
     /**
      * Arranges to asynchronously execute this task in the pool the
      * current task is running in, if applicable, or using the {@link
-     * com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool#commonPool()} if not {@link #inForkJoinPool}.  While
+     * ForkJoinPool#commonPool()} if not {@link #inForkJoinPool}.  While
      * it is not necessarily enforced, it is a usage error to fork a
      * task more than once unless it has completed and been
      * reinitialized.  Subsequent modifications to the state of this
@@ -972,8 +973,8 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * retrieves its result.
      *
      * @return the computed result
-     * @throws java.util.concurrent.CancellationException if the computation was cancelled
-     * @throws java.util.concurrent.ExecutionException if the computation threw an
+     * @throws CancellationException if the computation was cancelled
+     * @throws ExecutionException if the computation threw an
      * exception
      * @throws InterruptedException if the current thread is not a
      * member of a ForkJoinPool and was interrupted while waiting
@@ -996,12 +997,12 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
      * @return the computed result
-     * @throws java.util.concurrent.CancellationException if the computation was cancelled
-     * @throws java.util.concurrent.ExecutionException if the computation threw an
+     * @throws CancellationException if the computation was cancelled
+     * @throws ExecutionException if the computation threw an
      * exception
      * @throws InterruptedException if the current thread is not a
      * member of a ForkJoinPool and was interrupted while waiting
-     * @throws java.util.concurrent.TimeoutException if the wait timed out
+     * @throws TimeoutException if the wait timed out
      */
     public final V get(long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -1099,7 +1100,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
 
     /**
      * Possibly executes tasks until the pool hosting the current task
-     * {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool#isQuiescent is quiescent}. This method may
+     * {@link ForkJoinPool#isQuiescent is quiescent}. This method may
      * be of use in designs in which many tasks are forked, but none
      * are explicitly joined, instead executing them until all are
      * processed.
@@ -1152,10 +1153,10 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
 
     /**
      * Returns {@code true} if the current thread is a {@link
-     * com.github.mauricio.netty.util.internal.chmv8.ForkJoinWorkerThread} executing as a ForkJoinPool computation.
+     * ForkJoinWorkerThread} executing as a ForkJoinPool computation.
      *
      * @return {@code true} if the current thread is a {@link
-     * com.github.mauricio.netty.util.internal.chmv8.ForkJoinWorkerThread} executing as a ForkJoinPool computation,
+     * ForkJoinWorkerThread} executing as a ForkJoinPool computation,
      * or {@code false} otherwise
      */
     public static boolean inForkJoinPool() {

@@ -41,14 +41,14 @@ public final class RecyclableArrayList extends ArrayList<Object> {
     };
 
     /**
-     * Create a new empty {@link com.github.mauricio.netty.util.internal.RecyclableArrayList} instance
+     * Create a new empty {@link RecyclableArrayList} instance
      */
     public static RecyclableArrayList newInstance() {
         return newInstance(DEFAULT_INITIAL_CAPACITY);
     }
 
     /**
-     * Create a new empty {@link com.github.mauricio.netty.util.internal.RecyclableArrayList} instance with the given capacity.
+     * Create a new empty {@link RecyclableArrayList} instance with the given capacity.
      */
     public static RecyclableArrayList newInstance(int minCapacity) {
         RecyclableArrayList ret = RECYCLER.get();

@@ -16,14 +16,14 @@
 package com.github.mauricio.netty.util;
 
 /**
- * Holds {@link com.github.mauricio.netty.util.Attribute}s which can be accessed via {@link com.github.mauricio.netty.util.AttributeKey}.
+ * Holds {@link Attribute}s which can be accessed via {@link AttributeKey}.
  *
  * Implementations must be Thread-safe.
  */
 public interface AttributeMap {
     /**
-     * Get the {@link com.github.mauricio.netty.util.Attribute} for the given {@link com.github.mauricio.netty.util.AttributeKey}. This method will never return null, but may return
-     * an {@link com.github.mauricio.netty.util.Attribute} which does not have a value set yet.
+     * Get the {@link Attribute} for the given {@link AttributeKey}. This method will never return null, but may return
+     * an {@link Attribute} which does not have a value set yet.
      */
     <T> Attribute<T> attr(AttributeKey<T> key);
 }

@@ -25,16 +25,16 @@ import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 import java.util.Iterator;
 
 /**
- * The result of an asynchronous {@link com.github.mauricio.netty.channel.group.ChannelGroup} operation.
- * {@link com.github.mauricio.netty.channel.group.ChannelGroupFuture} is composed of {@link com.github.mauricio.netty.channel.ChannelFuture}s which
+ * The result of an asynchronous {@link ChannelGroup} operation.
+ * {@link ChannelGroupFuture} is composed of {@link ChannelFuture}s which
  * represent the outcome of the individual I/O operations that affect the
- * {@link com.github.mauricio.netty.channel.Channel}s in the {@link com.github.mauricio.netty.channel.group.ChannelGroup}.
+ * {@link Channel}s in the {@link ChannelGroup}.
  *
  * <p>
- * All I/O operations in {@link com.github.mauricio.netty.channel.group.ChannelGroup} are asynchronous.  It means any
+ * All I/O operations in {@link ChannelGroup} are asynchronous.  It means any
  * I/O calls will return immediately with no guarantee that the requested I/O
  * operations have been completed at the end of the call.  Instead, you will be
- * returned with a {@link com.github.mauricio.netty.channel.group.ChannelGroupFuture} instance which tells you when the
+ * returned with a {@link ChannelGroupFuture} instance which tells you when the
  * requested I/O operations have succeeded, failed, or cancelled.
  * <p>
  * Various methods are provided to let you check if the I/O operations has been
@@ -43,15 +43,15 @@ import java.util.Iterator;
  * {@link ChannelGroupFutureListener} so you can get notified when the I/O
  * operation have been completed.
  *
- * <h3>Prefer {@link #addListener(com.github.mauricio.netty.util.concurrent.GenericFutureListener)} to {@link #await()}</h3>
+ * <h3>Prefer {@link #addListener(GenericFutureListener)} to {@link #await()}</h3>
  *
- * It is recommended to prefer {@link #addListener(com.github.mauricio.netty.util.concurrent.GenericFutureListener)} to
+ * It is recommended to prefer {@link #addListener(GenericFutureListener)} to
  * {@link #await()} wherever possible to get notified when I/O operations are
  * done and to do any follow-up tasks.
  * <p>
- * {@link #addListener(com.github.mauricio.netty.util.concurrent.GenericFutureListener)} is non-blocking.  It simply
+ * {@link #addListener(GenericFutureListener)} is non-blocking.  It simply
  * adds the specified {@link ChannelGroupFutureListener} to the
- * {@link com.github.mauricio.netty.channel.group.ChannelGroupFuture}, and I/O thread will notify the listeners when
+ * {@link ChannelGroupFuture}, and I/O thread will notify the listeners when
  * the I/O operations associated with the future is done.
  * {@link ChannelGroupFutureListener} yields the best performance and resource
  * utilization because it does not block at all, but it could be tricky to
@@ -75,8 +75,8 @@ import java.util.Iterator;
  * // BAD - NEVER DO THIS
  * {@code @Override}
  * public void messageReceived({@link ChannelHandlerContext} ctx, ShutdownMessage msg) {
- *     {@link com.github.mauricio.netty.channel.group.ChannelGroup} allChannels = MyServer.getAllChannels();
- *     {@link com.github.mauricio.netty.channel.group.ChannelGroupFuture} future = allChannels.close();
+ *     {@link ChannelGroup} allChannels = MyServer.getAllChannels();
+ *     {@link ChannelGroupFuture} future = allChannels.close();
  *     future.awaitUninterruptibly();
  *     // Perform post-shutdown operation
  *     // ...
@@ -86,10 +86,10 @@ import java.util.Iterator;
  * // GOOD
  * {@code @Override}
  * public void messageReceived(ChannelHandlerContext ctx, ShutdownMessage msg) {
- *     {@link com.github.mauricio.netty.channel.group.ChannelGroup} allChannels = MyServer.getAllChannels();
- *     {@link com.github.mauricio.netty.channel.group.ChannelGroupFuture} future = allChannels.close();
+ *     {@link ChannelGroup} allChannels = MyServer.getAllChannels();
+ *     {@link ChannelGroupFuture} future = allChannels.close();
  *     future.addListener(new {@link ChannelGroupFutureListener}() {
- *         public void operationComplete({@link com.github.mauricio.netty.channel.group.ChannelGroupFuture} future) {
+ *         public void operationComplete({@link ChannelGroupFuture} future) {
  *             // Perform post-closure operation
  *             // ...
  *         }
@@ -105,15 +105,15 @@ import java.util.Iterator;
 public interface ChannelGroupFuture extends Future<Void>, Iterable<ChannelFuture> {
 
     /**
-     * Returns the {@link com.github.mauricio.netty.channel.group.ChannelGroup} which is associated with this future.
+     * Returns the {@link ChannelGroup} which is associated with this future.
      */
     ChannelGroup group();
 
     /**
-     * Returns the {@link com.github.mauricio.netty.channel.ChannelFuture} of the individual I/O operation which
-     * is associated with the specified {@link com.github.mauricio.netty.channel.Channel}.
+     * Returns the {@link ChannelFuture} of the individual I/O operation which
+     * is associated with the specified {@link Channel}.
      *
-     * @return the matching {@link com.github.mauricio.netty.channel.ChannelFuture} if found.
+     * @return the matching {@link ChannelFuture} if found.
      *         {@code null} otherwise.
      */
     ChannelFuture find(Channel channel);
@@ -165,9 +165,9 @@ public interface ChannelGroupFuture extends Future<Void>, Iterable<ChannelFuture
     ChannelGroupFuture sync() throws InterruptedException;
 
     /**
-     * Returns the {@link java.util.Iterator} that enumerates all {@link com.github.mauricio.netty.channel.ChannelFuture}s
+     * Returns the {@link Iterator} that enumerates all {@link ChannelFuture}s
      * which are associated with this future.  Please note that the returned
-     * {@link java.util.Iterator} is is unmodifiable, which means a {@link com.github.mauricio.netty.channel.ChannelFuture}
+     * {@link Iterator} is is unmodifiable, which means a {@link ChannelFuture}
      * cannot be removed from this future.
      */
     @Override

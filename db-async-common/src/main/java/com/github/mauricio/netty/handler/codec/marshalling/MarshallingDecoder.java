@@ -18,14 +18,16 @@ package com.github.mauricio.netty.handler.codec.marshalling;
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import com.github.mauricio.netty.handler.codec.TooLongFrameException;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.Unmarshaller;
 
+import java.io.StreamCorruptedException;
 /**
- * Decoder which MUST be used with {@link com.github.mauricio.netty.handler.codec.marshalling.MarshallingEncoder}.
+ * Decoder which MUST be used with {@link MarshallingEncoder}.
  *
- * A {@link com.github.mauricio.netty.handler.codec.LengthFieldBasedFrameDecoder} which use an {@link Unmarshaller} to read the Object out
- * of the {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * A {@link LengthFieldBasedFrameDecoder} which use an {@link Unmarshaller} to read the Object out
+ * of the {@link ByteBuf}.
  *
  */
 public class MarshallingDecoder extends LengthFieldBasedFrameDecoder {
@@ -35,7 +37,7 @@ public class MarshallingDecoder extends LengthFieldBasedFrameDecoder {
     /**
      * Creates a new decoder whose maximum object size is {@code 1048576}
      * bytes.  If the size of the received object is greater than
-     * {@code 1048576} bytes, a {@link java.io.StreamCorruptedException} will be
+     * {@code 1048576} bytes, a {@link StreamCorruptedException} will be
      * raised.
      *
      */
@@ -48,7 +50,7 @@ public class MarshallingDecoder extends LengthFieldBasedFrameDecoder {
      *
      * @param maxObjectSize  the maximum byte length of the serialized object.
      *                       if the length of the received object is greater
-     *                       than this value, {@link com.github.mauricio.netty.handler.codec.TooLongFrameException}
+     *                       than this value, {@link TooLongFrameException}
      *                       will be raised.
      */
     public MarshallingDecoder(UnmarshallerProvider provider, int maxObjectSize) {

@@ -18,7 +18,7 @@ package com.github.mauricio.netty.channel;
 import java.net.ConnectException;
 
 /**
- * {@link java.net.ConnectException} which will be thrown if a connection could
+ * {@link ConnectException} which will be thrown if a connection could
  * not be established because of a connection timeout.
  */
 public class ConnectTimeoutException extends ConnectException {

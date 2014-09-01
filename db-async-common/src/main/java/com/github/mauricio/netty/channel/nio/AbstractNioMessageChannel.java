@@ -15,7 +15,11 @@
  */
 package com.github.mauricio.netty.channel.nio;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.channel.ServerChannel;
 
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
@@ -24,12 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@link AbstractNioChannel} base class for {@link com.github.mauricio.netty.channel.Channel}s that operate on messages.
+ * {@link AbstractNioChannel} base class for {@link Channel}s that operate on messages.
  */
 public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
 
     /**
-     * @see {@link AbstractNioChannel#AbstractNioChannel(com.github.mauricio.netty.channel.Channel, java.nio.channels.SelectableChannel, int)}
+     * @see {@link AbstractNioChannel#AbstractNioChannel(Channel, SelectableChannel, int)}
      */
     protected AbstractNioMessageChannel(Channel parent, SelectableChannel ch, int readInterestOp) {
         super(parent, ch, readInterestOp);
@@ -44,66 +48,72 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
 
         private final List<Object> readBuf = new ArrayList<Object>();
 
-        private void removeReadOp() {
-            SelectionKey key = selectionKey();
-            int interestOps = key.interestOps();
-            if ((interestOps & readInterestOp) != 0) {
-                // only remove readInterestOp if needed
-                key.interestOps(interestOps & ~readInterestOp);
-            }
-        }
         @Override
         public void read() {
             assert eventLoop().inEventLoop();
-            if (!config().isAutoRead()) {
-                removeReadOp();
-            }
-
             final ChannelConfig config = config();
+
             final int maxMessagesPerRead = config.getMaxMessagesPerRead();
-            final boolean autoRead = config.isAutoRead();
             final ChannelPipeline pipeline = pipeline();
             boolean closed = false;
             Throwable exception = null;
             try {
-                for (;;) {
-                    int localRead = doReadMessages(readBuf);
-                    if (localRead == 0) {
-                        break;
-                    }
-                    if (localRead < 0) {
-                        closed = true;
-                        break;
-                    }
+                try {
+                    for (;;) {
+                        int localRead = doReadMessages(readBuf);
+                        if (localRead == 0) {
+                            break;
+                        }
+                        if (localRead < 0) {
+                            closed = true;
+                            break;
+                        }
 
-                    if (readBuf.size() >= maxMessagesPerRead | !autoRead) {
-                        break;
+                        // stop reading and remove op
+                        if (!config.isAutoRead()) {
+                            break;
+                        }
+
+                        if (readBuf.size() >= maxMessagesPerRead) {
+                            break;
+                        }
                     }
+                } catch (Throwable t) {
+                    exception = t;
                 }
-            } catch (Throwable t) {
-                exception = t;
-            }
-
-            int size = readBuf.size();
-            for (int i = 0; i < size; i ++) {
-                pipeline.fireChannelRead(readBuf.get(i));
-            }
-            readBuf.clear();
-            pipeline.fireChannelReadComplete();
-
-            if (exception != null) {
-                if (exception instanceof IOException) {
-                    // ServerChannel should not be closed even on IOException because it can often continue
-                    // accepting incoming connections. (e.g. too many open files)
-                    closed = !(AbstractNioMessageChannel.this instanceof ServerChannel);
+                readPending = false;
+                int size = readBuf.size();
+                for (int i = 0; i < size; i ++) {
+                    pipeline.fireChannelRead(readBuf.get(i));
                 }
 
-                pipeline.fireExceptionCaught(exception);
-            }
+                readBuf.clear();
+                pipeline.fireChannelReadComplete();
 
-            if (closed) {
-                if (isOpen()) {
-                    close(voidPromise());
+                if (exception != null) {
+                    if (exception instanceof IOException) {
+                        // ServerChannel should not be closed even on IOException because it can often continue
+                        // accepting incoming connections. (e.g. too many open files)
+                        closed = !(AbstractNioMessageChannel.this instanceof ServerChannel);
+                    }
+
+                    pipeline.fireExceptionCaught(exception);
+                }
+
+                if (closed) {
+                    if (isOpen()) {
+                        close(voidPromise());
+                    }
+                }
+            } finally {
+                // Check if there is a readPending which was not processed yet.
+                // This could be for two reasons:
+                // * The user called Channel.read() or ChannelHandlerContext.read() in channelRead(...) method
+                // * The user called Channel.read() or ChannelHandlerContext.read() in channelReadComplete(...) method
+                //
+                // See https://github.com/netty/netty/issues/2254
+                if (!config.isAutoRead() && !readPending) {
+                    removeReadOp();
                 }
             }
         }

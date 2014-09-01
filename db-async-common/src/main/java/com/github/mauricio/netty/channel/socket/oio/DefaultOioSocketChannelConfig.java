@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
 
-import static com.github.mauricio.netty.channel.ChannelOption.SO_TIMEOUT;
+import static com.github.mauricio.netty.channel.ChannelOption.*;
 
 /**
- * Default {@link com.github.mauricio.netty.channel.socket.oio.OioSocketChannelConfig} implementation
+ * Default {@link OioSocketChannelConfig} implementation
  */
 public class DefaultOioSocketChannelConfig extends DefaultSocketChannelConfig implements OioSocketChannelConfig {
     public DefaultOioSocketChannelConfig(SocketChannel channel, Socket javaSocket) {

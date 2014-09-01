@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * A special {@link Error} which is used to signal some state or request by throwing it.
- * {@link com.github.mauricio.netty.util.Signal} has an empty stack trace and has no cause to save the instantiation overhead.
+ * {@link Signal} has an empty stack trace and has no cause to save the instantiation overhead.
  */
 public final class Signal extends Error {
 
@@ -34,7 +34,7 @@ public final class Signal extends Error {
     private final UniqueName uname;
 
     /**
-     * Creates a new {@link com.github.mauricio.netty.util.Signal} with the specified {@code name}.
+     * Creates a new {@link Signal} with the specified {@code name}.
      */
     @SuppressWarnings("deprecation")
     public static Signal valueOf(String name) {
@@ -51,7 +51,7 @@ public final class Signal extends Error {
     }
 
     /**
-     * Check if the given {@link com.github.mauricio.netty.util.Signal} is the same as this instance. If not an {@link IllegalStateException} will
+     * Check if the given {@link Signal} is the same as this instance. If not an {@link IllegalStateException} will
      * be thrown.
      */
     public void expect(Signal signal) {

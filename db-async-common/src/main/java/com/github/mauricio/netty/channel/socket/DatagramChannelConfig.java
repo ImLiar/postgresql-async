@@ -17,6 +17,7 @@ package com.github.mauricio.netty.channel.socket;
 
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
 import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelOption;
 import com.github.mauricio.netty.channel.MessageSizeEstimator;
 import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 
@@ -25,36 +26,36 @@ import java.net.NetworkInterface;
 import java.net.StandardSocketOptions;
 
 /**
- * A {@link ChannelConfig} for a {@link com.github.mauricio.netty.channel.socket.DatagramChannel}.
+ * A {@link ChannelConfig} for a {@link DatagramChannel}.
  *
  * <h3>Available options</h3>
  *
  * In addition to the options provided by {@link ChannelConfig},
- * {@link com.github.mauricio.netty.channel.socket.DatagramChannelConfig} allows the following options in the option map:
+ * {@link DatagramChannelConfig} allows the following options in the option map:
  *
  * <table border="1" cellspacing="0" cellpadding="6">
  * <tr>
  * <th>Name</th><th>Associated setter method</th>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#SO_BROADCAST}</td><td>{@link #setBroadcast(boolean)}</td>
+ * <td>{@link ChannelOption#SO_BROADCAST}</td><td>{@link #setBroadcast(boolean)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#IP_MULTICAST_ADDR}</td><td>{@link #setInterface(java.net.InetAddress)}</td>
+ * <td>{@link ChannelOption#IP_MULTICAST_ADDR}</td><td>{@link #setInterface(InetAddress)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#IP_MULTICAST_LOOP_DISABLED}</td>
+ * <td>{@link ChannelOption#IP_MULTICAST_LOOP_DISABLED}</td>
  * <td>{@link #setLoopbackModeDisabled(boolean)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#IP_MULTICAST_IF}</td>
- * <td>{@link #setNetworkInterface(java.net.NetworkInterface)}</td>
+ * <td>{@link ChannelOption#IP_MULTICAST_IF}</td>
+ * <td>{@link #setNetworkInterface(NetworkInterface)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#SO_REUSEADDR}</td><td>{@link #setReuseAddress(boolean)}</td>
+ * <td>{@link ChannelOption#SO_REUSEADDR}</td><td>{@link #setReuseAddress(boolean)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#SO_RCVBUF}</td><td>{@link #setReceiveBufferSize(int)}</td>
+ * <td>{@link ChannelOption#SO_RCVBUF}</td><td>{@link #setReceiveBufferSize(int)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#SO_SNDBUF}</td><td>{@link #setSendBufferSize(int)}</td>
+ * <td>{@link ChannelOption#SO_SNDBUF}</td><td>{@link #setSendBufferSize(int)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#IP_MULTICAST_TTL}</td><td>{@link #setTimeToLive(int)}</td>
+ * <td>{@link ChannelOption#IP_MULTICAST_TTL}</td><td>{@link #setTimeToLive(int)}</td>
  * </tr><tr>
- * <td>{@link com.github.mauricio.netty.channel.ChannelOption#IP_TOS}</td><td>{@link #setTrafficClass(int)}</td>
+ * <td>{@link ChannelOption#IP_TOS}</td><td>{@link #setTrafficClass(int)}</td>
  * </tr>
  * </table>
  */

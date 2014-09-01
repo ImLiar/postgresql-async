@@ -16,18 +16,30 @@
 package com.github.mauricio.netty.buffer;
 
 import com.github.mauricio.netty.util.CharsetUtil;
+import com.github.mauricio.netty.util.internal.SystemPropertyUtil;
+import com.github.mauricio.netty.util.internal.logging.InternalLogger;
+import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
-import java.nio.charset.*;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+import java.util.Locale;
 
 /**
- * A collection of utility methods that is related with handling {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * A collection of utility methods that is related with handling {@link ByteBuf}.
  */
 public final class ByteBufUtil {
 
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(ByteBufUtil.class);
+
     private static final char[] HEXDUMP_TABLE = new char[256 * 4];
+
+    static final ByteBufAllocator DEFAULT_ALLOCATOR;
 
     static {
         final char[] DIGITS = "0123456789abcdef".toCharArray();
@@ -35,6 +47,21 @@ public final class ByteBufUtil {
             HEXDUMP_TABLE[ i << 1     ] = DIGITS[i >>> 4 & 0x0F];
             HEXDUMP_TABLE[(i << 1) + 1] = DIGITS[i       & 0x0F];
         }
+
+        String allocType = SystemPropertyUtil.get("io.netty.allocator.type", "unpooled").toLowerCase(Locale.US).trim();
+        ByteBufAllocator alloc;
+        if ("unpooled".equals(allocType)) {
+            alloc = UnpooledByteBufAllocator.DEFAULT;
+            logger.debug("-Dio.netty.allocator.type: {}", allocType);
+        } else if ("pooled".equals(allocType)) {
+            alloc = PooledByteBufAllocator.DEFAULT;
+            logger.debug("-Dio.netty.allocator.type: {}", allocType);
+        } else {
+            alloc = UnpooledByteBufAllocator.DEFAULT;
+            logger.debug("-Dio.netty.allocator.type: unpooled (unknown: {})", allocType);
+        }
+
+        DEFAULT_ALLOCATOR = alloc;
     }
 
     /**
@@ -152,7 +179,7 @@ public final class ByteBufUtil {
     }
 
     /**
-     * Compares the two specified buffers as described in {@link com.github.mauricio.netty.buffer.ByteBuf#compareTo(com.github.mauricio.netty.buffer.ByteBuf)}.
+     * Compares the two specified buffers as described in {@link ByteBuf#compareTo(ByteBuf)}.
      * This method is useful when implementing a new buffer type.
      */
     public static int compare(ByteBuf bufferA, ByteBuf bufferB) {
@@ -210,7 +237,7 @@ public final class ByteBufUtil {
     }
 
     /**
-     * The default implementation of {@link com.github.mauricio.netty.buffer.ByteBuf#indexOf(int, int, byte)}.
+     * The default implementation of {@link ByteBuf#indexOf(int, int, byte)}.
      * This method is useful when implementing a new buffer type.
      */
     public static int indexOf(ByteBuf buffer, int fromIndex, int toIndex, byte value) {
@@ -254,7 +281,7 @@ public final class ByteBufUtil {
     }
 
     /**
-     * Read the given amount of bytes into a new {@link com.github.mauricio.netty.buffer.ByteBuf} that is allocated from the {@link ByteBufAllocator}.
+     * Read the given amount of bytes into a new {@link ByteBuf} that is allocated from the {@link ByteBufAllocator}.
      */
     public static ByteBuf readBytes(ByteBufAllocator alloc, ByteBuf buffer, int length) {
         boolean release = true;
@@ -301,7 +328,7 @@ public final class ByteBufUtil {
     }
 
     /**
-     * Encode the given {@link java.nio.CharBuffer} using the given {@link java.nio.charset.Charset} into a new {@link com.github.mauricio.netty.buffer.ByteBuf} which
+     * Encode the given {@link CharBuffer} using the given {@link Charset} into a new {@link ByteBuf} which
      * is allocated via the {@link ByteBufAllocator}.
      */
     public static ByteBuf encodeString(ByteBufAllocator alloc, CharBuffer src, Charset charset) {
@@ -320,7 +347,7 @@ public final class ByteBufUtil {
             if (!cr.isUnderflow()) {
                 cr.throwException();
             }
-            dst.writerIndex(dst.writerIndex() + (dstBuf.position() - pos));
+            dst.writerIndex(dst.writerIndex() + dstBuf.position() - pos);
             release = false;
             return dst;
         } catch (CharacterCodingException x) {

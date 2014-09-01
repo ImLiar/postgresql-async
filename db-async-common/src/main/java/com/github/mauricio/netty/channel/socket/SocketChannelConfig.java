@@ -16,8 +16,14 @@
 package com.github.mauricio.netty.channel.socket;
 
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelInboundHandler;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.MessageSizeEstimator;
+import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 
+import java.net.Socket;
 import java.net.StandardSocketOptions;
 
 /**
@@ -26,7 +32,7 @@ import java.net.StandardSocketOptions;
  * <h3>Available options</h3>
  *
  * In addition to the options provided by {@link ChannelConfig},
- * {@link com.github.mauricio.netty.channel.socket.SocketChannelConfig} allows the following options in the option map:
+ * {@link SocketChannelConfig} allows the following options in the option map:
  *
  * <table border="1" cellspacing="0" cellpadding="6">
  * <tr>
@@ -130,7 +136,7 @@ public interface SocketChannelConfig extends ChannelConfig {
 
     /**
      * Sets the performance preferences as specified in
-     * {@link java.net.Socket#setPerformancePreferences(int, int, int)}.
+     * {@link Socket#setPerformancePreferences(int, int, int)}.
      */
     SocketChannelConfig setPerformancePreferences(int connectionTime, int latency, int bandwidth);
 
@@ -146,7 +152,7 @@ public interface SocketChannelConfig extends ChannelConfig {
      * make the connection half-closed.  If {@code true} the connection is not closed when the
      * remote peer shuts down output. Instead,
      * {@link ChannelInboundHandler#userEventTriggered(ChannelHandlerContext, Object)}
-     * is invoked with a {@link com.github.mauricio.netty.channel.socket.ChannelInputShutdownEvent} object. If {@code false}, the connection
+     * is invoked with a {@link ChannelInputShutdownEvent} object. If {@code false}, the connection
      * is closed automatically.
      */
     SocketChannelConfig setAllowHalfClosure(boolean allowHalfClosure);

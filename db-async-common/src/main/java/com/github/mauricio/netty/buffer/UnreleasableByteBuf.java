@@ -18,7 +18,7 @@ package com.github.mauricio.netty.buffer;
 import java.nio.ByteOrder;
 
 /**
- * A {@link com.github.mauricio.netty.buffer.ByteBuf} implementation that wraps another buffer to prevent a user from increasing or decreasing the
+ * A {@link ByteBuf} implementation that wraps another buffer to prevent a user from increasing or decreasing the
  * wrapped buffer's reference count.
  */
 final class UnreleasableByteBuf extends WrappedByteBuf {

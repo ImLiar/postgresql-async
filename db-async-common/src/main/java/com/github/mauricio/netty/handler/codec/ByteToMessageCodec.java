@@ -26,9 +26,9 @@ import java.util.List;
 /**
  * A Codec for on-the-fly encoding/decoding of bytes to messages and vise-versa.
  *
- * This can be thought of as a combination of {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} and {@link MessageToByteEncoder}.
+ * This can be thought of as a combination of {@link ByteToMessageDecoder} and {@link MessageToByteEncoder}.
  *
- * Be aware that sub-classes of {@link com.github.mauricio.netty.handler.codec.ByteToMessageCodec} <strong>MUST NOT</strong>
+ * Be aware that sub-classes of {@link ByteToMessageCodec} <strong>MUST NOT</strong>
  * annotated with {@link @Sharable}.
  */
 public abstract class ByteToMessageCodec<I> extends ChannelDuplexHandler {
@@ -65,9 +65,9 @@ public abstract class ByteToMessageCodec<I> extends ChannelDuplexHandler {
     /**
      * Create a new instance which will try to detect the types to match out of the type parameter of the class.
      *
-     * @param preferDirect          {@code true} if a direct {@link com.github.mauricio.netty.buffer.ByteBuf} should be tried to be used as target for
+     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
      *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link com.github.mauricio.netty.buffer.ByteBuf}, which is backed by an byte array.
+     *                              {@link ByteBuf}, which is backed by an byte array.
      */
     protected ByteToMessageCodec(boolean preferDirect) {
         outboundMsgMatcher = TypeParameterMatcher.find(this, ByteToMessageCodec.class, "I");
@@ -78,9 +78,9 @@ public abstract class ByteToMessageCodec<I> extends ChannelDuplexHandler {
      * Create a new instance
      *
      * @param outboundMessageType   The type of messages to match
-     * @param preferDirect          {@code true} if a direct {@link com.github.mauricio.netty.buffer.ByteBuf} should be tried to be used as target for
+     * @param preferDirect          {@code true} if a direct {@link ByteBuf} should be tried to be used as target for
      *                              the encoded messages. If {@code false} is used it will allocate a heap
-     *                              {@link com.github.mauricio.netty.buffer.ByteBuf}, which is backed by an byte array.
+     *                              {@link ByteBuf}, which is backed by an byte array.
      */
     protected ByteToMessageCodec(Class<? extends I> outboundMessageType, boolean preferDirect) {
         checkForSharableAnnotation();
@@ -89,7 +89,7 @@ public abstract class ByteToMessageCodec<I> extends ChannelDuplexHandler {
     }
 
     private void checkForSharableAnnotation() {
-        if (getClass().isAnnotationPresent(Sharable.class)) {
+        if (isSharable()) {
             throw new IllegalStateException("@Sharable annotation is not allowed");
         }
     }
@@ -114,17 +114,17 @@ public abstract class ByteToMessageCodec<I> extends ChannelDuplexHandler {
     }
 
     /**
-     * @see MessageToByteEncoder#encode(com.github.mauricio.netty.channel.ChannelHandlerContext, Object, com.github.mauricio.netty.buffer.ByteBuf)
+     * @see MessageToByteEncoder#encode(ChannelHandlerContext, Object, ByteBuf)
      */
     protected abstract void encode(ChannelHandlerContext ctx, I msg, ByteBuf out) throws Exception;
 
     /**
-     * @see com.github.mauricio.netty.handler.codec.ByteToMessageDecoder#decode(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.buffer.ByteBuf, java.util.List)
+     * @see ByteToMessageDecoder#decode(ChannelHandlerContext, ByteBuf, List)
      */
     protected abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;
 
     /**
-     * @see com.github.mauricio.netty.handler.codec.ByteToMessageDecoder#decodeLast(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.buffer.ByteBuf, java.util.List)
+     * @see ByteToMessageDecoder#decodeLast(ChannelHandlerContext, ByteBuf, List)
      */
     protected void decodeLast(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         decode(ctx, in, out);

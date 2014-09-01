@@ -15,9 +15,12 @@
  */
 package com.github.mauricio.netty.handler.codec.string;
 
+import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufUtil;
 import com.github.mauricio.netty.channel.ChannelHandler.Sharable;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.handler.codec.LineBasedFrameDecoder;
 import com.github.mauricio.netty.handler.codec.MessageToMessageEncoder;
 
 import java.nio.CharBuffer;
@@ -25,22 +28,22 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 /**
- * Encodes the requested {@link String} into a {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * Encodes the requested {@link String} into a {@link ByteBuf}.
  * A typical setup for a text-based line protocol in a TCP/IP socket would be:
  * <pre>
- * {@link com.github.mauricio.netty.channel.ChannelPipeline} pipeline = ...;
+ * {@link ChannelPipeline} pipeline = ...;
  *
  * // Decoders
- * pipeline.addLast("frameDecoder", new {@link com.github.mauricio.netty.handler.codec.LineBasedFrameDecoder}(80));
- * pipeline.addLast("stringDecoder", new {@link com.github.mauricio.netty.handler.codec.string.StringDecoder}(CharsetUtil.UTF_8));
+ * pipeline.addLast("frameDecoder", new {@link LineBasedFrameDecoder}(80));
+ * pipeline.addLast("stringDecoder", new {@link StringDecoder}(CharsetUtil.UTF_8));
  *
  * // Encoder
- * pipeline.addLast("stringEncoder", new {@link com.github.mauricio.netty.handler.codec.string.StringEncoder}(CharsetUtil.UTF_8));
+ * pipeline.addLast("stringEncoder", new {@link StringEncoder}(CharsetUtil.UTF_8));
  * </pre>
- * and then you can use a {@link String} instead of a {@link com.github.mauricio.netty.buffer.ByteBuf}
+ * and then you can use a {@link String} instead of a {@link ByteBuf}
  * as a message:
  * <pre>
- * void channelRead({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link String} msg) {
+ * void channelRead({@link ChannelHandlerContext} ctx, {@link String} msg) {
  *     ch.write("Did you say '" + msg + "'?\n");
  * }
  * </pre>

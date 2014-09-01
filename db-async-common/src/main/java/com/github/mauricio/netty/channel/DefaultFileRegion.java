@@ -24,9 +24,9 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
- * Default {@link com.github.mauricio.netty.channel.FileRegion} implementation which transfer data from a {@link java.nio.channels.FileChannel}.
+ * Default {@link FileRegion} implementation which transfer data from a {@link FileChannel}.
  *
- * Be aware that the {@link java.nio.channels.FileChannel} will be automatically closed once {@link #refCnt()} returns
+ * Be aware that the {@link FileChannel} will be automatically closed once {@link #refCnt()} returns
  * {@code 0}.
  */
 public class DefaultFileRegion extends AbstractReferenceCounted implements FileRegion {
@@ -41,7 +41,7 @@ public class DefaultFileRegion extends AbstractReferenceCounted implements FileR
     /**
      * Create a new instance
      *
-     * @param file      the {@link java.nio.channels.FileChannel} which should be transfered
+     * @param file      the {@link FileChannel} which should be transfered
      * @param position  the position from which the transfer should start
      * @param count     the number of bytes to transfer
      */

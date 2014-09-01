@@ -16,7 +16,7 @@
 package com.github.mauricio.netty.handler.codec;
 
 /**
- * An {@link com.github.mauricio.netty.handler.codec.DecoderException} which is thrown when the received frame data could not be decoded by
+ * An {@link DecoderException} which is thrown when the received frame data could not be decoded by
  * an inbound handler.
  */
 public class CorruptedFrameException extends DecoderException {

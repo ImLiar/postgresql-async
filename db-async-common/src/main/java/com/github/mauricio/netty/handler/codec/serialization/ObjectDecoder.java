@@ -20,12 +20,15 @@ import com.github.mauricio.netty.buffer.ByteBufInputStream;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
+
 /**
- * A decoder which deserializes the received {@link com.github.mauricio.netty.buffer.ByteBuf}s into Java
+ * A decoder which deserializes the received {@link ByteBuf}s into Java
  * objects.
  * <p>
  * Please note that the serialized form this decoder expects is not
- * compatible with the standard {@link java.io.ObjectOutputStream}.  Please use
+ * compatible with the standard {@link ObjectOutputStream}.  Please use
  * {@link ObjectEncoder} or {@link ObjectEncoderOutputStream} to ensure the
  * interoperability with this decoder.
  */
@@ -36,7 +39,7 @@ public class ObjectDecoder extends LengthFieldBasedFrameDecoder {
     /**
      * Creates a new decoder whose maximum object size is {@code 1048576}
      * bytes.  If the size of the received object is greater than
-     * {@code 1048576} bytes, a {@link java.io.StreamCorruptedException} will be
+     * {@code 1048576} bytes, a {@link StreamCorruptedException} will be
      * raised.
      *
      * @param classResolver  the {@link ClassResolver} to use for this decoder
@@ -50,7 +53,7 @@ public class ObjectDecoder extends LengthFieldBasedFrameDecoder {
      *
      * @param maxObjectSize  the maximum byte length of the serialized object.
      *                       if the length of the received object is greater
-     *                       than this value, {@link java.io.StreamCorruptedException}
+     *                       than this value, {@link StreamCorruptedException}
      *                       will be raised.
      * @param classResolver    the {@link ClassResolver} which will load the class
      *                       of the serialized object

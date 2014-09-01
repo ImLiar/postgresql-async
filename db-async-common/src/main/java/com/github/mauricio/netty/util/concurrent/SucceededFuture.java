@@ -16,8 +16,8 @@
 package com.github.mauricio.netty.util.concurrent;
 
 /**
- * The {@link com.github.mauricio.netty.util.concurrent.CompleteFuture} which is succeeded already.  It is
- * recommended to use {@link com.github.mauricio.netty.util.concurrent.EventExecutor#newSucceededFuture(Object)} instead of
+ * The {@link CompleteFuture} which is succeeded already.  It is
+ * recommended to use {@link EventExecutor#newSucceededFuture(Object)} instead of
  * calling the constructor of this future.
  */
 public final class SucceededFuture<V> extends CompleteFuture<V> {
@@ -26,7 +26,7 @@ public final class SucceededFuture<V> extends CompleteFuture<V> {
     /**
      * Creates a new instance.
      *
-     * @param executor the {@link com.github.mauricio.netty.util.concurrent.EventExecutor} associated with this future
+     * @param executor the {@link EventExecutor} associated with this future
      */
     public SucceededFuture(EventExecutor executor, V result) {
         super(executor);

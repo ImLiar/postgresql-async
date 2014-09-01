@@ -25,23 +25,23 @@ import com.github.mauricio.netty.util.internal.StringUtil;
 import java.util.List;
 
 /**
- * {@link com.github.mauricio.netty.channel.ChannelInboundHandlerAdapter} which decodes bytes in a stream-like fashion from one {@link com.github.mauricio.netty.buffer.ByteBuf} to an
+ * {@link ChannelInboundHandlerAdapter} which decodes bytes in a stream-like fashion from one {@link ByteBuf} to an
  * other Message type.
  *
  * For example here is an implementation which reads all readable bytes from
- * the input {@link com.github.mauricio.netty.buffer.ByteBuf} and create a new {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * the input {@link ByteBuf} and create a new {@link ByteBuf}.
  *
  * <pre>
- *     public class SquareDecoder extends {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} {
+ *     public class SquareDecoder extends {@link ByteToMessageDecoder} {
  *         {@code @Override}
- *         public void decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link com.github.mauricio.netty.buffer.ByteBuf} in, List&lt;Object&gt; out)
+ *         public void decode({@link ChannelHandlerContext} ctx, {@link ByteBuf} in, List&lt;Object&gt; out)
  *                 throws {@link Exception} {
  *             out.add(in.readBytes(in.readableBytes()));
  *         }
  *     }
  * </pre>
  *
- * Be aware that sub-classes of {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} <strong>MUST NOT</strong>
+ * Be aware that sub-classes of {@link ByteToMessageDecoder} <strong>MUST NOT</strong>
  * annotated with {@link @Sharable}.
  */
 public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter {
@@ -52,13 +52,13 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     private boolean first;
 
     protected ByteToMessageDecoder() {
-        if (getClass().isAnnotationPresent(Sharable.class)) {
+        if (isSharable()) {
             throw new IllegalStateException("@Sharable annotation is not allowed");
         }
     }
 
     /**
-     * If set then only one message is decoded on each {@link #channelRead(com.github.mauricio.netty.channel.ChannelHandlerContext, Object)}
+     * If set then only one message is decoded on each {@link #channelRead(ChannelHandlerContext, Object)}
      * call. This may be useful if you need to do some protocol upgrade and want to make sure nothing is mixed up.
      *
      * Default is {@code false} as this has performance impacts.
@@ -69,7 +69,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     /**
      * If {@code true} then only one message is decoded on each
-     * {@link #channelRead(com.github.mauricio.netty.channel.ChannelHandlerContext, Object)} call.
+     * {@link #channelRead(ChannelHandlerContext, Object)} call.
      *
      * Default is {@code false} as this has performance impacts.
      */
@@ -108,6 +108,8 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
             ByteBuf bytes = buf.readBytes(readable);
             buf.release();
             ctx.fireChannelRead(bytes);
+        } else {
+            buf.release();
         }
         cumulation = null;
         ctx.fireChannelReadComplete();
@@ -115,7 +117,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     }
 
     /**
-     * Gets called after the {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} was removed from the actual context and it doesn't handle
+     * Gets called after the {@link ByteToMessageDecoder} was removed from the actual context and it doesn't handle
      * events anymore.
      */
     protected void handlerRemoved0(ChannelHandlerContext ctx) throws Exception { }
@@ -211,12 +213,12 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     }
 
     /**
-     * Called once data should be decoded from the given {@link com.github.mauricio.netty.buffer.ByteBuf}. This method will call
-     * {@link #decode(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.buffer.ByteBuf, java.util.List)} as long as decoding should take place.
+     * Called once data should be decoded from the given {@link ByteBuf}. This method will call
+     * {@link #decode(ChannelHandlerContext, ByteBuf, List)} as long as decoding should take place.
      *
-     * @param ctx           the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} belongs to
-     * @param in            the {@link com.github.mauricio.netty.buffer.ByteBuf} from which to read data
-     * @param out           the {@link java.util.List} to which decoded messages should be added
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param in            the {@link ByteBuf} from which to read data
+     * @param out           the {@link List} to which decoded messages should be added
      */
     protected void callDecode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         try {
@@ -259,23 +261,23 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     }
 
     /**
-     * Decode the from one {@link com.github.mauricio.netty.buffer.ByteBuf} to an other. This method will be called till either the input
-     * {@link com.github.mauricio.netty.buffer.ByteBuf} has nothing to read anymore, till nothing was read from the input {@link com.github.mauricio.netty.buffer.ByteBuf} or till
+     * Decode the from one {@link ByteBuf} to an other. This method will be called till either the input
+     * {@link ByteBuf} has nothing to read anymore, till nothing was read from the input {@link ByteBuf} or till
      * this method returns {@code null}.
      *
-     * @param ctx           the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} belongs to
-     * @param in            the {@link com.github.mauricio.netty.buffer.ByteBuf} from which to read data
-     * @param out           the {@link java.util.List} to which decoded messages should be added
+     * @param ctx           the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param in            the {@link ByteBuf} from which to read data
+     * @param out           the {@link List} to which decoded messages should be added
 
      * @throws Exception    is thrown if an error accour
      */
     protected abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;
 
     /**
-     * Is called one last time when the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} goes in-active. Which means the
-     * {@link #channelInactive(com.github.mauricio.netty.channel.ChannelHandlerContext)} was triggered.
+     * Is called one last time when the {@link ChannelHandlerContext} goes in-active. Which means the
+     * {@link #channelInactive(ChannelHandlerContext)} was triggered.
      *
-     * By default this will just call {@link #decode(com.github.mauricio.netty.channel.ChannelHandlerContext, com.github.mauricio.netty.buffer.ByteBuf, java.util.List)} but sub-classes may
+     * By default this will just call {@link #decode(ChannelHandlerContext, ByteBuf, List)} but sub-classes may
      * override this for some special cleanup operation.
      */
     protected void decodeLast(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {

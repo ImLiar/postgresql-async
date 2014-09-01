@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * A utility class that provides various common operations and constants
- * related with {@link java.nio.charset.Charset} and its relevant classes.
+ * related with {@link Charset} and its relevant classes.
  */
 public final class CharsetUtil {
 
@@ -77,7 +77,7 @@ public final class CharsetUtil {
         };
 
     /**
-     * Returns a cached thread-local {@link java.nio.charset.CharsetEncoder} for the specified
+     * Returns a cached thread-local {@link CharsetEncoder} for the specified
      * <tt>charset</tt>.
      */
     public static CharsetEncoder getEncoder(Charset charset) {
@@ -102,7 +102,7 @@ public final class CharsetUtil {
     }
 
     /**
-     * Returns a cached thread-local {@link java.nio.charset.CharsetDecoder} for the specified
+     * Returns a cached thread-local {@link CharsetDecoder} for the specified
      * <tt>charset</tt>.
      */
     public static CharsetDecoder getDecoder(Charset charset) {

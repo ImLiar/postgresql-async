@@ -18,9 +18,9 @@ package com.github.mauricio.netty.channel.group;
 import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 
 /**
- * Listens to the result of a {@link com.github.mauricio.netty.channel.group.ChannelGroupFuture}.  The result of the
- * asynchronous {@link com.github.mauricio.netty.channel.group.ChannelGroup} I/O operations is notified once this
- * listener is added by calling {@link com.github.mauricio.netty.channel.group.ChannelGroupFuture#addListener(com.github.mauricio.netty.util.concurrent.GenericFutureListener)}
+ * Listens to the result of a {@link ChannelGroupFuture}.  The result of the
+ * asynchronous {@link ChannelGroup} I/O operations is notified once this
+ * listener is added by calling {@link ChannelGroupFuture#addListener(GenericFutureListener)}
  * and all I/O operations are complete.
  */
 public interface ChannelGroupFutureListener extends GenericFutureListener<ChannelGroupFuture> {

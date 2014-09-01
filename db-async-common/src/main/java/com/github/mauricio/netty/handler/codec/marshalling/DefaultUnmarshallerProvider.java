@@ -16,13 +16,14 @@
 package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
  * Default implementation of {@link UnmarshallerProvider} which will just create a new {@link Unmarshaller}
- * on every call to {@link #getUnmarshaller(com.github.mauricio.netty.channel.ChannelHandlerContext)}
+ * on every call to {@link #getUnmarshaller(ChannelHandlerContext)}
  *
  */
 public class DefaultUnmarshallerProvider implements UnmarshallerProvider {

@@ -19,6 +19,7 @@ import com.github.mauricio.netty.buffer.ByteBufAllocator;
 import com.github.mauricio.netty.util.DefaultAttributeMap;
 import com.github.mauricio.netty.util.ReferenceCountUtil;
 import com.github.mauricio.netty.util.internal.EmptyArrays;
+import com.github.mauricio.netty.util.internal.OneTimeTask;
 import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.ThreadLocalRandom;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
@@ -33,7 +34,7 @@ import java.nio.channels.NotYetConnectedException;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * A skeletal {@link com.github.mauricio.netty.channel.Channel} implementation.
+ * A skeletal {@link Channel} implementation.
  */
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 
@@ -276,7 +277,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     }
 
     /**
-     * Create a new {@link AbstractUnsafe} instance which will be used for the life-time of the {@link com.github.mauricio.netty.channel.Channel}
+     * Create a new {@link AbstractUnsafe} instance which will be used for the life-time of the {@link Channel}
      */
     protected abstract AbstractUnsafe newUnsafe();
 
@@ -369,7 +370,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     }
 
     /**
-     * {@link com.github.mauricio.netty.channel.Channel.Unsafe} implementation which sub-classes must extend and use.
+     * {@link Unsafe} implementation which sub-classes must extend and use.
      */
     protected abstract class AbstractUnsafe implements Unsafe {
 
@@ -412,7 +413,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 register0(promise);
             } else {
                 try {
-                    eventLoop.execute(new Runnable() {
+                    eventLoop.execute(new OneTimeTask() {
                         @Override
                         public void run() {
                             register0(promise);
@@ -424,7 +425,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                             AbstractChannel.this, t);
                     closeForcibly();
                     closeFuture.setClosed();
-                    promise.setFailure(t);
+                    safeSetFailure(promise, t);
                 }
             }
         }
@@ -433,12 +434,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             try {
                 // check if the channel is still open as it could be closed in the mean time when the register
                 // call was outside of the eventLoop
-                if (!ensureOpen(promise)) {
+                if (!promise.setUncancellable() || !ensureOpen(promise)) {
                     return;
                 }
                 doRegister();
                 registered = true;
-                promise.setSuccess();
+                safeSetSuccess(promise);
                 pipeline.fireChannelRegistered();
                 if (isActive()) {
                     pipeline.fireChannelActive();
@@ -447,17 +448,13 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 // Close the channel directly to avoid FD leak.
                 closeForcibly();
                 closeFuture.setClosed();
-                if (!promise.tryFailure(t)) {
-                    logger.warn(
-                            "Tried to fail the registration promise, but it is complete already. " +
-                                    "Swallowing the cause of the registration failure:", t);
-                }
+                safeSetFailure(promise, t);
             }
         }
 
         @Override
         public final void bind(final SocketAddress localAddress, final ChannelPromise promise) {
-            if (!ensureOpen(promise)) {
+            if (!promise.setUncancellable() || !ensureOpen(promise)) {
                 return;
             }
 
@@ -478,48 +475,59 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             try {
                 doBind(localAddress);
             } catch (Throwable t) {
-                promise.setFailure(t);
+                safeSetFailure(promise, t);
                 closeIfClosed();
                 return;
             }
-            promise.setSuccess();
 
             if (!wasActive && isActive()) {
-                invokeLater(new Runnable() {
+                invokeLater(new OneTimeTask() {
                     @Override
                     public void run() {
                         pipeline.fireChannelActive();
                     }
                 });
             }
+
+            safeSetSuccess(promise);
         }
 
         @Override
         public final void disconnect(final ChannelPromise promise) {
+            if (!promise.setUncancellable()) {
+                return;
+            }
+
             boolean wasActive = isActive();
             try {
                 doDisconnect();
             } catch (Throwable t) {
-                promise.setFailure(t);
+                safeSetFailure(promise, t);
                 closeIfClosed();
                 return;
             }
-            promise.setSuccess();
+
             if (wasActive && !isActive()) {
-                invokeLater(new Runnable() {
+                invokeLater(new OneTimeTask() {
                     @Override
                     public void run() {
                         pipeline.fireChannelInactive();
                     }
                 });
             }
+
+            safeSetSuccess(promise);
             closeIfClosed(); // doDisconnect() might have closed the channel
         }
 
         @Override
         public final void close(final ChannelPromise promise) {
+            if (!promise.setUncancellable()) {
+                return;
+            }
+
             if (inFlush0) {
-                invokeLater(new Runnable() {
+                invokeLater(new OneTimeTask() {
                     @Override
                     public void run() {
                         close(promise);
@@ -530,7 +538,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             if (closeFuture.isDone()) {
                 // Closed already.
-                promise.setSuccess();
+                safeSetSuccess(promise);
                 return;
             }
 
@@ -541,10 +549,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             try {
                 doClose();
                 closeFuture.setClosed();
-                promise.setSuccess();
+                safeSetSuccess(promise);
             } catch (Throwable t) {
                 closeFuture.setClosed();
-                promise.setFailure(t);
+                safeSetFailure(promise, t);
             }
 
             // Fail all the queued messages
@@ -554,7 +562,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             } finally {
 
                 if (wasActive && !isActive()) {
-                    invokeLater(new Runnable() {
+                    invokeLater(new OneTimeTask() {
                         @Override
                         public void run() {
                             pipeline.fireChannelInactive();
@@ -577,8 +585,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
         @Override
         public final void deregister(final ChannelPromise promise) {
+            if (!promise.setUncancellable()) {
+                return;
+            }
+
             if (!registered) {
-                promise.setSuccess();
+                safeSetSuccess(promise);
                 return;
             }
 
@@ -589,18 +601,18 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             } finally {
                 if (registered) {
                     registered = false;
-                    promise.setSuccess();
-                    invokeLater(new Runnable() {
+                    invokeLater(new OneTimeTask() {
                         @Override
                         public void run() {
                             pipeline.fireChannelUnregistered();
                         }
                     });
+                    safeSetSuccess(promise);
                 } else {
                     // Some transports like local and AIO does not allow the deregistration of
                     // an open channel.  Their doDeregister() calls close().  Consequently,
                     // close() calls deregister() again - no need to fire channelUnregistered.
-                    promise.setSuccess();
+                    safeSetSuccess(promise);
                 }
             }
         }
@@ -614,7 +626,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             try {
                 doBeginRead();
             } catch (final Exception e) {
-                invokeLater(new Runnable() {
+                invokeLater(new OneTimeTask() {
                     @Override
                     public void run() {
                         pipeline.fireExceptionCaught(e);
@@ -629,9 +641,9 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             if (!isActive()) {
                 // Mark the write request as failure if the channel is inactive.
                 if (isOpen()) {
-                    promise.tryFailure(NOT_YET_CONNECTED_EXCEPTION);
+                    safeSetFailure(promise, NOT_YET_CONNECTED_EXCEPTION);
                 } else {
-                    promise.tryFailure(CLOSED_CHANNEL_EXCEPTION);
+                    safeSetFailure(promise, CLOSED_CHANNEL_EXCEPTION);
                 }
                 // release message now to prevent resource-leak
                 ReferenceCountUtil.release(msg);
@@ -700,8 +712,26 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 return true;
             }
 
-            promise.setFailure(CLOSED_CHANNEL_EXCEPTION);
+            safeSetFailure(promise, CLOSED_CHANNEL_EXCEPTION);
             return false;
+        }
+
+        /**
+         * Marks the specified {@code promise} as success.  If the {@code promise} is done already, log a message.
+         */
+        protected final void safeSetSuccess(ChannelPromise promise) {
+            if (!(promise instanceof VoidChannelPromise) && !promise.trySuccess()) {
+                logger.warn("Failed to mark a promise as success because it is done already: {}", promise);
+            }
+        }
+
+        /**
+         * Marks the specified {@code promise} as failure.  If the {@code promise} is done already, log a message.
+         */
+        protected final void safeSetFailure(ChannelPromise promise, Throwable cause) {
+            if (!(promise instanceof VoidChannelPromise) && !promise.tryFailure(cause)) {
+                logger.warn("Failed to mark a promise as failure because it's done already: {}", promise, cause);
+            }
         }
 
         protected final void closeIfClosed() {
@@ -737,17 +767,17 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     protected abstract boolean isCompatible(EventLoop loop);
 
     /**
-     * Returns the {@link java.net.SocketAddress} which is bound locally.
+     * Returns the {@link SocketAddress} which is bound locally.
      */
     protected abstract SocketAddress localAddress0();
 
     /**
-     * Return the {@link java.net.SocketAddress} which the {@link com.github.mauricio.netty.channel.Channel} is connected to.
+     * Return the {@link SocketAddress} which the {@link Channel} is connected to.
      */
     protected abstract SocketAddress remoteAddress0();
 
     /**
-     * Is called after the {@link com.github.mauricio.netty.channel.Channel} is registered with its {@link EventLoop} as part of the register process.
+     * Is called after the {@link Channel} is registered with its {@link EventLoop} as part of the register process.
      *
      * Sub-classes may override this method
      */
@@ -756,22 +786,22 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     }
 
     /**
-     * Bind the {@link com.github.mauricio.netty.channel.Channel} to the {@link java.net.SocketAddress}
+     * Bind the {@link Channel} to the {@link SocketAddress}
      */
     protected abstract void doBind(SocketAddress localAddress) throws Exception;
 
     /**
-     * Disconnect this {@link com.github.mauricio.netty.channel.Channel} from its remote peer
+     * Disconnect this {@link Channel} from its remote peer
      */
     protected abstract void doDisconnect() throws Exception;
 
     /**
-     * Close the {@link com.github.mauricio.netty.channel.Channel}
+     * Close the {@link Channel}
      */
     protected abstract void doClose() throws Exception;
 
     /**
-     * Deregister the {@link com.github.mauricio.netty.channel.Channel} from its {@link EventLoop}.
+     * Deregister the {@link Channel} from its {@link EventLoop}.
      *
      * Sub-classes may override this method
      */

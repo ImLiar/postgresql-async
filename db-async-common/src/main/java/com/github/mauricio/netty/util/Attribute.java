@@ -43,13 +43,13 @@ public interface Attribute<T> {
     T getAndSet(T value);
 
     /**
-     *  Atomically sets to the given value if this {@link com.github.mauricio.netty.util.Attribute} does not contain a value at the moment.
+     *  Atomically sets to the given value if this {@link Attribute} does not contain a value at the moment.
      *  If it was not possible to set the value as it contains a value it will just return the current value.
      */
     T setIfAbsent(T value);
 
     /**
-     * Removes this attribute from the {@link com.github.mauricio.netty.util.AttributeMap} and returns the old value..  Subsequent {@link #get()}
+     * Removes this attribute from the {@link AttributeMap} and returns the old value..  Subsequent {@link #get()}
      * calls will return @{code null}.
      */
     T getAndRemove();
@@ -61,7 +61,7 @@ public interface Attribute<T> {
     boolean compareAndSet(T oldValue, T newValue);
 
     /**
-     * Removes this attribute from the {@link com.github.mauricio.netty.util.AttributeMap}.  Subsequent {@link #get()} calls will return @{code null}.
+     * Removes this attribute from the {@link AttributeMap}.  Subsequent {@link #get()} calls will return @{code null}.
      */
     void remove();
 }

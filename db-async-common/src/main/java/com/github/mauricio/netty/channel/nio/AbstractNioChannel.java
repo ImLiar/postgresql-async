@@ -15,7 +15,15 @@
  */
 package com.github.mauricio.netty.channel.nio;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.AbstractChannel;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelFutureListener;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.ConnectTimeoutException;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.util.internal.OneTimeTask;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -29,7 +37,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Abstract base class for {@link com.github.mauricio.netty.channel.Channel} implementations which use a Selector based approach.
+ * Abstract base class for {@link Channel} implementations which use a Selector based approach.
  */
 public abstract class AbstractNioChannel extends AbstractChannel {
 
@@ -52,9 +60,9 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     /**
      * Create a new instance
      *
-     * @param parent            the parent {@link com.github.mauricio.netty.channel.Channel} by which this instance was created. May be {@code null}
-     * @param ch                the underlying {@link java.nio.channels.SelectableChannel} on which it operates
-     * @param readInterestOp    the ops to set to receive data from the {@link java.nio.channels.SelectableChannel}
+     * @param parent            the parent {@link Channel} by which this instance was created. May be {@code null}
+     * @param ch                the underlying {@link SelectableChannel} on which it operates
+     * @param readInterestOp    the ops to set to receive data from the {@link SelectableChannel}
      */
     protected AbstractNioChannel(Channel parent, SelectableChannel ch, int readInterestOp) {
         super(parent);
@@ -96,7 +104,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     }
 
     /**
-     * Return the current {@link java.nio.channels.SelectionKey}
+     * Return the current {@link SelectionKey}
      */
     protected SelectionKey selectionKey() {
         assert selectionKey != null;
@@ -104,25 +112,25 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     }
 
     /**
-     * Return {@code true} if the input of this {@link com.github.mauricio.netty.channel.Channel} is shutdown
+     * Return {@code true} if the input of this {@link Channel} is shutdown
      */
     protected boolean isInputShutdown() {
         return inputShutdown;
     }
 
     /**
-     * Shutdown the input of this {@link com.github.mauricio.netty.channel.Channel}.
+     * Shutdown the input of this {@link Channel}.
      */
     void setInputShutdown() {
         inputShutdown = true;
     }
 
     /**
-     * Special {@link com.github.mauricio.netty.channel.Channel.Unsafe} sub-type which allows to access the underlying {@link java.nio.channels.SelectableChannel}
+     * Special {@link Unsafe} sub-type which allows to access the underlying {@link SelectableChannel}
      */
     public interface NioUnsafe extends Unsafe {
         /**
-         * Return underlying {@link java.nio.channels.SelectableChannel}
+         * Return underlying {@link SelectableChannel}
          */
         SelectableChannel ch();
 
@@ -132,7 +140,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         void finishConnect();
 
         /**
-         * Read from underlying {@link java.nio.channels.SelectableChannel}
+         * Read from underlying {@link SelectableChannel}
          */
         void read();
 
@@ -140,6 +148,30 @@ public abstract class AbstractNioChannel extends AbstractChannel {
     }
 
     protected abstract class AbstractNioUnsafe extends AbstractUnsafe implements NioUnsafe {
+
+        protected boolean readPending;
+
+        protected final void removeReadOp() {
+            SelectionKey key = selectionKey();
+            // Check first if the key is still valid as it may be canceled as part of the deregistration
+            // from the EventLoop
+            // See https://github.com/netty/netty/issues/2104
+            if (!key.isValid()) {
+                return;
+            }
+            int interestOps = key.interestOps();
+            if ((interestOps & readInterestOp) != 0) {
+                // only remove readInterestOp if needed
+                key.interestOps(interestOps & ~readInterestOp);
+            }
+        }
+
+        @Override
+        public void beginRead() {
+            // Channel.read() or ChannelHandlerContext.read() was called
+            readPending = true;
+            super.beginRead();
+        }
 
         @Override
         public SelectableChannel ch() {
@@ -149,7 +181,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         @Override
         public void connect(
                 final SocketAddress remoteAddress, final SocketAddress localAddress, final ChannelPromise promise) {
-            if (!ensureOpen(promise)) {
+            if (!promise.setUncancellable() || !ensureOpen(promise)) {
                 return;
             }
 
@@ -168,7 +200,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                     // Schedule connect timeout.
                     int connectTimeoutMillis = config().getConnectTimeoutMillis();
                     if (connectTimeoutMillis > 0) {
-                        connectTimeoutFuture = eventLoop().schedule(new Runnable() {
+                        connectTimeoutFuture = eventLoop().schedule(new OneTimeTask() {
                             @Override
                             public void run() {
                                 ChannelPromise connectPromise = AbstractNioChannel.this.connectPromise;
@@ -206,6 +238,11 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         }
 
         private void fulfillConnectPromise(ChannelPromise promise, boolean wasActive) {
+            if (promise == null) {
+                // Closed via cancellation and the promise has been notified already.
+                return;
+            }
+
             // trySuccess() will return false if a user cancelled the connection attempt.
             boolean promiseSet = promise.trySuccess();
 
@@ -221,13 +258,22 @@ public abstract class AbstractNioChannel extends AbstractChannel {
             }
         }
 
+        private void fulfillConnectPromise(ChannelPromise promise, Throwable cause) {
+            if (promise == null) {
+                // Closed via cancellation and the promise has been notified already.
+            }
+
+            // Use tryFailure() instead of setFailure() to avoid the race against cancel().
+            promise.tryFailure(cause);
+            closeIfClosed();
+        }
+
         @Override
         public void finishConnect() {
             // Note this method is invoked by the event loop only if the connection attempt was
             // neither cancelled nor timed out.
 
             assert eventLoop().inEventLoop();
-            assert connectPromise != null;
 
             try {
                 boolean wasActive = isActive();
@@ -240,9 +286,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
                     t = newT;
                 }
 
-                // Use tryFailure() instead of setFailure() to avoid the race against cancel().
-                connectPromise.tryFailure(t);
-                closeIfClosed();
+                fulfillConnectPromise(connectPromise, t);
             } finally {
                 // Check for null as the connectTimeoutFuture is only created if a connectTimeoutMillis > 0 is used
                 // See https://github.com/netty/netty/issues/1770

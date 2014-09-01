@@ -20,7 +20,7 @@ import com.jcraft.jzlib.Inflater;
 import com.jcraft.jzlib.JZlib;
 
 /**
- * Utility methods used by {@link com.github.mauricio.netty.handler.codec.compression.JZlibEncoder} and {@link com.github.mauricio.netty.handler.codec.compression.JZlibDecoder}.
+ * Utility methods used by {@link JZlibEncoder} and {@link JZlibDecoder}.
  */
 final class ZlibUtil {
 

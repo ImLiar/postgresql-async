@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} is responsible to provide {@link com.github.mauricio.netty.util.concurrent.EventExecutor}'s to use via its
+ * The {@link EventExecutorGroup} is responsible to provide {@link EventExecutor}'s to use via its
  * {@link #next()} method. Beside this it also is responsible to handle their live-cycle and allows
  * to shut them down in a global fashion.
  *
@@ -36,7 +36,7 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
     boolean isShuttingDown();
 
     /**
-     * Shortcut method for {@link #shutdownGracefully(long, long, java.util.concurrent.TimeUnit)} with sensible default values.
+     * Shortcut method for {@link #shutdownGracefully(long, long, TimeUnit)} with sensible default values.
      *
      * @return the {@link #terminationFuture()}
      */
@@ -59,32 +59,32 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
     Future<?> shutdownGracefully(long quietPeriod, long timeout, TimeUnit unit);
 
     /**
-     * Returns the {@link com.github.mauricio.netty.util.concurrent.Future} which is notified when this executor has been terminated.
+     * Returns the {@link Future} which is notified when this executor has been terminated.
      */
     Future<?> terminationFuture();
 
     /**
-     * @deprecated {@link #shutdownGracefully(long, long, java.util.concurrent.TimeUnit)} or {@link #shutdownGracefully()} instead.
+     * @deprecated {@link #shutdownGracefully(long, long, TimeUnit)} or {@link #shutdownGracefully()} instead.
      */
     @Override
     @Deprecated
     void shutdown();
 
     /**
-     * @deprecated {@link #shutdownGracefully(long, long, java.util.concurrent.TimeUnit)} or {@link #shutdownGracefully()} instead.
+     * @deprecated {@link #shutdownGracefully(long, long, TimeUnit)} or {@link #shutdownGracefully()} instead.
      */
     @Override
     @Deprecated
     List<Runnable> shutdownNow();
 
     /**
-     * Returns one of the {@link com.github.mauricio.netty.util.concurrent.EventExecutor}s that belong to this group.
+     * Returns one of the {@link EventExecutor}s that belong to this group.
      */
     EventExecutor next();
 
     /**
-     * Returns a read-only {@link java.util.Iterator} over all {@link com.github.mauricio.netty.util.concurrent.EventExecutor}, which are handled by this
-     * {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} at the time of invoke this method.
+     * Returns a read-only {@link Iterator} over all {@link EventExecutor}, which are handled by this
+     * {@link EventExecutorGroup} at the time of invoke this method.
      */
     @Override
     Iterator<EventExecutor> iterator();

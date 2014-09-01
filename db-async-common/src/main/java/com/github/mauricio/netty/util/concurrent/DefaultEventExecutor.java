@@ -18,7 +18,7 @@ package com.github.mauricio.netty.util.concurrent;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Default {@link com.github.mauricio.netty.util.concurrent.SingleThreadEventExecutor} implementation which just execute all submitted task in a
+ * Default {@link SingleThreadEventExecutor} implementation which just execute all submitted task in a
  * serial fashion
  *
  */

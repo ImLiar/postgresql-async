@@ -16,9 +16,11 @@
 package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
+import com.github.mauricio.netty.channel.Channel;
 import com.github.mauricio.netty.channel.ChannelHandler.Sharable;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.MessageToByteEncoder;
+
 import org.jboss.marshalling.Marshaller;
 
 /**
@@ -37,9 +39,9 @@ public class CompatibleMarshallingEncoder extends MessageToByteEncoder<Object> {
     private final MarshallerProvider provider;
 
     /**
-     * Create a new instance of the {@link com.github.mauricio.netty.handler.codec.marshalling.CompatibleMarshallingEncoder}
+     * Create a new instance of the {@link CompatibleMarshallingEncoder}
      *
-     * @param provider  the {@link MarshallerProvider} to use to get the {@link Marshaller} for a {@link com.github.mauricio.netty.channel.Channel}
+     * @param provider  the {@link MarshallerProvider} to use to get the {@link Marshaller} for a {@link Channel}
      */
     public CompatibleMarshallingEncoder(MarshallerProvider provider) {
         this.provider = provider;

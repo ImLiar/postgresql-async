@@ -95,7 +95,7 @@ public final class ResourceLeakDetector<T> {
     private static final int DEFAULT_SAMPLING_INTERVAL = 113;
 
     /**
-     * @deprecated Use {@link #setLevel(com.github.mauricio.netty.util.ResourceLeakDetector.Level)} instead.
+     * @deprecated Use {@link #setLevel(Level)} instead.
      */
     @Deprecated
     public static void setEnabled(boolean enabled) {
@@ -173,10 +173,10 @@ public final class ResourceLeakDetector<T> {
     }
 
     /**
-     * Creates a new {@link com.github.mauricio.netty.util.ResourceLeak} which is expected to be closed via {@link com.github.mauricio.netty.util.ResourceLeak#close()} when the
+     * Creates a new {@link ResourceLeak} which is expected to be closed via {@link ResourceLeak#close()} when the
      * related resource is deallocated.
      *
-     * @return the {@link com.github.mauricio.netty.util.ResourceLeak} or {@code null}
+     * @return the {@link ResourceLeak} or {@code null}
      */
     public ResourceLeak open(T obj) {
         Level level = ResourceLeakDetector.level;
@@ -259,13 +259,13 @@ public final class ResourceLeakDetector<T> {
         private DefaultResourceLeak prev;
         private DefaultResourceLeak next;
 
-        public DefaultResourceLeak(Object referent) {
+        DefaultResourceLeak(Object referent) {
             super(referent, referent != null? refQueue : null);
 
             if (referent != null) {
                 Level level = getLevel();
                 if (level.ordinal() >= Level.ADVANCED.ordinal()) {
-                    creationRecord = newRecord();
+                    creationRecord = newRecord(3);
                 } else {
                     creationRecord = null;
                 }
@@ -288,7 +288,7 @@ public final class ResourceLeakDetector<T> {
         @Override
         public void record() {
             if (creationRecord != null) {
-                String value = newRecord();
+                String value = newRecord(2);
 
                 synchronized (lastRecords) {
                     int size = lastRecords.size();
@@ -352,17 +352,33 @@ public final class ResourceLeakDetector<T> {
         }
     }
 
-    private static String newRecord() {
+    private static final String[] STACK_TRACE_ELEMENT_EXCLUSIONS = {
+            "io.netty.buffer.AbstractByteBufAllocator.toLeakAwareBuffer(",
+    };
+
+    static String newRecord(int recordsToSkip) {
         StringBuilder buf = new StringBuilder(4096);
         StackTraceElement[] array = new Throwable().getStackTrace();
-        int recordsToSkip = 3;
         for (StackTraceElement e: array) {
             if (recordsToSkip > 0) {
                 recordsToSkip --;
             } else {
-                buf.append('\t');
-                buf.append(e.toString());
-                buf.append(NEWLINE);
+                String estr = e.toString();
+
+                // Strip the noisy stack trace elements.
+                boolean excluded = false;
+                for (String exclusion: STACK_TRACE_ELEMENT_EXCLUSIONS) {
+                    if (estr.startsWith(exclusion)) {
+                        excluded = true;
+                        break;
+                    }
+                }
+
+                if (!excluded) {
+                    buf.append('\t');
+                    buf.append(estr);
+                    buf.append(NEWLINE);
+                }
             }
         }
 

@@ -15,17 +15,18 @@
  */
 package com.github.mauricio.netty.channel;
 
+import com.github.mauricio.netty.util.concurrent.Future;
 import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 
 
 /**
- * Listens to the result of a {@link com.github.mauricio.netty.channel.ChannelFuture}.  The result of the
- * asynchronous {@link com.github.mauricio.netty.channel.Channel} I/O operation is notified once this listener
- * is added by calling {@link com.github.mauricio.netty.channel.ChannelFuture#addListener(com.github.mauricio.netty.util.concurrent.GenericFutureListener)}.
+ * Listens to the result of a {@link ChannelFuture}.  The result of the
+ * asynchronous {@link Channel} I/O operation is notified once this listener
+ * is added by calling {@link ChannelFuture#addListener(GenericFutureListener)}.
  *
  * <h3>Return the control to the caller quickly</h3>
  *
- * {@link #operationComplete(com.github.mauricio.netty.util.concurrent.Future)} is directly called by an I/O
+ * {@link #operationComplete(Future)} is directly called by an I/O
  * thread.  Therefore, performing a time consuming task or a blocking operation
  * in the handler method can cause an unexpected pause during I/O.  If you need
  * to perform a blocking operation on I/O completion, try to execute the
@@ -34,8 +35,8 @@ import com.github.mauricio.netty.util.concurrent.GenericFutureListener;
 public interface ChannelFutureListener extends GenericFutureListener<ChannelFuture> {
 
     /**
-     * A {@link com.github.mauricio.netty.channel.ChannelFutureListener} that closes the {@link com.github.mauricio.netty.channel.Channel} which is
-     * associated with the specified {@link com.github.mauricio.netty.channel.ChannelFuture}.
+     * A {@link ChannelFutureListener} that closes the {@link Channel} which is
+     * associated with the specified {@link ChannelFuture}.
      */
     ChannelFutureListener CLOSE = new ChannelFutureListener() {
         @Override
@@ -45,7 +46,7 @@ public interface ChannelFutureListener extends GenericFutureListener<ChannelFutu
     };
 
     /**
-     * A {@link com.github.mauricio.netty.channel.ChannelFutureListener} that closes the {@link com.github.mauricio.netty.channel.Channel} when the
+     * A {@link ChannelFutureListener} that closes the {@link Channel} when the
      * operation ended up with a failure or cancellation rather than a success.
      */
     ChannelFutureListener CLOSE_ON_FAILURE = new ChannelFutureListener() {
@@ -58,7 +59,7 @@ public interface ChannelFutureListener extends GenericFutureListener<ChannelFutu
     };
 
     /**
-     * A {@link com.github.mauricio.netty.channel.ChannelFutureListener} that forwards the {@link Throwable} of the {@link com.github.mauricio.netty.channel.ChannelFuture} into the
+     * A {@link ChannelFutureListener} that forwards the {@link Throwable} of the {@link ChannelFuture} into the
      * {@link ChannelPipeline}. This mimics the old behavior of Netty 3.
      */
     ChannelFutureListener FIRE_EXCEPTION_ON_FAILURE = new ChannelFutureListener() {

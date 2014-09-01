@@ -18,7 +18,7 @@ package com.github.mauricio.netty.channel;
 import com.github.mauricio.netty.util.concurrent.EventExecutorGroup;
 
 /**
- * Special {@link com.github.mauricio.netty.util.concurrent.EventExecutorGroup} which allows to register {@link com.github.mauricio.netty.channel.Channel}'s that get
+ * Special {@link EventExecutorGroup} which allows to register {@link Channel}'s that get
  * processed for later selection during the event loop.
  *
  */
@@ -30,13 +30,13 @@ public interface EventLoopGroup extends EventExecutorGroup {
     EventLoop next();
 
     /**
-     * Register a {@link com.github.mauricio.netty.channel.Channel} with this {@link EventLoop}. The returned {@link com.github.mauricio.netty.channel.ChannelFuture}
+     * Register a {@link Channel} with this {@link EventLoop}. The returned {@link ChannelFuture}
      * will get notified once the registration was complete.
      */
     ChannelFuture register(Channel channel);
 
     /**
-     * Register a {@link com.github.mauricio.netty.channel.Channel} with this {@link EventLoop}. The passed {@link com.github.mauricio.netty.channel.ChannelFuture}
+     * Register a {@link Channel} with this {@link EventLoop}. The passed {@link ChannelFuture}
      * will get notified once the registration was complete and also will get returned.
      */
     ChannelFuture register(Channel channel, ChannelPromise promise);

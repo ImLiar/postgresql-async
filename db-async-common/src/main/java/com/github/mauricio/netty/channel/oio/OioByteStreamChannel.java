@@ -53,7 +53,7 @@ public abstract class OioByteStreamChannel extends AbstractOioByteChannel {
     /**
      * Create a new instance
      *
-     * @param parent    the parent {@link com.github.mauricio.netty.channel.Channel} which was used to create this instance. This can be null if the
+     * @param parent    the parent {@link Channel} which was used to create this instance. This can be null if the
      *                  {@link} has no parent as it was created by your self.
      */
     protected OioByteStreamChannel(Channel parent) {

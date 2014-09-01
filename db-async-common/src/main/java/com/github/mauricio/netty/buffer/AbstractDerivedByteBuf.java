@@ -19,8 +19,8 @@ package com.github.mauricio.netty.buffer;
 import java.nio.ByteBuffer;
 
 /**
- * Abstract base class for {@link com.github.mauricio.netty.buffer.ByteBuf} implementations that wrap another
- * {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * Abstract base class for {@link ByteBuf} implementations that wrap another
+ * {@link ByteBuf}.
  */
 public abstract class AbstractDerivedByteBuf extends AbstractByteBuf {
 

@@ -18,7 +18,7 @@ package com.github.mauricio.netty.handler.codec.compression;
 import com.github.mauricio.netty.handler.codec.DecoderException;
 
 /**
- * A {@link com.github.mauricio.netty.handler.codec.DecoderException} that is raised when decompression failed.
+ * A {@link DecoderException} that is raised when decompression failed.
  */
 public class DecompressionException extends DecoderException {
 

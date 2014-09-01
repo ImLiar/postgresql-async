@@ -18,8 +18,8 @@ package com.github.mauricio.netty.bootstrap;
 import com.github.mauricio.netty.channel.Channel;
 
 /**
- * Factory that creates a new {@link com.github.mauricio.netty.channel.Channel} on {@link com.github.mauricio.netty.bootstrap.Bootstrap#bind()}, {@link com.github.mauricio.netty.bootstrap.Bootstrap#connect()}, and
- * {@link com.github.mauricio.netty.bootstrap.ServerBootstrap#bind()}.
+ * Factory that creates a new {@link Channel} on {@link Bootstrap#bind()}, {@link Bootstrap#connect()}, and
+ * {@link ServerBootstrap#bind()}.
  */
 public interface ChannelFactory<T extends Channel> {
     /**

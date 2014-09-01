@@ -16,19 +16,19 @@
 package com.github.mauricio.netty.util.concurrent;
 
 /**
- * Special {@link com.github.mauricio.netty.util.concurrent.ProgressiveFuture} which is writable.
+ * Special {@link ProgressiveFuture} which is writable.
  */
 public interface ProgressivePromise<V> extends Promise<V>, ProgressiveFuture<V> {
 
     /**
      * Sets the current progress of the operation and notifies the listeners that implement
-     * {@link com.github.mauricio.netty.util.concurrent.GenericProgressiveFutureListener}.
+     * {@link GenericProgressiveFutureListener}.
      */
     ProgressivePromise<V> setProgress(long progress, long total);
 
     /**
      * Tries to set the current progress of the operation and notifies the listeners that implement
-     * {@link com.github.mauricio.netty.util.concurrent.GenericProgressiveFutureListener}.  If the operation is already complete or the progress is out of range,
+     * {@link GenericProgressiveFutureListener}.  If the operation is already complete or the progress is out of range,
      * this method does nothing but returning {@code false}.
      */
     boolean tryProgress(long progress, long total);

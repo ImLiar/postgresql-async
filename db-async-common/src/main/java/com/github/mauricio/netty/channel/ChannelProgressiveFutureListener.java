@@ -17,8 +17,10 @@ package com.github.mauricio.netty.channel;
 
 import com.github.mauricio.netty.util.concurrent.GenericProgressiveFutureListener;
 
+import java.util.EventListener;
+
 /**
- * An {@link java.util.EventListener} listener which will be called once the sending task associated with future is
+ * An {@link EventListener} listener which will be called once the sending task associated with future is
  * being transferred.
  */
 public interface ChannelProgressiveFutureListener extends GenericProgressiveFutureListener<ChannelProgressiveFuture> {

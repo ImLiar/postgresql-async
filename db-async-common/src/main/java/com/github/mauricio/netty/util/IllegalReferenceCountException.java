@@ -17,7 +17,7 @@
 package com.github.mauricio.netty.util;
 
 /**
- * An {@link IllegalStateException} which is raised when a user attempts to access a {@link com.github.mauricio.netty.util.ReferenceCounted} whose
+ * An {@link IllegalStateException} which is raised when a user attempts to access a {@link ReferenceCounted} whose
  * reference count has been decreased to 0 (and consequently freed).
  */
 public class IllegalReferenceCountException extends IllegalStateException {

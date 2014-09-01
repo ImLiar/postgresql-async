@@ -22,16 +22,17 @@ import com.github.mauricio.netty.handler.codec.MessageToByteEncoder;
 import com.github.mauricio.netty.util.Attribute;
 import com.github.mauricio.netty.util.AttributeKey;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 
 /**
- * An encoder which serializes a Java object into a {@link com.github.mauricio.netty.buffer.ByteBuf}
+ * An encoder which serializes a Java object into a {@link ByteBuf}
  * (interoperability version).
  * <p>
  * This encoder is interoperable with the standard Java object streams such as
- * {@link java.io.ObjectInputStream} and {@link java.io.ObjectOutputStream}.
+ * {@link ObjectInputStream} and {@link ObjectOutputStream}.
  */
 public class CompatibleObjectEncoder extends MessageToByteEncoder<Serializable> {
 
@@ -52,7 +53,7 @@ public class CompatibleObjectEncoder extends MessageToByteEncoder<Serializable> 
      * Creates a new instance.
      *
      * @param resetInterval
-     *        the number of objects between {@link java.io.ObjectOutputStream#reset()}.
+     *        the number of objects between {@link ObjectOutputStream#reset()}.
      *        {@code 0} will disable resetting the stream, but the remote
      *        peer will be at the risk of getting {@link OutOfMemoryError} in
      *        the long term.
@@ -66,9 +67,9 @@ public class CompatibleObjectEncoder extends MessageToByteEncoder<Serializable> 
     }
 
     /**
-     * Creates a new {@link java.io.ObjectOutputStream} which wraps the specified
-     * {@link java.io.OutputStream}.  Override this method to use a subclass of the
-     * {@link java.io.ObjectOutputStream}.
+     * Creates a new {@link ObjectOutputStream} which wraps the specified
+     * {@link OutputStream}.  Override this method to use a subclass of the
+     * {@link ObjectOutputStream}.
      */
     protected ObjectOutputStream newObjectOutputStream(OutputStream out) throws Exception {
         return new ObjectOutputStream(out);

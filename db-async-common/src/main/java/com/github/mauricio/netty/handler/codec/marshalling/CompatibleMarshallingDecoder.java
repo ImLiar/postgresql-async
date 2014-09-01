@@ -16,17 +16,19 @@
 package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
+import com.github.mauricio.netty.channel.Channel;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.ReplayingDecoder;
 import com.github.mauricio.netty.handler.codec.TooLongFrameException;
-import org.jboss.marshalling.ByteInput;
-import org.jboss.marshalling.Unmarshaller;
 
 import java.io.ObjectStreamConstants;
 import java.util.List;
 
+import org.jboss.marshalling.ByteInput;
+import org.jboss.marshalling.Unmarshaller;
+
 /**
- * {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} which use an {@link Unmarshaller} to read the Object out of the {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * {@link ReplayingDecoder} which use an {@link Unmarshaller} to read the Object out of the {@link ByteBuf}.
  *
  * If you can you should use {@link MarshallingDecoder}.
  */
@@ -36,14 +38,14 @@ public class CompatibleMarshallingDecoder extends ReplayingDecoder<Void> {
     private boolean discardingTooLongFrame;
 
     /**
-     * Create a new instance of {@link com.github.mauricio.netty.handler.codec.marshalling.CompatibleMarshallingDecoder}.
+     * Create a new instance of {@link CompatibleMarshallingDecoder}.
      *
      * @param provider
-     *        the {@link com.github.mauricio.netty.handler.codec.marshalling.UnmarshallerProvider} which is used to obtain the {@link Unmarshaller}
-     *        for the {@link com.github.mauricio.netty.channel.Channel}
+     *        the {@link UnmarshallerProvider} which is used to obtain the {@link Unmarshaller}
+     *        for the {@link Channel}
      * @param maxObjectSize
      *        the maximal size (in bytes) of the {@link Object} to unmarshal. Once the size is
-     *        exceeded the {@link com.github.mauricio.netty.channel.Channel} will get closed. Use a a maxObjectSize of
+     *        exceeded the {@link Channel} will get closed. Use a a maxObjectSize of
      *        {@link Integer#MAX_VALUE} to disable this.  You should only do this if you are sure
      *        that the received Objects will never be big and the sending side are trusted, as this
      *        opens the possibility for a DOS-Attack due an {@link OutOfMemoryError}.

@@ -18,14 +18,14 @@ package com.github.mauricio.netty.util;
 /**
  * A reference-counted object that requires explicit deallocation.
  * <p>
- * When a new {@link com.github.mauricio.netty.util.ReferenceCounted} is instantiated, it starts with the reference count of {@code 1}.
+ * When a new {@link ReferenceCounted} is instantiated, it starts with the reference count of {@code 1}.
  * {@link #retain()} increases the reference count, and {@link #release()} decreases the reference count.
  * If the reference count is decreased to {@code 0}, the object will be deallocated explicitly, and accessing
  * the deallocated object will usually result in an access violation.
  * </p>
  * <p>
- * If an object that implements {@link com.github.mauricio.netty.util.ReferenceCounted} is a container of other objects that implement
- * {@link com.github.mauricio.netty.util.ReferenceCounted}, the contained objects will also be released via {@link #release()} when the container's
+ * If an object that implements {@link ReferenceCounted} is a container of other objects that implement
+ * {@link ReferenceCounted}, the contained objects will also be released via {@link #release()} when the container's
  * reference count becomes 0.
  * </p>
  */

@@ -28,7 +28,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -63,7 +66,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Iterators and Enumerations return elements reflecting the state of
  * the hash table at some point at or since the creation of the
  * iterator/enumeration.  They do <em>not</em> throw {@link
- * java.util.ConcurrentModificationException}.  However, iterators are designed
+ * ConcurrentModificationException}.  However, iterators are designed
  * to be used by only one thread at a time.  Bear in mind that the
  * results of aggregate status methods including {@code size}, {@code
  * isEmpty}, and {@code containsValue} are typically useful only when
@@ -94,17 +97,17 @@ import java.util.concurrent.locks.ReentrantLock;
  * hash table. To ameliorate impact, when keys are {@link Comparable},
  * this class may use comparison order among keys to help break ties.
  *
- * <p>A {@link java.util.Set} projection of a ConcurrentHashMapV8 may be created
+ * <p>A {@link Set} projection of a ConcurrentHashMapV8 may be created
  * (using {@link #newKeySet()} or {@link #newKeySet(int)}), or viewed
  * (using {@link #keySet(Object)} when only keys are of interest, and the
  * mapped values are (perhaps transiently) not used or all take the
  * same mapping value.
  *
  * <p>This class and its views and iterators implement all of the
- * <em>optional</em> methods of the {@link java.util.Map} and {@link java.util.Iterator}
+ * <em>optional</em> methods of the {@link Map} and {@link Iterator}
  * interfaces.
  *
- * <p>Like {@link java.util.Hashtable} but unlike {@link java.util.HashMap}, this class
+ * <p>Like {@link Hashtable} but unlike {@link HashMap}, this class
  * does <em>not</em> allow {@code null} to be used as a key or value.
  *
  * <p>ConcurrentHashMapV8s support a set of sequential and parallel bulk
@@ -158,7 +161,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@code Long.MAX_VALUE} suppresses all parallelism.  Using a value
  * of {@code 1} results in maximal parallelism by partitioning into
  * enough subtasks to fully utilize the {@link
- * com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool#commonPool()} that is used for all parallel
+ * ForkJoinPool#commonPool()} that is used for all parallel
  * computations. Normally, you would initially choose one of these
  * extreme values, and then measure performance of using in-between
  * values that trade off overhead versus throughput.
@@ -604,7 +607,7 @@ public class ConcurrentHashMapV8<K,V>
      * are special, and contain null keys and values (but are never
      * exported).  Otherwise, keys and vals are never null.
      */
-    static class Node<K,V> implements Entry<K,V> {
+    static class Node<K,V> implements Map.Entry<K,V> {
         final int hash;
         final K key;
         volatile V val;
@@ -626,9 +629,9 @@ public class ConcurrentHashMapV8<K,V>
         }
 
         public final boolean equals(Object o) {
-            Object k, v, u; Entry<?,?> e;
-            return ((o instanceof Entry) &&
-                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
+            Object k, v, u; Map.Entry<?,?> e;
+            return ((o instanceof Map.Entry) &&
+                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
                     (v = e.getValue()) != null &&
                     (k == key || k.equals(key)) &&
                     (v == (u = val) || v.equals(u)));
@@ -1073,7 +1076,7 @@ public class ConcurrentHashMapV8<K,V>
      */
     public void putAll(Map<? extends K, ? extends V> m) {
         tryPresize(m.size());
-        for (Entry<? extends K, ? extends V> e : m.entrySet())
+        for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
             putVal(e.getKey(), e.getValue(), false);
     }
 
@@ -1202,7 +1205,7 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * Returns a {@link java.util.Set} view of the keys contained in this map.
+     * Returns a {@link Set} view of the keys contained in this map.
      * The set is backed by the map, so changes to the map are
      * reflected in the set, and vice-versa. The set supports element
      * removal, which removes the corresponding mapping from this map,
@@ -1212,7 +1215,7 @@ public class ConcurrentHashMapV8<K,V>
      * {@code addAll} operations.
      *
      * <p>The view's {@code iterator} is a "weakly consistent" iterator
-     * that will never throw {@link java.util.ConcurrentModificationException},
+     * that will never throw {@link ConcurrentModificationException},
      * and guarantees to traverse elements as they existed upon
      * construction of the iterator, and may (but is not guaranteed to)
      * reflect any modifications subsequent to construction.
@@ -1225,7 +1228,7 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * Returns a {@link java.util.Collection} view of the values contained in this map.
+     * Returns a {@link Collection} view of the values contained in this map.
      * The collection is backed by the map, so changes to the map are
      * reflected in the collection, and vice-versa.  The collection
      * supports element removal, which removes the corresponding
@@ -1235,7 +1238,7 @@ public class ConcurrentHashMapV8<K,V>
      * support the {@code add} or {@code addAll} operations.
      *
      * <p>The view's {@code iterator} is a "weakly consistent" iterator
-     * that will never throw {@link java.util.ConcurrentModificationException},
+     * that will never throw {@link ConcurrentModificationException},
      * and guarantees to traverse elements as they existed upon
      * construction of the iterator, and may (but is not guaranteed to)
      * reflect any modifications subsequent to construction.
@@ -1248,7 +1251,7 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * Returns a {@link java.util.Set} view of the mappings contained in this map.
+     * Returns a {@link Set} view of the mappings contained in this map.
      * The set is backed by the map, so changes to the map are
      * reflected in the set, and vice-versa.  The set supports element
      * removal, which removes the corresponding mapping from the map,
@@ -1257,20 +1260,20 @@ public class ConcurrentHashMapV8<K,V>
      * operations.
      *
      * <p>The view's {@code iterator} is a "weakly consistent" iterator
-     * that will never throw {@link java.util.ConcurrentModificationException},
+     * that will never throw {@link ConcurrentModificationException},
      * and guarantees to traverse elements as they existed upon
      * construction of the iterator, and may (but is not guaranteed to)
      * reflect any modifications subsequent to construction.
      *
      * @return the set view
      */
-    public Set<Entry<K,V>> entrySet() {
+    public Set<Map.Entry<K,V>> entrySet() {
         EntrySetView<K,V> es;
         return (es = entrySet) != null ? es : (entrySet = new EntrySetView<K,V>(this));
     }
 
     /**
-     * Returns the hash code value for this {@link java.util.Map}, i.e.,
+     * Returns the hash code value for this {@link Map}, i.e.,
      * the sum of, for each key-value pair in the map,
      * {@code key.hashCode() ^ value.hashCode()}.
      *
@@ -1344,7 +1347,7 @@ public class ConcurrentHashMapV8<K,V>
                 if (v == null || (v != val && !v.equals(val)))
                     return false;
             }
-            for (Entry<?,?> e : m.entrySet()) {
+            for (Map.Entry<?,?> e : m.entrySet()) {
                 Object mk, mv, v;
                 if ((mk = e.getKey()) == null ||
                         (mv = e.getValue()) == null ||
@@ -2095,7 +2098,7 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * Creates a new {@link java.util.Set} backed by a ConcurrentHashMapV8
+     * Creates a new {@link Set} backed by a ConcurrentHashMapV8
      * from the given type to {@code Boolean.TRUE}.
      *
      * @return the new set
@@ -2107,7 +2110,7 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * Creates a new {@link java.util.Set} backed by a ConcurrentHashMapV8
+     * Creates a new {@link Set} backed by a ConcurrentHashMapV8
      * from the given type to {@code Boolean.TRUE}.
      *
      * @param initialCapacity The implementation performs internal
@@ -2123,9 +2126,9 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * Returns a {@link java.util.Set} view of the keys in this map, using the
+     * Returns a {@link Set} view of the keys in this map, using the
      * given common mapped value for any additions (i.e., {@link
-     * java.util.Collection#add} and {@link java.util.Collection#addAll(java.util.Collection)}).
+     * Collection#add} and {@link Collection#addAll(Collection)}).
      * This is of course only appropriate if it is acceptable to use
      * the same value for all additions from this view.
      *
@@ -2669,7 +2672,7 @@ public class ConcurrentHashMapV8<K,V>
                         return;
                     }
                 }
-                else if ((s | WAITER) == 0) {
+                else if ((s & WAITER) == 0) {
                     if (U.compareAndSwapInt(this, LOCKSTATE, s, s | WAITER)) {
                         waiting = true;
                         waiter = Thread.currentThread();
@@ -3240,13 +3243,13 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     static final class EntryIterator<K,V> extends BaseIterator<K,V>
-            implements Iterator<Entry<K,V>> {
+            implements Iterator<Map.Entry<K,V>> {
         EntryIterator(Node<K,V>[] tab, int index, int size, int limit,
                       ConcurrentHashMapV8<K,V> map) {
             super(tab, index, size, limit, map);
         }
 
-        public final Entry<K,V> next() {
+        public final Map.Entry<K,V> next() {
             Node<K,V> p;
             if ((p = next) == null)
                 throw new NoSuchElementException();
@@ -3261,7 +3264,7 @@ public class ConcurrentHashMapV8<K,V>
     /**
      * Exported Entry for EntryIterator
      */
-    static final class MapEntry<K,V> implements Entry<K,V> {
+    static final class MapEntry<K,V> implements Map.Entry<K,V> {
         final K key; // non-null
         V val;       // non-null
         final ConcurrentHashMapV8<K,V> map;
@@ -3276,9 +3279,9 @@ public class ConcurrentHashMapV8<K,V>
         public String toString() { return key + "=" + val; }
 
         public boolean equals(Object o) {
-            Object k, v; Entry<?,?> e;
-            return ((o instanceof Entry) &&
-                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
+            Object k, v; Map.Entry<?,?> e;
+            return ((o instanceof Map.Entry) &&
+                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
                     (v = e.getValue()) != null &&
                     (k == key || k.equals(key)) &&
                     (v == val || v.equals(val)));
@@ -3372,7 +3375,7 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     static final class EntrySpliterator<K,V> extends Traverser<K,V>
-            implements ConcurrentHashMapSpliterator<Entry<K,V>> {
+            implements ConcurrentHashMapSpliterator<Map.Entry<K,V>> {
         final ConcurrentHashMapV8<K,V> map; // To export MapEntry
         long est;               // size estimate
         EntrySpliterator(Node<K,V>[] tab, int size, int index, int limit,
@@ -3382,20 +3385,20 @@ public class ConcurrentHashMapV8<K,V>
             this.est = est;
         }
 
-        public ConcurrentHashMapSpliterator<Entry<K,V>> trySplit() {
+        public ConcurrentHashMapSpliterator<Map.Entry<K,V>> trySplit() {
             int i, f, h;
             return (h = ((i = baseIndex) + (f = baseLimit)) >>> 1) <= i ? null :
                     new EntrySpliterator<K,V>(tab, baseSize, baseLimit = h,
                             f, est >>>= 1, map);
         }
 
-        public void forEachRemaining(Action<? super Entry<K,V>> action) {
+        public void forEachRemaining(Action<? super Map.Entry<K,V>> action) {
             if (action == null) throw new NullPointerException();
             for (Node<K,V> p; (p = advance()) != null; )
                 action.apply(new MapEntry<K,V>(p.key, p.val, map));
         }
 
-        public boolean tryAdvance(Action<? super Entry<K,V>> action) {
+        public boolean tryAdvance(Action<? super Map.Entry<K,V>> action) {
             if (action == null) throw new NullPointerException();
             Node<K,V> p;
             if ((p = advance()) == null)
@@ -3965,7 +3968,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public void forEachEntry(long parallelismThreshold,
-                             Action<? super Entry<K,V>> action) {
+                             Action<? super Map.Entry<K,V>> action) {
         if (action == null) throw new NullPointerException();
         new ForEachEntryTask<K,V>(null, batchFor(parallelismThreshold), 0, 0, table,
                 action).invoke();
@@ -3984,7 +3987,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public <U> void forEachEntry(long parallelismThreshold,
-                                 Fun<Entry<K,V>, ? extends U> transformer,
+                                 Fun<Map.Entry<K,V>, ? extends U> transformer,
                                  Action<? super U> action) {
         if (transformer == null || action == null)
             throw new NullPointerException();
@@ -4009,7 +4012,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public <U> U searchEntries(long parallelismThreshold,
-                               Fun<Entry<K,V>, ? extends U> searchFunction) {
+                               Fun<Map.Entry<K,V>, ? extends U> searchFunction) {
         if (searchFunction == null) throw new NullPointerException();
         return new SearchEntriesTask<K,V,U>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4026,8 +4029,8 @@ public class ConcurrentHashMapV8<K,V>
      * @return the result of accumulating all entries
      * @since 1.8
      */
-    public Entry<K,V> reduceEntries(long parallelismThreshold,
-                                        BiFun<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer) {
+    public Map.Entry<K,V> reduceEntries(long parallelismThreshold,
+                                        BiFun<Map.Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer) {
         if (reducer == null) throw new NullPointerException();
         return new ReduceEntriesTask<K,V>
                 (null, batchFor(parallelismThreshold), 0, 0, table,
@@ -4050,7 +4053,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public <U> U reduceEntries(long parallelismThreshold,
-                               Fun<Entry<K,V>, ? extends U> transformer,
+                               Fun<Map.Entry<K,V>, ? extends U> transformer,
                                BiFun<? super U, ? super U, ? extends U> reducer) {
         if (transformer == null || reducer == null)
             throw new NullPointerException();
@@ -4075,7 +4078,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public double reduceEntriesToDouble(long parallelismThreshold,
-                                        ObjectToDouble<Entry<K,V>> transformer,
+                                        ObjectToDouble<Map.Entry<K,V>> transformer,
                                         double basis,
                                         DoubleByDoubleToDouble reducer) {
         if (transformer == null || reducer == null)
@@ -4101,7 +4104,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public long reduceEntriesToLong(long parallelismThreshold,
-                                    ObjectToLong<Entry<K,V>> transformer,
+                                    ObjectToLong<Map.Entry<K,V>> transformer,
                                     long basis,
                                     LongByLongToLong reducer) {
         if (transformer == null || reducer == null)
@@ -4127,7 +4130,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public int reduceEntriesToInt(long parallelismThreshold,
-                                  ObjectToInt<Entry<K,V>> transformer,
+                                  ObjectToInt<Map.Entry<K,V>> transformer,
                                   int basis,
                                   IntByIntToInt reducer) {
         if (transformer == null || reducer == null)
@@ -4144,7 +4147,7 @@ public class ConcurrentHashMapV8<K,V>
      * Base class for views.
      */
     abstract static class CollectionView<K,V,E>
-            implements Collection<E>, Serializable {
+            implements Collection<E>, java.io.Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
         final ConcurrentHashMapV8<K,V> map;
         CollectionView(ConcurrentHashMapV8<K,V> map)  { this.map = map; }
@@ -4168,7 +4171,7 @@ public class ConcurrentHashMapV8<K,V>
         // abstract methods
         /**
          * Returns a "weakly consistent" iterator that will never
-         * throw {@link java.util.ConcurrentModificationException}, and
+         * throw {@link ConcurrentModificationException}, and
          * guarantees to traverse elements as they existed upon
          * construction of the iterator, and may (but is not
          * guaranteed to) reflect any modifications subsequent to
@@ -4294,7 +4297,7 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * A view of a ConcurrentHashMapV8 as a {@link java.util.Set} of keys, in
+     * A view of a ConcurrentHashMapV8 as a {@link Set} of keys, in
      * which additions may optionally be enabled by mapping to a
      * common value.  This class cannot be directly instantiated.
      * See {@link #keySet() keySet()},
@@ -4305,7 +4308,7 @@ public class ConcurrentHashMapV8<K,V>
      * @since 1.8
      */
     public static class KeySetView<K,V> extends CollectionView<K,V,K>
-            implements Set<K>, Serializable {
+            implements Set<K>, java.io.Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
         private final V value;
         KeySetView(ConcurrentHashMapV8<K,V> map, V value) {  // non-public
@@ -4403,7 +4406,7 @@ public class ConcurrentHashMapV8<K,V>
                             (containsAll(c) && c.containsAll(this))));
         }
 
-        public ConcurrentHashMapSpliterator<K> spliterator() {
+        public ConcurrentHashMapSpliterator<K> spliterator166() {
             Node<K,V>[] t;
             ConcurrentHashMapV8<K,V> m = map;
             long n = m.sumCount();
@@ -4423,12 +4426,12 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * A view of a ConcurrentHashMapV8 as a {@link java.util.Collection} of
+     * A view of a ConcurrentHashMapV8 as a {@link Collection} of
      * values, in which additions are disabled. This class cannot be
      * directly instantiated. See {@link #values()}.
      */
     static final class ValuesView<K,V> extends CollectionView<K,V,V>
-            implements Collection<V>, Serializable {
+            implements Collection<V>, java.io.Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
         ValuesView(ConcurrentHashMapV8<K,V> map) { super(map); }
         public final boolean contains(Object o) {
@@ -4461,7 +4464,7 @@ public class ConcurrentHashMapV8<K,V>
             throw new UnsupportedOperationException();
         }
 
-        public ConcurrentHashMapSpliterator<V> spliterator() {
+        public ConcurrentHashMapSpliterator<V> spliterator166() {
             Node<K,V>[] t;
             ConcurrentHashMapV8<K,V> m = map;
             long n = m.sumCount();
@@ -4481,28 +4484,28 @@ public class ConcurrentHashMapV8<K,V>
     }
 
     /**
-     * A view of a ConcurrentHashMapV8 as a {@link java.util.Set} of (key, value)
+     * A view of a ConcurrentHashMapV8 as a {@link Set} of (key, value)
      * entries.  This class cannot be directly instantiated. See
      * {@link #entrySet()}.
      */
-    static final class EntrySetView<K,V> extends CollectionView<K,V,Entry<K,V>>
-            implements Set<Entry<K,V>>, Serializable {
+    static final class EntrySetView<K,V> extends CollectionView<K,V,Map.Entry<K,V>>
+            implements Set<Map.Entry<K,V>>, java.io.Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
         EntrySetView(ConcurrentHashMapV8<K,V> map) { super(map); }
 
         public boolean contains(Object o) {
-            Object k, v, r; Entry<?,?> e;
-            return ((o instanceof Entry) &&
-                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
+            Object k, v, r; Map.Entry<?,?> e;
+            return ((o instanceof Map.Entry) &&
+                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
                     (r = map.get(k)) != null &&
                     (v = e.getValue()) != null &&
                     (v == r || v.equals(r)));
         }
 
         public boolean remove(Object o) {
-            Object k, v; Entry<?,?> e;
-            return ((o instanceof Entry) &&
-                    (k = (e = (Entry<?,?>)o).getKey()) != null &&
+            Object k, v; Map.Entry<?,?> e;
+            return ((o instanceof Map.Entry) &&
+                    (k = (e = (Map.Entry<?,?>)o).getKey()) != null &&
                     (v = e.getValue()) != null &&
                     map.remove(k, v));
         }
@@ -4510,7 +4513,7 @@ public class ConcurrentHashMapV8<K,V>
         /**
          * @return an iterator over the entries of the backing map
          */
-        public Iterator<Entry<K,V>> iterator() {
+        public Iterator<Map.Entry<K,V>> iterator() {
             ConcurrentHashMapV8<K,V> m = map;
             Node<K,V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
@@ -4549,7 +4552,7 @@ public class ConcurrentHashMapV8<K,V>
                             (containsAll(c) && c.containsAll(this))));
         }
 
-        public ConcurrentHashMapSpliterator<Entry<K,V>> spliterator() {
+        public ConcurrentHashMapSpliterator<Map.Entry<K,V>> spliterator166() {
             Node<K,V>[] t;
             ConcurrentHashMapV8<K,V> m = map;
             long n = m.sumCount();
@@ -4557,7 +4560,7 @@ public class ConcurrentHashMapV8<K,V>
             return new EntrySpliterator<K,V>(t, f, 0, f, n < 0L ? 0L : n, m);
         }
 
-        public void forEach(Action<? super Entry<K,V>> action) {
+        public void forEach(Action<? super Map.Entry<K,V>> action) {
             if (action == null) throw new NullPointerException();
             Node<K,V>[] t;
             if ((t = map.table) != null) {
@@ -4813,16 +4816,16 @@ public class ConcurrentHashMapV8<K,V>
     @SuppressWarnings("serial")
     static final class ForEachTransformedEntryTask<K,V,U>
             extends BulkTask<K,V,Void> {
-        final Fun<Entry<K,V>, ? extends U> transformer;
+        final Fun<Map.Entry<K,V>, ? extends U> transformer;
         final Action<? super U> action;
         ForEachTransformedEntryTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
-                 Fun<Entry<K,V>, ? extends U> transformer, Action<? super U> action) {
+                 Fun<Map.Entry<K,V>, ? extends U> transformer, Action<? super U> action) {
             super(p, b, i, f, t);
             this.transformer = transformer; this.action = action;
         }
         public final void compute() {
-            final Fun<Entry<K,V>, ? extends U> transformer;
+            final Fun<Map.Entry<K,V>, ? extends U> transformer;
             final Action<? super U> action;
             if ((transformer = this.transformer) != null &&
                     (action = this.action) != null) {
@@ -5149,20 +5152,20 @@ public class ConcurrentHashMapV8<K,V>
 
     @SuppressWarnings("serial")
     static final class ReduceEntriesTask<K,V>
-            extends BulkTask<K,V,Entry<K,V>> {
-        final BiFun<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer;
-        Entry<K,V> result;
+            extends BulkTask<K,V,Map.Entry<K,V>> {
+        final BiFun<Map.Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer;
+        Map.Entry<K,V> result;
         ReduceEntriesTask<K,V> rights, nextRight;
         ReduceEntriesTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  ReduceEntriesTask<K,V> nextRight,
-                 BiFun<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer) {
+                 BiFun<Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.reducer = reducer;
         }
-        public final Entry<K,V> getRawResult() { return result; }
+        public final Map.Entry<K,V> getRawResult() { return result; }
         public final void compute() {
-            final BiFun<Entry<K,V>, Entry<K,V>, ? extends Entry<K,V>> reducer;
+            final BiFun<Map.Entry<K,V>, Map.Entry<K,V>, ? extends Map.Entry<K,V>> reducer;
             if ((reducer = this.reducer) != null) {
                 for (int i = baseIndex, f, h; batch > 0 &&
                         (h = ((f = baseLimit) + i) >>> 1) > i;) {
@@ -5171,7 +5174,7 @@ public class ConcurrentHashMapV8<K,V>
                             (this, batch >>>= 1, baseLimit = h, f, tab,
                                     rights, reducer)).fork();
                 }
-                Entry<K,V> r = null;
+                Map.Entry<K,V> r = null;
                 for (Node<K,V> p; (p = advance()) != null; )
                     r = (r == null) ? p : reducer.apply(r, p);
                 result = r;
@@ -5181,7 +5184,7 @@ public class ConcurrentHashMapV8<K,V>
                             t = (ReduceEntriesTask<K,V>)c,
                             s = t.rights;
                     while (s != null) {
-                        Entry<K,V> tr, sr;
+                        Map.Entry<K,V> tr, sr;
                         if ((sr = s.result) != null)
                             t.result = (((tr = t.result) == null) ? sr :
                                     reducer.apply(tr, sr));
@@ -5301,14 +5304,14 @@ public class ConcurrentHashMapV8<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesTask<K,V,U>
             extends BulkTask<K,V,U> {
-        final Fun<Entry<K,V>, ? extends U> transformer;
+        final Fun<Map.Entry<K,V>, ? extends U> transformer;
         final BiFun<? super U, ? super U, ? extends U> reducer;
         U result;
         MapReduceEntriesTask<K,V,U> rights, nextRight;
         MapReduceEntriesTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesTask<K,V,U> nextRight,
-                 Fun<Entry<K,V>, ? extends U> transformer,
+                 Fun<Map.Entry<K,V>, ? extends U> transformer,
                  BiFun<? super U, ? super U, ? extends U> reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
             this.transformer = transformer;
@@ -5316,7 +5319,7 @@ public class ConcurrentHashMapV8<K,V>
         }
         public final U getRawResult() { return result; }
         public final void compute() {
-            final Fun<Entry<K,V>, ? extends U> transformer;
+            final Fun<Map.Entry<K,V>, ? extends U> transformer;
             final BiFun<? super U, ? super U, ? extends U> reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5505,7 +5508,7 @@ public class ConcurrentHashMapV8<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToDoubleTask<K,V>
             extends BulkTask<K,V,Double> {
-        final ObjectToDouble<Entry<K,V>> transformer;
+        final ObjectToDouble<Map.Entry<K,V>> transformer;
         final DoubleByDoubleToDouble reducer;
         final double basis;
         double result;
@@ -5513,7 +5516,7 @@ public class ConcurrentHashMapV8<K,V>
         MapReduceEntriesToDoubleTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesToDoubleTask<K,V> nextRight,
-                 ObjectToDouble<Entry<K,V>> transformer,
+                 ObjectToDouble<Map.Entry<K,V>> transformer,
                  double basis,
                  DoubleByDoubleToDouble reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5522,7 +5525,7 @@ public class ConcurrentHashMapV8<K,V>
         }
         public final Double getRawResult() { return result; }
         public final void compute() {
-            final ObjectToDouble<Entry<K,V>> transformer;
+            final ObjectToDouble<Map.Entry<K,V>> transformer;
             final DoubleByDoubleToDouble reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5701,7 +5704,7 @@ public class ConcurrentHashMapV8<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToLongTask<K,V>
             extends BulkTask<K,V,Long> {
-        final ObjectToLong<Entry<K,V>> transformer;
+        final ObjectToLong<Map.Entry<K,V>> transformer;
         final LongByLongToLong reducer;
         final long basis;
         long result;
@@ -5709,7 +5712,7 @@ public class ConcurrentHashMapV8<K,V>
         MapReduceEntriesToLongTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesToLongTask<K,V> nextRight,
-                 ObjectToLong<Entry<K,V>> transformer,
+                 ObjectToLong<Map.Entry<K,V>> transformer,
                  long basis,
                  LongByLongToLong reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5718,7 +5721,7 @@ public class ConcurrentHashMapV8<K,V>
         }
         public final Long getRawResult() { return result; }
         public final void compute() {
-            final ObjectToLong<Entry<K,V>> transformer;
+            final ObjectToLong<Map.Entry<K,V>> transformer;
             final LongByLongToLong reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {
@@ -5897,7 +5900,7 @@ public class ConcurrentHashMapV8<K,V>
     @SuppressWarnings("serial")
     static final class MapReduceEntriesToIntTask<K,V>
             extends BulkTask<K,V,Integer> {
-        final ObjectToInt<Entry<K,V>> transformer;
+        final ObjectToInt<Map.Entry<K,V>> transformer;
         final IntByIntToInt reducer;
         final int basis;
         int result;
@@ -5905,7 +5908,7 @@ public class ConcurrentHashMapV8<K,V>
         MapReduceEntriesToIntTask
                 (BulkTask<K,V,?> p, int b, int i, int f, Node<K,V>[] t,
                  MapReduceEntriesToIntTask<K,V> nextRight,
-                 ObjectToInt<Entry<K,V>> transformer,
+                 ObjectToInt<Map.Entry<K,V>> transformer,
                  int basis,
                  IntByIntToInt reducer) {
             super(p, b, i, f, t); this.nextRight = nextRight;
@@ -5914,7 +5917,7 @@ public class ConcurrentHashMapV8<K,V>
         }
         public final Integer getRawResult() { return result; }
         public final void compute() {
-            final ObjectToInt<Entry<K,V>> transformer;
+            final ObjectToInt<Map.Entry<K,V>> transformer;
             final IntByIntToInt reducer;
             if ((transformer = this.transformer) != null &&
                     (reducer = this.reducer) != null) {

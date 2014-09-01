@@ -15,6 +15,7 @@
  */
 package com.github.mauricio.netty.channel;
 
+import com.github.mauricio.netty.util.concurrent.EventExecutorGroup;
 import com.github.mauricio.netty.util.concurrent.SingleThreadEventExecutor;
 
 import java.util.concurrent.ThreadFactory;
@@ -26,7 +27,7 @@ import java.util.concurrent.ThreadFactory;
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
 
     /**
-     * @see {@link com.github.mauricio.netty.util.concurrent.SingleThreadEventExecutor#SingleThreadEventExecutor(com.github.mauricio.netty.util.concurrent.EventExecutorGroup, java.util.concurrent.ThreadFactory, boolean)}
+     * @see {@link SingleThreadEventExecutor#SingleThreadEventExecutor(EventExecutorGroup, ThreadFactory, boolean)}
      */
     protected SingleThreadEventLoop(EventLoopGroup parent, ThreadFactory threadFactory, boolean addTaskWakesUp) {
         super(parent, threadFactory, addTaskWakesUp);
@@ -59,4 +60,14 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
         channel.unsafe().register(this, promise);
         return promise;
     }
+
+    @Override
+    protected boolean wakesUpForTask(Runnable task) {
+        return !(task instanceof NonWakeupRunnable);
+    }
+
+    /**
+     * Marker interface for {@linkRunnable} that will not trigger an {@link #wakeup(boolean)} in all cases.
+     */
+    interface NonWakeupRunnable extends Runnable { }
 }

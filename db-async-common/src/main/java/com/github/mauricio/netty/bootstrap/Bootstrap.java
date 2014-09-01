@@ -15,7 +15,12 @@
  */
 package com.github.mauricio.netty.bootstrap;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelFutureListener;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.channel.ChannelPromise;
 import com.github.mauricio.netty.util.AttributeKey;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
@@ -27,7 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * A {@link com.github.mauricio.netty.bootstrap.Bootstrap} that makes it easy to bootstrap a {@link com.github.mauricio.netty.channel.Channel} to use
+ * A {@link Bootstrap} that makes it easy to bootstrap a {@link Channel} to use
  * for clients.
  *
  * <p>The {@link #bind()} methods are useful in combination with connectionless transports such as datagram (UDP).
@@ -47,7 +52,7 @@ public final class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     /**
-     * The {@link java.net.SocketAddress} to connect to once the {@link #connect()} method
+     * The {@link SocketAddress} to connect to once the {@link #connect()} method
      * is called.
      */
     public Bootstrap remoteAddress(SocketAddress remoteAddress) {
@@ -56,7 +61,7 @@ public final class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     /**
-     * @see {@link #remoteAddress(java.net.SocketAddress)}
+     * @see {@link #remoteAddress(SocketAddress)}
      */
     public Bootstrap remoteAddress(String inetHost, int inetPort) {
         remoteAddress = new InetSocketAddress(inetHost, inetPort);
@@ -64,7 +69,7 @@ public final class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     /**
-     * @see {@link #remoteAddress(java.net.SocketAddress)}
+     * @see {@link #remoteAddress(SocketAddress)}
      */
     public Bootstrap remoteAddress(InetAddress inetHost, int inetPort) {
         remoteAddress = new InetSocketAddress(inetHost, inetPort);
@@ -72,7 +77,7 @@ public final class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     /**
-     * Connect a {@link com.github.mauricio.netty.channel.Channel} to the remote peer.
+     * Connect a {@link Channel} to the remote peer.
      */
     public ChannelFuture connect() {
         validate();
@@ -85,21 +90,21 @@ public final class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     /**
-     * Connect a {@link com.github.mauricio.netty.channel.Channel} to the remote peer.
+     * Connect a {@link Channel} to the remote peer.
      */
     public ChannelFuture connect(String inetHost, int inetPort) {
         return connect(new InetSocketAddress(inetHost, inetPort));
     }
 
     /**
-     * Connect a {@link com.github.mauricio.netty.channel.Channel} to the remote peer.
+     * Connect a {@link Channel} to the remote peer.
      */
     public ChannelFuture connect(InetAddress inetHost, int inetPort) {
         return connect(new InetSocketAddress(inetHost, inetPort));
     }
 
     /**
-     * Connect a {@link com.github.mauricio.netty.channel.Channel} to the remote peer.
+     * Connect a {@link Channel} to the remote peer.
      */
     public ChannelFuture connect(SocketAddress remoteAddress) {
         if (remoteAddress == null) {
@@ -111,7 +116,7 @@ public final class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     /**
-     * Connect a {@link com.github.mauricio.netty.channel.Channel} to the remote peer.
+     * Connect a {@link Channel} to the remote peer.
      */
     public ChannelFuture connect(SocketAddress remoteAddress, SocketAddress localAddress) {
         if (remoteAddress == null) {

@@ -18,6 +18,7 @@ package com.github.mauricio.netty.handler.codec.base64;
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.channel.ChannelHandler.Sharable;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelPipeline;
 import com.github.mauricio.netty.handler.codec.DelimiterBasedFrameDecoder;
 import com.github.mauricio.netty.handler.codec.Delimiters;
 import com.github.mauricio.netty.handler.codec.MessageToMessageEncoder;
@@ -25,17 +26,17 @@ import com.github.mauricio.netty.handler.codec.MessageToMessageEncoder;
 import java.util.List;
 
 /**
- * Encodes a {@link com.github.mauricio.netty.buffer.ByteBuf} into a Base64-encoded {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * Encodes a {@link ByteBuf} into a Base64-encoded {@link ByteBuf}.
  * A typical setup for TCP/IP would be:
  * <pre>
- * {@link com.github.mauricio.netty.channel.ChannelPipeline} pipeline = ...;
+ * {@link ChannelPipeline} pipeline = ...;
  *
  * // Decoders
  * pipeline.addLast("frameDecoder", new {@link DelimiterBasedFrameDecoder}(80, {@link Delimiters#nulDelimiter()}));
  * pipeline.addLast("base64Decoder", new {@link Base64Decoder}());
  *
  * // Encoder
- * pipeline.addLast("base64Encoder", new {@link com.github.mauricio.netty.handler.codec.base64.Base64Encoder}());
+ * pipeline.addLast("base64Encoder", new {@link Base64Encoder}());
  * </pre>
  */
 @Sharable

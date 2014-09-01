@@ -20,11 +20,11 @@ import com.github.mauricio.netty.util.internal.PlatformDependent;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Key which can be used to access {@link com.github.mauricio.netty.util.Attribute} out of the {@link com.github.mauricio.netty.util.AttributeMap}. Be aware that it is not be
+ * Key which can be used to access {@link Attribute} out of the {@link AttributeMap}. Be aware that it is not be
  * possible to have multiple keys with the same name.
  *
  *
- * @param <T>   the type of the {@link com.github.mauricio.netty.util.Attribute} which can be accessed via this {@link com.github.mauricio.netty.util.AttributeKey}.
+ * @param <T>   the type of the {@link Attribute} which can be accessed via this {@link AttributeKey}.
  */
 @SuppressWarnings({ "UnusedDeclaration", "deprecation" }) // 'T' is used only at compile time
 public final class AttributeKey<T> extends UniqueName {
@@ -32,7 +32,7 @@ public final class AttributeKey<T> extends UniqueName {
     private static final ConcurrentMap<String, Boolean> names = PlatformDependent.newConcurrentHashMap();
 
     /**
-     * Creates a new {@link com.github.mauricio.netty.util.AttributeKey} with the specified {@code name}.
+     * Creates a new {@link AttributeKey} with the specified {@code name}.
      */
     @SuppressWarnings("deprecation")
     public static <T> AttributeKey<T> valueOf(String name) {

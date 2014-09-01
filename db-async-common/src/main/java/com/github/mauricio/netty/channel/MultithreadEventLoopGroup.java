@@ -43,7 +43,7 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
     }
 
     /**
-     * @see {@link com.github.mauricio.netty.util.concurrent.MultithreadEventExecutorGroup#MultithreadEventExecutorGroup(int, java.util.concurrent.ThreadFactory, Object...)}
+     * @see {@link MultithreadEventExecutorGroup#MultithreadEventExecutorGroup(int, ThreadFactory, Object...)}
      */
     protected MultithreadEventLoopGroup(int nThreads, ThreadFactory threadFactory, Object... args) {
         super(nThreads == 0? DEFAULT_EVENT_LOOP_THREADS : nThreads, threadFactory, args);

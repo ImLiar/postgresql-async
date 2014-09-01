@@ -18,7 +18,16 @@ package com.github.mauricio.netty.channel.socket.nio;
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
 import com.github.mauricio.netty.buffer.ByteBufHolder;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.AddressedEnvelope;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelMetadata;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.DefaultAddressedEnvelope;
+import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 import com.github.mauricio.netty.channel.nio.AbstractNioMessageChannel;
 import com.github.mauricio.netty.channel.socket.DatagramChannelConfig;
 import com.github.mauricio.netty.channel.socket.DatagramPacket;
@@ -27,12 +36,21 @@ import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.StringUtil;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.MembershipKey;
 import java.nio.channels.SelectionKey;
-import java.util.*;
+import java.nio.channels.spi.SelectorProvider;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An NIO datagram {@link Channel} that sends and receives an
@@ -45,6 +63,7 @@ public final class NioDatagramChannel
         extends AbstractNioMessageChannel implements com.github.mauricio.netty.channel.socket.DatagramChannel {
 
     private static final ChannelMetadata METADATA = new ChannelMetadata(true);
+    private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
     private final DatagramChannelConfig config;
     private final Map<InetAddress, List<MembershipKey>> memberships =
@@ -52,27 +71,37 @@ public final class NioDatagramChannel
 
     private RecvByteBufAllocator.Handle allocHandle;
 
-    private static DatagramChannel newSocket() {
+    private static DatagramChannel newSocket(SelectorProvider provider) {
         try {
-            return DatagramChannel.open();
+            /**
+             *  Use the {@link SelectorProvider} to open {@link SocketChannel} and so remove condition in
+             *  {@link SelectorProvider#provider()} which is called by each DatagramChannel.open() otherwise.
+             *
+             *  See <a href="See https://github.com/netty/netty/issues/2308">#2308</a>.
+             */
+            return provider.openDatagramChannel();
         } catch (IOException e) {
             throw new ChannelException("Failed to open a socket.", e);
         }
     }
 
-    private static DatagramChannel newSocket(InternetProtocolFamily ipFamily) {
+    private static DatagramChannel newSocket(SelectorProvider provider, InternetProtocolFamily ipFamily) {
         if (ipFamily == null) {
-            return newSocket();
+            return newSocket(provider);
         }
 
-        if (PlatformDependent.javaVersion() < 7) {
-            throw new UnsupportedOperationException();
-        }
+        checkJavaVersion();
 
         try {
-            return DatagramChannel.open(ProtocolFamilyConverter.convert(ipFamily));
+            return provider.openDatagramChannel(ProtocolFamilyConverter.convert(ipFamily));
         } catch (IOException e) {
             throw new ChannelException("Failed to open a socket.", e);
+        }
+    }
+
+    private static void checkJavaVersion() {
+        if (PlatformDependent.javaVersion() < 7) {
+            throw new UnsupportedOperationException("Only supported on java 7+.");
         }
     }
 
@@ -80,7 +109,15 @@ public final class NioDatagramChannel
      * Create a new instance which will use the Operation Systems default {@link InternetProtocolFamily}.
      */
     public NioDatagramChannel() {
-        this(newSocket());
+        this(newSocket(DEFAULT_SELECTOR_PROVIDER));
+    }
+
+    /**
+     * Create a new instance using the given {@link SelectorProvider}
+     * which will use the Operation Systems default {@link InternetProtocolFamily}.
+     */
+    public NioDatagramChannel(SelectorProvider provider) {
+        this(newSocket(provider));
     }
 
     /**
@@ -88,11 +125,20 @@ public final class NioDatagramChannel
      * on the Operation Systems default which will be chosen.
      */
     public NioDatagramChannel(InternetProtocolFamily ipFamily) {
-        this(newSocket(ipFamily));
+        this(newSocket(DEFAULT_SELECTOR_PROVIDER, ipFamily));
     }
 
     /**
-     * Create a new instance from the given {@link java.nio.channels.DatagramChannel}.
+     * Create a new instance using the given {@link SelectorProvider} and {@link InternetProtocolFamily}.
+     * If {@link InternetProtocolFamily} is {@code null} it will depend on the Operation Systems default
+     * which will be chosen.
+     */
+    public NioDatagramChannel(SelectorProvider provider, InternetProtocolFamily ipFamily) {
+        this(newSocket(provider, ipFamily));
+    }
+
+    /**
+     * Create a new instance from the given {@link DatagramChannel}.
      */
     public NioDatagramChannel(DatagramChannel socket) {
         super(null, socket, SelectionKey.OP_READ);
@@ -332,39 +378,39 @@ public final class NioDatagramChannel
     public ChannelFuture joinGroup(
             InetAddress multicastAddress, NetworkInterface networkInterface,
             InetAddress source, ChannelPromise promise) {
-        if (PlatformDependent.javaVersion() >= 7) {
-            if (multicastAddress == null) {
-                throw new NullPointerException("multicastAddress");
-            }
 
-            if (networkInterface == null) {
-                throw new NullPointerException("networkInterface");
-            }
+        checkJavaVersion();
 
-            try {
-                MembershipKey key;
-                if (source == null) {
-                    key = javaChannel().join(multicastAddress, networkInterface);
-                } else {
-                    key = javaChannel().join(multicastAddress, networkInterface, source);
-                }
-
-                synchronized (this) {
-                    List<MembershipKey> keys = memberships.get(multicastAddress);
-                    if (keys == null) {
-                        keys = new ArrayList<MembershipKey>();
-                        memberships.put(multicastAddress, keys);
-                    }
-                    keys.add(key);
-                }
-
-                promise.setSuccess();
-            } catch (Throwable e) {
-                promise.setFailure(e);
-            }
-        } else {
-            throw new UnsupportedOperationException();
+        if (multicastAddress == null) {
+            throw new NullPointerException("multicastAddress");
         }
+
+        if (networkInterface == null) {
+            throw new NullPointerException("networkInterface");
+        }
+
+        try {
+            MembershipKey key;
+            if (source == null) {
+                key = javaChannel().join(multicastAddress, networkInterface);
+            } else {
+                key = javaChannel().join(multicastAddress, networkInterface, source);
+            }
+
+            synchronized (this) {
+                List<MembershipKey> keys = memberships.get(multicastAddress);
+                if (keys == null) {
+                    keys = new ArrayList<MembershipKey>();
+                    memberships.put(multicastAddress, keys);
+                }
+                keys.add(key);
+            }
+
+            promise.setSuccess();
+        } catch (Throwable e) {
+            promise.setFailure(e);
+        }
+
         return promise;
     }
 
@@ -407,9 +453,8 @@ public final class NioDatagramChannel
     public ChannelFuture leaveGroup(
             InetAddress multicastAddress, NetworkInterface networkInterface, InetAddress source,
             ChannelPromise promise) {
-        if (PlatformDependent.javaVersion() < 7) {
-            throw new UnsupportedOperationException();
-        }
+        checkJavaVersion();
+
         if (multicastAddress == null) {
             throw new NullPointerException("multicastAddress");
         }
@@ -461,36 +506,34 @@ public final class NioDatagramChannel
     public ChannelFuture block(
             InetAddress multicastAddress, NetworkInterface networkInterface,
             InetAddress sourceToBlock, ChannelPromise promise) {
-        if (PlatformDependent.javaVersion() < 7) {
-            throw new UnsupportedOperationException();
-        } else {
-            if (multicastAddress == null) {
-                throw new NullPointerException("multicastAddress");
-            }
-            if (sourceToBlock == null) {
-                throw new NullPointerException("sourceToBlock");
-            }
+        checkJavaVersion();
 
-            if (networkInterface == null) {
-                throw new NullPointerException("networkInterface");
-            }
-            synchronized (this) {
-                if (memberships != null) {
-                    List<MembershipKey> keys = memberships.get(multicastAddress);
-                    for (MembershipKey key: keys) {
-                        if (networkInterface.equals(key.networkInterface())) {
-                            try {
-                                key.block(sourceToBlock);
-                            } catch (IOException e) {
-                                promise.setFailure(e);
-                            }
+        if (multicastAddress == null) {
+            throw new NullPointerException("multicastAddress");
+        }
+        if (sourceToBlock == null) {
+            throw new NullPointerException("sourceToBlock");
+        }
+
+        if (networkInterface == null) {
+            throw new NullPointerException("networkInterface");
+        }
+        synchronized (this) {
+            if (memberships != null) {
+                List<MembershipKey> keys = memberships.get(multicastAddress);
+                for (MembershipKey key: keys) {
+                    if (networkInterface.equals(key.networkInterface())) {
+                        try {
+                            key.block(sourceToBlock);
+                        } catch (IOException e) {
+                            promise.setFailure(e);
                         }
                     }
                 }
             }
-            promise.setSuccess();
-            return promise;
         }
+        promise.setSuccess();
+        return promise;
     }
 
     /**

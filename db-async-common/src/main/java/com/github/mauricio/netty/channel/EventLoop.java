@@ -18,9 +18,9 @@ package com.github.mauricio.netty.channel;
 import com.github.mauricio.netty.util.concurrent.EventExecutor;
 
 /**
- * Will handle all the I/O-Operations for a {@link com.github.mauricio.netty.channel.Channel} once it was registered.
+ * Will handle all the I/O-Operations for a {@link Channel} once it was registered.
  *
- * One {@link com.github.mauricio.netty.channel.EventLoop} instance will usually handle more then one {@link com.github.mauricio.netty.channel.Channel} but this may depend on
+ * One {@link EventLoop} instance will usually handle more then one {@link Channel} but this may depend on
  * implementation details and internals.
  *
  */

@@ -18,6 +18,7 @@ package com.github.mauricio.netty.handler.codec;
 import com.github.mauricio.netty.channel.ChannelDuplexHandler;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.util.ReferenceCounted;
 import com.github.mauricio.netty.util.internal.TypeParameterMatcher;
 
 import java.util.List;
@@ -25,31 +26,31 @@ import java.util.List;
 /**
  * A Codec for on-the-fly encoding/decoding of message.
  *
- * This can be thought of as a combination of {@link com.github.mauricio.netty.handler.codec.MessageToMessageDecoder} and {@link com.github.mauricio.netty.handler.codec.MessageToMessageEncoder}.
+ * This can be thought of as a combination of {@link MessageToMessageDecoder} and {@link MessageToMessageEncoder}.
  *
- * Here is an example of a {@link com.github.mauricio.netty.handler.codec.MessageToMessageCodec} which just decode from {@link Integer} to {@link Long}
+ * Here is an example of a {@link MessageToMessageCodec} which just decode from {@link Integer} to {@link Long}
  * and encode from {@link Long} to {@link Integer}.
  *
  * <pre>
  *     public class NumberCodec extends
- *             {@link com.github.mauricio.netty.handler.codec.MessageToMessageCodec}&lt;{@link Integer}, {@link Long}&gt; {
+ *             {@link MessageToMessageCodec}&lt;{@link Integer}, {@link Long}&gt; {
  *         {@code @Override}
- *         public {@link Long} decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link Integer} msg, List&lt;Object&gt; out)
+ *         public {@link Long} decode({@link ChannelHandlerContext} ctx, {@link Integer} msg, List&lt;Object&gt; out)
  *                 throws {@link Exception} {
  *             out.add(msg.longValue());
  *         }
  *
  *         {@code @Overrride}
- *         public {@link Integer} encode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx, {@link Long} msg, List&lt;Object&gt; out)
+ *         public {@link Integer} encode({@link ChannelHandlerContext} ctx, {@link Long} msg, List&lt;Object&gt; out)
  *                 throws {@link Exception} {
  *             out.add(msg.intValue());
  *         }
  *     }
  * </pre>
  *
- * Be aware that you need to call {@link com.github.mauricio.netty.util.ReferenceCounted#retain()} on messages that are just passed through if they
- * are of type {@link com.github.mauricio.netty.util.ReferenceCounted}. This is needed as the {@link com.github.mauricio.netty.handler.codec.MessageToMessageCodec} will call
- * {@link com.github.mauricio.netty.util.ReferenceCounted#release()} on encoded / decoded messages.
+ * Be aware that you need to call {@link ReferenceCounted#retain()} on messages that are just passed through if they
+ * are of type {@link ReferenceCounted}. This is needed as the {@link MessageToMessageCodec} will call
+ * {@link ReferenceCounted#release()} on encoded / decoded messages.
  */
 public abstract class MessageToMessageCodec<INBOUND_IN, OUTBOUND_IN> extends ChannelDuplexHandler {
 
@@ -134,13 +135,13 @@ public abstract class MessageToMessageCodec<INBOUND_IN, OUTBOUND_IN> extends Cha
     }
 
     /**
-     * @see com.github.mauricio.netty.handler.codec.MessageToMessageEncoder#encode(com.github.mauricio.netty.channel.ChannelHandlerContext, Object, java.util.List)
+     * @see MessageToMessageEncoder#encode(ChannelHandlerContext, Object, List)
      */
     protected abstract void encode(ChannelHandlerContext ctx, OUTBOUND_IN msg, List<Object> out)
             throws Exception;
 
     /**
-     * @see com.github.mauricio.netty.handler.codec.MessageToMessageDecoder#decode(com.github.mauricio.netty.channel.ChannelHandlerContext, Object, java.util.List)
+     * @see MessageToMessageDecoder#decode(ChannelHandlerContext, Object, List)
      */
     protected abstract void decode(ChannelHandlerContext ctx, INBOUND_IN msg, List<Object> out)
             throws Exception;

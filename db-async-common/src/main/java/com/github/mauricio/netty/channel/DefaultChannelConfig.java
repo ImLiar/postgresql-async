@@ -16,8 +16,8 @@
 package com.github.mauricio.netty.channel;
 
 import com.github.mauricio.netty.buffer.ByteBufAllocator;
-import com.github.mauricio.netty.buffer.UnpooledByteBufAllocator;
 import com.github.mauricio.netty.channel.nio.AbstractNioByteChannel;
+import com.github.mauricio.netty.channel.socket.SocketChannelConfig;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -26,11 +26,10 @@ import java.util.Map.Entry;
 import static com.github.mauricio.netty.channel.ChannelOption.*;
 
 /**
- * The default {@link com.github.mauricio.netty.channel.socket.SocketChannelConfig} implementation.
+ * The default {@link SocketChannelConfig} implementation.
  */
 public class DefaultChannelConfig implements ChannelConfig {
 
-    private static final ByteBufAllocator DEFAULT_ALLOCATOR = UnpooledByteBufAllocator.DEFAULT;
     private static final RecvByteBufAllocator DEFAULT_RCVBUF_ALLOCATOR = AdaptiveRecvByteBufAllocator.DEFAULT;
     private static final MessageSizeEstimator DEFAULT_MSG_SIZE_ESTIMATOR = DefaultMessageSizeEstimator.DEFAULT;
 
@@ -38,7 +37,7 @@ public class DefaultChannelConfig implements ChannelConfig {
 
     protected final Channel channel;
 
-    private volatile ByteBufAllocator allocator = DEFAULT_ALLOCATOR;
+    private volatile ByteBufAllocator allocator = ByteBufAllocator.DEFAULT;
     private volatile RecvByteBufAllocator rcvBufAllocator = DEFAULT_RCVBUF_ALLOCATOR;
     private volatile MessageSizeEstimator msgSizeEstimator = DEFAULT_MSG_SIZE_ESTIMATOR;
 

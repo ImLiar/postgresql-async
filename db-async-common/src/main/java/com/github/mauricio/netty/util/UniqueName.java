@@ -32,10 +32,10 @@ public class UniqueName implements Comparable<UniqueName> {
     private final String name;
 
     /**
-     * Constructs a new {@link com.github.mauricio.netty.util.UniqueName}
+     * Constructs a new {@link UniqueName}
      *
      * @param map the map of names to compare with
-     * @param name the name of this {@link com.github.mauricio.netty.util.UniqueName}
+     * @param name the name of this {@link UniqueName}
      * @param args the arguments to process
      */
     public UniqueName(ConcurrentMap<String, Boolean> map, String name, Object... args) {
@@ -69,7 +69,7 @@ public class UniqueName implements Comparable<UniqueName> {
     }
 
     /**
-     * Returns this {@link com.github.mauricio.netty.util.UniqueName}'s name
+     * Returns this {@link UniqueName}'s name
      *
      * @return the name
      */
@@ -78,7 +78,7 @@ public class UniqueName implements Comparable<UniqueName> {
     }
 
     /**
-     * Returns this {@link com.github.mauricio.netty.util.UniqueName}'s ID
+     * Returns this {@link UniqueName}'s ID
      *
      * @return the id
      */

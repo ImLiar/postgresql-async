@@ -19,7 +19,7 @@ object ProjectBuild extends Build {
     base = file(commonName),
     settings = Configuration.baseSettings ++ Seq(
       name := commonName,
-      libraryDependencies := Configuration.commonDependencies
+      libraryDependencies ++= Configuration.commonDependencies
     )
   )
 
@@ -30,7 +30,7 @@ object ProjectBuild extends Build {
       name := postgresqlName,
       libraryDependencies ++= Configuration.implementationDependencies
     )
-  ) aggregate (common) dependsOn (common)
+  ) dependsOn (common)
 
   lazy val mysql = Project(
     id = mysqlName,
@@ -39,27 +39,28 @@ object ProjectBuild extends Build {
       name := mysqlName,
       libraryDependencies ++= Configuration.implementationDependencies
     )
-  ) aggregate (common) dependsOn (common)
+  ) dependsOn (common)
 
 }
 
 object Configuration {
 
-  val commonVersion = "0.2.13-SNAPSHOT"
-  val projectScalaVersion = "2.10.3"
+  val commonVersion = "0.2.14-SNAPSHOT"
+  val projectScalaVersion = "2.10.4"
 
-  val specs2Dependency = "org.specs2" %% "specs2" % "2.3.4" % "test"
+  val specs2Dependency = "org.specs2" %% "specs2" % "2.3.11" % "test"
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
 
   val commonDependencies = Seq(
     "org.slf4j" % "slf4j-api" % "1.7.5",
     "joda-time" % "joda-time" % "2.3",
     "org.joda" % "joda-convert" % "1.5",
-    "org.scala-lang" % "scala-library" % projectScalaVersion,
+//    "io.netty" % "netty-all" % "4.0.18.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
     "commons-logging" % "commons-logging" % "1.1.3" % "optional",
     "org.jboss.marshalling" % "jboss-marshalling" % "1.3.18.GA" % "optional",
     "com.jcraft" % "jzlib" % "1.1.2" % "optional",
+    "com.google.protobuf" % "protobuf-java" % "2.5.0" % "optional",
     "log4j" % "log4j" % "1.2.17" % "optional" intransitive(),
     specs2Dependency,
     logbackDependency
@@ -78,10 +79,11 @@ object Configuration {
         :+ "-feature"
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
-    scalaVersion := projectScalaVersion,
+    crossScalaVersions := Seq(projectScalaVersion, "2.10.4"),
     javacOptions := Seq("-source", "1.7", "-target", "1.7", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,
+    parallelExecution := false,
     publishArtifact in Test := false,
     publishMavenStyle := true,
     pomIncludeRepository := {

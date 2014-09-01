@@ -39,6 +39,7 @@
  */
 package com.github.mauricio.netty.util.internal.logging;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -96,9 +97,9 @@ import java.util.Map;
  * will return the string "File name is C:\file.zip".
  * <p/>
  * <p/>
- * The formatting conventions are different than those of {@link java.text.MessageFormat}
+ * The formatting conventions are different than those of {@link MessageFormat}
  * which ships with the Java platform. This is justified by the fact that
- * SLF4J's implementation is 10 times faster than that of {@link java.text.MessageFormat}.
+ * SLF4J's implementation is 10 times faster than that of {@link MessageFormat}.
  * This local performance difference is both measurable and significant in the
  * larger context of the complete logging processing chain.
  * <p/>

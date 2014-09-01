@@ -15,7 +15,17 @@
  */
 package com.github.mauricio.netty.channel.local;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.AbstractChannel;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelMetadata;
+import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.DefaultChannelConfig;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.SingleThreadEventLoop;
 import com.github.mauricio.netty.util.ReferenceCountUtil;
 import com.github.mauricio.netty.util.concurrent.SingleThreadEventExecutor;
 
@@ -310,13 +320,13 @@ public class LocalChannel extends AbstractChannel {
         @Override
         public void connect(final SocketAddress remoteAddress,
                 SocketAddress localAddress, final ChannelPromise promise) {
-            if (!ensureOpen(promise)) {
+            if (!promise.setUncancellable() || !ensureOpen(promise)) {
                 return;
             }
 
             if (state == 2) {
                 Exception cause = new AlreadyConnectedException();
-                promise.setFailure(cause);
+                safeSetFailure(promise, cause);
                 pipeline().fireExceptionCaught(cause);
                 return;
             }
@@ -338,7 +348,7 @@ public class LocalChannel extends AbstractChannel {
                 try {
                     doBind(localAddress);
                 } catch (Throwable t) {
-                    promise.setFailure(t);
+                    safeSetFailure(promise, t);
                     close(voidPromise());
                     return;
                 }
@@ -347,7 +357,7 @@ public class LocalChannel extends AbstractChannel {
             Channel boundChannel = LocalChannelRegistry.get(remoteAddress);
             if (!(boundChannel instanceof LocalServerChannel)) {
                 Exception cause = new ChannelException("connection refused");
-                promise.setFailure(cause);
+                safeSetFailure(promise, cause);
                 close(voidPromise());
                 return;
             }

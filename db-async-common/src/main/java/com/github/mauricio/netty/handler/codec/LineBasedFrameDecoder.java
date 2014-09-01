@@ -21,10 +21,10 @@ import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import java.util.List;
 
 /**
- * A decoder that splits the received {@link com.github.mauricio.netty.buffer.ByteBuf}s on line endings.
+ * A decoder that splits the received {@link ByteBuf}s on line endings.
  * <p>
  * Both {@code "\n"} and {@code "\r\n"} are handled.
- * For a more general delimiter-based decoder, see {@link com.github.mauricio.netty.handler.codec.DelimiterBasedFrameDecoder}.
+ * For a more general delimiter-based decoder, see {@link DelimiterBasedFrameDecoder}.
  */
 public class LineBasedFrameDecoder extends ByteToMessageDecoder {
 
@@ -41,7 +41,7 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Creates a new decoder.
      * @param maxLength  the maximum length of the decoded frame.
-     *                   A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                   A {@link TooLongFrameException} is thrown if
      *                   the length of the frame exceeds this value.
      */
     public LineBasedFrameDecoder(final int maxLength) {
@@ -51,15 +51,15 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
     /**
      * Creates a new decoder.
      * @param maxLength  the maximum length of the decoded frame.
-     *                   A {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is thrown if
+     *                   A {@link TooLongFrameException} is thrown if
      *                   the length of the frame exceeds this value.
      * @param stripDelimiter  whether the decoded frame should strip out the
      *                        delimiter or not
-     * @param failFast  If <tt>true</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is
+     * @param failFast  If <tt>true</tt>, a {@link TooLongFrameException} is
      *                  thrown as soon as the decoder notices the length of the
      *                  frame will exceed <tt>maxFrameLength</tt> regardless of
      *                  whether the entire frame has been read.
-     *                  If <tt>false</tt>, a {@link com.github.mauricio.netty.handler.codec.TooLongFrameException} is
+     *                  If <tt>false</tt>, a {@link TooLongFrameException} is
      *                  thrown after the entire frame that exceeds
      *                  <tt>maxFrameLength</tt> has been read.
      */
@@ -78,11 +78,11 @@ public class LineBasedFrameDecoder extends ByteToMessageDecoder {
     }
 
     /**
-     * Create a frame out of the {@link com.github.mauricio.netty.buffer.ByteBuf} and return it.
+     * Create a frame out of the {@link ByteBuf} and return it.
      *
-     * @param   ctx             the {@link com.github.mauricio.netty.channel.ChannelHandlerContext} which this {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} belongs to
-     * @param   buffer          the {@link com.github.mauricio.netty.buffer.ByteBuf} from which to read data
-     * @return  frame           the {@link com.github.mauricio.netty.buffer.ByteBuf} which represent the frame or {@code null} if no frame could
+     * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
+     * @param   buffer          the {@link ByteBuf} from which to read data
+     * @return  frame           the {@link ByteBuf} which represent the frame or {@code null} if no frame could
      *                          be created.
      */
     protected Object decode(ChannelHandlerContext ctx, ByteBuf buffer) throws Exception {

@@ -15,7 +15,19 @@
  */
 package com.github.mauricio.netty.channel.embedded;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.AbstractChannel;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelConfig;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelHandler;
+import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelInboundHandlerAdapter;
+import com.github.mauricio.netty.channel.ChannelMetadata;
+import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
+import com.github.mauricio.netty.channel.ChannelPipeline;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.DefaultChannelConfig;
+import com.github.mauricio.netty.channel.EventLoop;
 import com.github.mauricio.netty.util.ReferenceCountUtil;
 import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.RecyclableArrayList;
@@ -96,7 +108,7 @@ public class EmbeddedChannel extends AbstractChannel {
     }
 
     /**
-     * Returns the {@link java.util.Queue} which holds all the {@link Object}s that were received by this {@link Channel}.
+     * Returns the {@link Queue} which holds all the {@link Object}s that were received by this {@link Channel}.
      */
     public Queue<Object> inboundMessages() {
         return inboundMessages;
@@ -111,7 +123,7 @@ public class EmbeddedChannel extends AbstractChannel {
     }
 
     /**
-     * Returns the {@link java.util.Queue} which holds all the {@link Object}s that were written by this {@link Channel}.
+     * Returns the {@link Queue} which holds all the {@link Object}s that were written by this {@link Channel}.
      */
     public Queue<Object> outboundMessages() {
         return outboundMessages;
@@ -322,7 +334,7 @@ public class EmbeddedChannel extends AbstractChannel {
     private class DefaultUnsafe extends AbstractUnsafe {
         @Override
         public void connect(SocketAddress remoteAddress, SocketAddress localAddress, ChannelPromise promise) {
-            promise.setSuccess();
+            safeSetSuccess(promise);
         }
     }
 

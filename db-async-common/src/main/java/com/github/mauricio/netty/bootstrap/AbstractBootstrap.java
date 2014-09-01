@@ -16,7 +16,16 @@
 
 package com.github.mauricio.netty.bootstrap;
 
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelFutureListener;
+import com.github.mauricio.netty.channel.ChannelHandler;
+import com.github.mauricio.netty.channel.ChannelOption;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.DefaultChannelPromise;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.EventLoopGroup;
 import com.github.mauricio.netty.util.AttributeKey;
 import com.github.mauricio.netty.util.concurrent.GlobalEventExecutor;
 import com.github.mauricio.netty.util.internal.StringUtil;
@@ -28,10 +37,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * {@link com.github.mauricio.netty.bootstrap.AbstractBootstrap} is a helper class that makes it easy to bootstrap a {@link com.github.mauricio.netty.channel.Channel}. It support
- * method-chaining to provide an easy way to configure the {@link com.github.mauricio.netty.bootstrap.AbstractBootstrap}.
+ * {@link AbstractBootstrap} is a helper class that makes it easy to bootstrap a {@link Channel}. It support
+ * method-chaining to provide an easy way to configure the {@link AbstractBootstrap}.
  *
- * <p>When not used in a {@link com.github.mauricio.netty.bootstrap.ServerBootstrap} context, the {@link #bind()} methods are useful for connectionless
+ * <p>When not used in a {@link ServerBootstrap} context, the {@link #bind()} methods are useful for connectionless
  * transports such as datagram (UDP).</p>
  */
 public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C extends Channel> implements Cloneable {
@@ -62,7 +71,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * The {@link EventLoopGroup} which is used to handle all the events for the to-be-creates
-     * {@link com.github.mauricio.netty.channel.Channel}
+     * {@link Channel}
      */
     @SuppressWarnings("unchecked")
     public B group(EventLoopGroup group) {
@@ -77,9 +86,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * The {@link Class} which is used to create {@link com.github.mauricio.netty.channel.Channel} instances from.
-     * You either use this or {@link #channelFactory(com.github.mauricio.netty.bootstrap.ChannelFactory)} if your
-     * {@link com.github.mauricio.netty.channel.Channel} implementation has no no-args constructor.
+     * The {@link Class} which is used to create {@link Channel} instances from.
+     * You either use this or {@link #channelFactory(ChannelFactory)} if your
+     * {@link Channel} implementation has no no-args constructor.
      */
     public B channel(Class<? extends C> channelClass) {
         if (channelClass == null) {
@@ -89,9 +98,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * {@link com.github.mauricio.netty.bootstrap.ChannelFactory} which is used to create {@link com.github.mauricio.netty.channel.Channel} instances from
+     * {@link ChannelFactory} which is used to create {@link Channel} instances from
      * when calling {@link #bind()}. This method is usually only used if {@link #channel(Class)}
-     * is not working for you because of some more complex needs. If your {@link com.github.mauricio.netty.channel.Channel} implementation
+     * is not working for you because of some more complex needs. If your {@link Channel} implementation
      * has a no-args constructor, its highly recommend to just use {@link #channel(Class)} for
      * simplify your code.
      */
@@ -109,7 +118,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * The {@link java.net.SocketAddress} which is used to bind the local "end" to.
+     * The {@link SocketAddress} which is used to bind the local "end" to.
      *
      */
     @SuppressWarnings("unchecked")
@@ -119,29 +128,29 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * @see {@link #localAddress(java.net.SocketAddress)}
+     * @see {@link #localAddress(SocketAddress)}
      */
     public B localAddress(int inetPort) {
         return localAddress(new InetSocketAddress(inetPort));
     }
 
     /**
-     * @see {@link #localAddress(java.net.SocketAddress)}
+     * @see {@link #localAddress(SocketAddress)}
      */
     public B localAddress(String inetHost, int inetPort) {
         return localAddress(new InetSocketAddress(inetHost, inetPort));
     }
 
     /**
-     * @see {@link #localAddress(java.net.SocketAddress)}
+     * @see {@link #localAddress(SocketAddress)}
      */
     public B localAddress(InetAddress inetHost, int inetPort) {
         return localAddress(new InetSocketAddress(inetHost, inetPort));
     }
 
     /**
-     * Allow to specify a {@link com.github.mauricio.netty.channel.ChannelOption} which is used for the {@link com.github.mauricio.netty.channel.Channel} instances once they got
-     * created. Use a value of {@code null} to remove a previous set {@link com.github.mauricio.netty.channel.ChannelOption}.
+     * Allow to specify a {@link ChannelOption} which is used for the {@link Channel} instances once they got
+     * created. Use a value of {@code null} to remove a previous set {@link ChannelOption}.
      */
     @SuppressWarnings("unchecked")
     public <T> B option(ChannelOption<T> option, T value) {
@@ -161,7 +170,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * Allow to specify an initial attribute of the newly created {@link com.github.mauricio.netty.channel.Channel}.  If the {@code value} is
+     * Allow to specify an initial attribute of the newly created {@link Channel}.  If the {@code value} is
      * {@code null}, the attribute of the specified {@code key} is removed.
      */
     public <T> B attr(AttributeKey<T> key, T value) {
@@ -193,14 +202,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             throw new IllegalStateException("group not set");
         }
         if (channelFactory == null) {
-            throw new IllegalStateException("factory not set");
+            throw new IllegalStateException("channel or channelFactory not set");
         }
         return (B) this;
     }
 
     /**
      * Returns a deep clone of this bootstrap which has the identical configuration.  This method is useful when making
-     * multiple {@link com.github.mauricio.netty.channel.Channel}s with similar settings.  Please note that this method does not clone the
+     * multiple {@link Channel}s with similar settings.  Please note that this method does not clone the
      * {@link EventLoopGroup} deeply but shallowly, making the group a shared resource.
      */
     @Override
@@ -208,7 +217,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     public abstract B clone();
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.Channel} and register it with an {@link EventLoop}.
+     * Create a new {@link Channel} and register it with an {@link EventLoop}.
      */
     public ChannelFuture register() {
         validate();
@@ -216,7 +225,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.Channel} and bind it.
+     * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind() {
         validate();
@@ -228,28 +237,28 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.Channel} and bind it.
+     * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind(int inetPort) {
         return bind(new InetSocketAddress(inetPort));
     }
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.Channel} and bind it.
+     * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind(String inetHost, int inetPort) {
         return bind(new InetSocketAddress(inetHost, inetPort));
     }
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.Channel} and bind it.
+     * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind(InetAddress inetHost, int inetPort) {
         return bind(new InetSocketAddress(inetHost, inetPort));
     }
 
     /**
-     * Create a new {@link com.github.mauricio.netty.channel.Channel} and bind it.
+     * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind(SocketAddress localAddress) {
         validate();

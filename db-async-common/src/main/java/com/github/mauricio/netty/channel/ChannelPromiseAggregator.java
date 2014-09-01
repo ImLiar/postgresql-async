@@ -31,7 +31,7 @@ public final class ChannelPromiseAggregator implements ChannelFutureListener {
     private Set<ChannelPromise> pendingPromises;
 
     /**
-     * Instance an new {@link com.github.mauricio.netty.channel.ChannelPromiseAggregator}
+     * Instance an new {@link ChannelPromiseAggregator}
      *
      * @param aggregatePromise  the {@link ChannelPromise} to notify
      */

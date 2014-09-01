@@ -18,8 +18,8 @@ package com.github.mauricio.netty.channel;
 import com.github.mauricio.netty.channel.socket.ServerSocketChannel;
 
 /**
- * A {@link com.github.mauricio.netty.channel.Channel} that accepts an incoming connection attempt and creates
- * its child {@link com.github.mauricio.netty.channel.Channel}s by accepting them.  {@link ServerSocketChannel} is
+ * A {@link Channel} that accepts an incoming connection attempt and creates
+ * its child {@link Channel}s by accepting them.  {@link ServerSocketChannel} is
  * a good example.
  */
 public interface ServerChannel extends Channel {

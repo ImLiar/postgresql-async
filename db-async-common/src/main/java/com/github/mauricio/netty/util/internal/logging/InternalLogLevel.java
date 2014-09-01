@@ -16,7 +16,7 @@
 package com.github.mauricio.netty.util.internal.logging;
 
 /**
- * The log level that {@link com.github.mauricio.netty.util.internal.logging.InternalLogger} can log at.
+ * The log level that {@link InternalLogger} can log at.
  */
 public enum InternalLogLevel {
     /**

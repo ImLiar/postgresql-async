@@ -46,7 +46,7 @@ package com.github.mauricio.netty.util.internal.logging;
 public interface InternalLogger {
 
     /**
-     * Return the name of this {@link com.github.mauricio.netty.util.internal.logging.InternalLogger} instance.
+     * Return the name of this {@link InternalLogger} instance.
      *
      * @return name of this logger instance
      */
@@ -424,8 +424,8 @@ public interface InternalLogger {
      * is disabled for the specified {@code level}. However, this variant incurs the hidden
      * (and relatively small) cost of creating an {@code Object[]} before invoking the method,
      * even if this logger is disabled for the specified {@code level}. The variants taking
-     * {@link #log(com.github.mauricio.netty.util.internal.logging.InternalLogLevel, String, Object) one} and
-     * {@link #log(com.github.mauricio.netty.util.internal.logging.InternalLogLevel, String, Object, Object) two} arguments exist solely
+     * {@link #log(InternalLogLevel, String, Object) one} and
+     * {@link #log(InternalLogLevel, String, Object, Object) two} arguments exist solely
      * in order to avoid this hidden cost.</p>
      *
      * @param format    the format string

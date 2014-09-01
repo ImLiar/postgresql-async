@@ -23,17 +23,17 @@ import com.github.mauricio.netty.util.ReferenceCounted;
 public interface ByteBufHolder extends ReferenceCounted {
 
     /**
-     * Return the data which is held by this {@link com.github.mauricio.netty.buffer.ByteBufHolder}.
+     * Return the data which is held by this {@link ByteBufHolder}.
      */
     ByteBuf content();
 
     /**
-     * Create a deep copy of this {@link com.github.mauricio.netty.buffer.ByteBufHolder}.
+     * Create a deep copy of this {@link ByteBufHolder}.
      */
     ByteBufHolder copy();
 
     /**
-     * Duplicate the {@link com.github.mauricio.netty.buffer.ByteBufHolder}. Be aware that this will not automatically call {@link #retain()}.
+     * Duplicate the {@link ByteBufHolder}. Be aware that this will not automatically call {@link #retain()}.
      */
     ByteBufHolder duplicate();
 

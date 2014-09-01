@@ -31,6 +31,7 @@ public final class AppendableCharSequence implements CharSequence, Appendable {
 
     private AppendableCharSequence(char[] chars) {
         this.chars = chars;
+        pos = chars.length;
     }
 
     @Override
@@ -97,7 +98,7 @@ public final class AppendableCharSequence implements CharSequence, Appendable {
     }
 
     /**
-     * Reset the {@link com.github.mauricio.netty.util.internal.AppendableCharSequence}. Be aware this will only reset the current internal position and not
+     * Reset the {@link AppendableCharSequence}. Be aware this will only reset the current internal position and not
      * shrink the internal char array.
      */
     public void reset() {

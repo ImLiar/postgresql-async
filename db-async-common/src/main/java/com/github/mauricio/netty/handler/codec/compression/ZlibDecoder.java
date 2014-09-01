@@ -15,10 +15,11 @@
  */
 package com.github.mauricio.netty.handler.codec.compression;
 
+import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.handler.codec.ByteToMessageDecoder;
 
 /**
- * Decompresses a {@link com.github.mauricio.netty.buffer.ByteBuf} using the deflate algorithm.
+ * Decompresses a {@link ByteBuf} using the deflate algorithm.
  */
 public abstract class ZlibDecoder extends ByteToMessageDecoder {
 

@@ -26,8 +26,8 @@ import java.nio.channels.ScatteringByteChannel;
 
 /**
  * A derived buffer which exposes its parent's sub-region only.  It is
- * recommended to use {@link com.github.mauricio.netty.buffer.ByteBuf#slice()} and
- * {@link com.github.mauricio.netty.buffer.ByteBuf#slice(int, int)} instead of calling the constructor
+ * recommended to use {@link ByteBuf#slice()} and
+ * {@link ByteBuf#slice(int, int)} instead of calling the constructor
  * explicitly.
  */
 public class SlicedByteBuf extends AbstractDerivedByteBuf {

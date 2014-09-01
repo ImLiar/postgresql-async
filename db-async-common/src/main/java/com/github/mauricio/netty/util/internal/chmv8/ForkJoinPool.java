@@ -32,19 +32,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.AbstractExecutorService;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * An {@link java.util.concurrent.ExecutorService} for running {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask}s.
+ * An {@link ExecutorService} for running {@link ForkJoinTask}s.
  * A {@code ForkJoinPool} provides the entry point for submissions
  * from non-{@code ForkJoinTask} clients, as well as management and
  * monitoring operations.
  *
  * <p>A {@code ForkJoinPool} differs from other kinds of {@link
- * java.util.concurrent.ExecutorService} mainly by virtue of employing
+ * ExecutorService} mainly by virtue of employing
  * <em>work-stealing</em>: all threads in the pool attempt to find and
  * execute tasks submitted to the pool and/or created by other active
  * tasks (eventually blocking waiting for work if none exist). This
@@ -70,7 +71,7 @@ import java.util.concurrent.TimeUnit;
  * threads, even if some tasks are stalled waiting to join others.
  * However, no such adjustments are guaranteed in the face of blocked
  * I/O or other unmanaged synchronization. The nested {@link
- * com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool.ManagedBlocker} interface enables extension of the kinds of
+ * ManagedBlocker} interface enables extension of the kinds of
  * synchronization accommodated.
  *
  * <p>In addition to execution and lifecycle control methods, this
@@ -101,18 +102,18 @@ import java.util.concurrent.TimeUnit;
  *  </tr>
  *  <tr>
  *    <td> <b>Arrange async execution</b></td>
- *    <td> {@link #execute(com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask)}</td>
- *    <td> {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask#fork}</td>
+ *    <td> {@link #execute(ForkJoinTask)}</td>
+ *    <td> {@link ForkJoinTask#fork}</td>
  *  </tr>
  *  <tr>
  *    <td> <b>Await and obtain result</b></td>
- *    <td> {@link #invoke(com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask)}</td>
- *    <td> {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask#invoke}</td>
+ *    <td> {@link #invoke(ForkJoinTask)}</td>
+ *    <td> {@link ForkJoinTask#invoke}</td>
  *  </tr>
  *  <tr>
  *    <td> <b>Arrange exec and obtain Future</b></td>
- *    <td> {@link #submit(com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask)}</td>
- *    <td> {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask#fork} (ForkJoinTasks <em>are</em> Futures)</td>
+ *    <td> {@link #submit(ForkJoinTask)}</td>
+ *    <td> {@link ForkJoinTask#fork} (ForkJoinTasks <em>are</em> Futures)</td>
  *  </tr>
  * </table>
  *
@@ -123,9 +124,9 @@ import java.util.concurrent.TimeUnit;
  * <li>{@code java.util.concurrent.ForkJoinPool.common.parallelism}
  * - the parallelism level, a non-negative integer
  * <li>{@code java.util.concurrent.ForkJoinPool.common.threadFactory}
- * - the class name of a {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool.ForkJoinWorkerThreadFactory}
+ * - the class name of a {@link ForkJoinWorkerThreadFactory}
  * <li>{@code java.util.concurrent.ForkJoinPool.common.exceptionHandler}
- * - the class name of a {@link java.lang.Thread.UncaughtExceptionHandler}
+ * - the class name of a {@link UncaughtExceptionHandler}
  * </ul>
  * The system class loader is used to load these classes.
  * Upon any error in establishing these settings, default parameters
@@ -139,7 +140,7 @@ import java.util.concurrent.TimeUnit;
  * {@code IllegalArgumentException}.
  *
  * <p>This implementation rejects submitted tasks (that is, by throwing
- * {@link java.util.concurrent.RejectedExecutionException}) only when the pool is shut down
+ * {@link RejectedExecutionException}) only when the pool is shut down
  * or internal resources have been exhausted.
  *
  * @since 1.7
@@ -538,7 +539,7 @@ public class ForkJoinPool extends AbstractExecutorService {
     // Nested classes
 
     /**
-     * Factory for creating new {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinWorkerThread}s.
+     * Factory for creating new {@link ForkJoinWorkerThread}s.
      * A {@code ForkJoinWorkerThreadFactory} must be defined and used
      * for {@code ForkJoinWorkerThread} subclasses that extend base
      * functionality or initialize threads with different contexts.
@@ -709,7 +710,7 @@ public class ForkJoinPool extends AbstractExecutorService {
          * shared-queue version is embedded in method externalPush.)
          *
          * @param task the task. Caller must ensure non-null.
-         * @throws java.util.concurrent.RejectedExecutionException if array cannot be resized
+         * @throws RejectedExecutionException if array cannot be resized
          */
         final void push(ForkJoinTask<?> task) {
             ForkJoinTask<?>[] a; ForkJoinPool p;
@@ -2382,14 +2383,14 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * Creates a {@code ForkJoinPool} with parallelism equal to {@link
-     * Runtime#availableProcessors}, using the {@linkplain
+     * java.lang.Runtime#availableProcessors}, using the {@linkplain
      * #defaultForkJoinWorkerThreadFactory default thread factory},
      * no UncaughtExceptionHandler, and non-async LIFO processing mode.
      *
      * @throws SecurityException if a security manager exists and
      *         the caller is not permitted to modify threads
      *         because it does not hold {@link
-     *         RuntimePermission}{@code ("modifyThread")}
+     *         java.lang.RuntimePermission}{@code ("modifyThread")}
      */
     public ForkJoinPool() {
         this(Math.min(MAX_CAP, Runtime.getRuntime().availableProcessors()),
@@ -2408,7 +2409,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @throws SecurityException if a security manager exists and
      *         the caller is not permitted to modify threads
      *         because it does not hold {@link
-     *         RuntimePermission}{@code ("modifyThread")}
+     *         java.lang.RuntimePermission}{@code ("modifyThread")}
      */
     public ForkJoinPool(int parallelism) {
         this(parallelism, defaultForkJoinWorkerThreadFactory, null, false);
@@ -2418,7 +2419,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * Creates a {@code ForkJoinPool} with the given parameters.
      *
      * @param parallelism the parallelism level. For default value,
-     * use {@link Runtime#availableProcessors}.
+     * use {@link java.lang.Runtime#availableProcessors}.
      * @param factory the factory for creating new threads. For default value,
      * use {@link #defaultForkJoinWorkerThreadFactory}.
      * @param handler the handler for internal worker threads that
@@ -2436,7 +2437,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @throws SecurityException if a security manager exists and
      *         the caller is not permitted to modify threads
      *         because it does not hold {@link
-     *         RuntimePermission}{@code ("modifyThread")}
+     *         java.lang.RuntimePermission}{@code ("modifyThread")}
      */
     public ForkJoinPool(int parallelism,
                         ForkJoinWorkerThreadFactory factory,
@@ -2515,7 +2516,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @param task the task
      * @return the task's result
      * @throws NullPointerException if the task is null
-     * @throws java.util.concurrent.RejectedExecutionException if the task cannot be
+     * @throws RejectedExecutionException if the task cannot be
      *         scheduled for execution
      */
     public <T> T invoke(ForkJoinTask<T> task) {
@@ -2530,7 +2531,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      *
      * @param task the task
      * @throws NullPointerException if the task is null
-     * @throws java.util.concurrent.RejectedExecutionException if the task cannot be
+     * @throws RejectedExecutionException if the task cannot be
      *         scheduled for execution
      */
     public void execute(ForkJoinTask<?> task) {
@@ -2543,7 +2544,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * @throws NullPointerException if the task is null
-     * @throws java.util.concurrent.RejectedExecutionException if the task cannot be
+     * @throws RejectedExecutionException if the task cannot be
      *         scheduled for execution
      */
     public void execute(Runnable task) {
@@ -2563,7 +2564,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @param task the task to submit
      * @return the task
      * @throws NullPointerException if the task is null
-     * @throws java.util.concurrent.RejectedExecutionException if the task cannot be
+     * @throws RejectedExecutionException if the task cannot be
      *         scheduled for execution
      */
     public <T> ForkJoinTask<T> submit(ForkJoinTask<T> task) {
@@ -2575,7 +2576,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * @throws NullPointerException if the task is null
-     * @throws java.util.concurrent.RejectedExecutionException if the task cannot be
+     * @throws RejectedExecutionException if the task cannot be
      *         scheduled for execution
      */
     public <T> ForkJoinTask<T> submit(Callable<T> task) {
@@ -2586,7 +2587,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * @throws NullPointerException if the task is null
-     * @throws java.util.concurrent.RejectedExecutionException if the task cannot be
+     * @throws RejectedExecutionException if the task cannot be
      *         scheduled for execution
      */
     public <T> ForkJoinTask<T> submit(Runnable task, T result) {
@@ -2597,7 +2598,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * @throws NullPointerException if the task is null
-     * @throws java.util.concurrent.RejectedExecutionException if the task cannot be
+     * @throws RejectedExecutionException if the task cannot be
      *         scheduled for execution
      */
     public ForkJoinTask<?> submit(Runnable task) {
@@ -2614,7 +2615,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * @throws NullPointerException       {@inheritDoc}
-     * @throws java.util.concurrent.RejectedExecutionException {@inheritDoc}
+     * @throws RejectedExecutionException {@inheritDoc}
      */
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) {
         // In previous versions of this class, this method constructed
@@ -2942,7 +2943,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @throws SecurityException if a security manager exists and
      *         the caller is not permitted to modify threads
      *         because it does not hold {@link
-     *         RuntimePermission}{@code ("modifyThread")}
+     *         java.lang.RuntimePermission}{@code ("modifyThread")}
      */
     public void shutdown() {
         checkPermission();
@@ -2965,7 +2966,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * @throws SecurityException if a security manager exists and
      *         the caller is not permitted to modify threads
      *         because it does not hold {@link
-     *         RuntimePermission}{@code ("modifyThread")}
+     *         java.lang.RuntimePermission}{@code ("modifyThread")}
      */
     public List<Runnable> shutdownNow() {
         checkPermission();
@@ -2991,7 +2992,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * period after shutdown may indicate that submitted tasks have
      * ignored or suppressed interruption, or are waiting for I/O,
      * causing this executor not to properly terminate. (See the
-     * advisory notes for class {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask} stating that
+     * advisory notes for class {@link ForkJoinTask} stating that
      * tasks should not normally entail blocking operations.  But if
      * they do, they must abort them on interrupt.)
      *
@@ -3018,7 +3019,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      * is interrupted, whichever happens first. Because the {@link
      * #commonPool()} never terminates until program shutdown, when
      * applied to the common pool, this method is equivalent to {@link
-     * #awaitQuiescence(long, java.util.concurrent.TimeUnit)} but always returns {@code false}.
+     * #awaitQuiescence(long, TimeUnit)} but always returns {@code false}.
      *
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
@@ -3055,7 +3056,7 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * If called by a ForkJoinTask operating in this pool, equivalent
-     * in effect to {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask#helpQuiesce}. Otherwise,
+     * in effect to {@link ForkJoinTask#helpQuiesce}. Otherwise,
      * waits and/or attempts to assist performing tasks until this
      * pool {@link #isQuiescent} or the indicated timeout elapses.
      *
@@ -3108,14 +3109,14 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * Interface for extending managed parallelism for tasks running
-     * in {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool}s.
+     * in {@link ForkJoinPool}s.
      *
      * <p>A {@code ManagedBlocker} provides two methods.  Method
      * {@code isReleasable} must return {@code true} if blocking is
      * not necessary. Method {@code block} blocks the current thread
      * if necessary (perhaps internally invoking {@code isReleasable}
      * before actually blocking). These actions are performed by any
-     * thread invoking {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool#managedBlock(com.github.mauricio.netty.util.internal.chmv8.ForkJoinPool.ManagedBlocker)}.
+     * thread invoking {@link ForkJoinPool#managedBlock(ManagedBlocker)}.
      * The unusual methods in this API accommodate synchronizers that
      * may, but don't usually, block for long periods. Similarly, they
      * allow more efficient internal handling of cases in which
@@ -3182,11 +3183,11 @@ public class ForkJoinPool extends AbstractExecutorService {
 
     /**
      * Blocks in accord with the given blocker.  If the current thread
-     * is a {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinWorkerThread}, this method possibly
+     * is a {@link ForkJoinWorkerThread}, this method possibly
      * arranges for a spare thread to be activated if necessary to
      * ensure sufficient parallelism while the current thread is blocked.
      *
-     * <p>If the caller is not a {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask}, this method is
+     * <p>If the caller is not a {@link ForkJoinTask}, this method is
      * behaviorally equivalent to
      *  <pre> {@code
      * while (!blocker.isReleasable())

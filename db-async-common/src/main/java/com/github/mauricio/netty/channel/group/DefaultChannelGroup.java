@@ -26,7 +26,12 @@ import com.github.mauricio.netty.util.concurrent.EventExecutor;
 import com.github.mauricio.netty.util.internal.ConcurrentSet;
 import com.github.mauricio.netty.util.internal.StringUtil;
 
-import java.util.*;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -47,7 +52,7 @@ public class DefaultChannelGroup extends AbstractSet<Channel> implements Channel
     };
 
     /**
-     * Creates a new group with a generated name amd the provided {@link com.github.mauricio.netty.util.concurrent.EventExecutor} to notify the
+     * Creates a new group with a generated name and the provided {@link EventExecutor} to notify the
      * {@link ChannelGroupFuture}s.
      */
     public DefaultChannelGroup(EventExecutor executor) {
@@ -55,7 +60,7 @@ public class DefaultChannelGroup extends AbstractSet<Channel> implements Channel
     }
 
     /**
-     * Creates a new group with the specified {@code name} and {@link com.github.mauricio.netty.util.concurrent.EventExecutor} to notify the
+     * Creates a new group with the specified {@code name} and {@link EventExecutor} to notify the
      * {@link ChannelGroupFuture}s.  Please note that different groups can have the same name, which means no
      * duplicate check is done against group names.
      */

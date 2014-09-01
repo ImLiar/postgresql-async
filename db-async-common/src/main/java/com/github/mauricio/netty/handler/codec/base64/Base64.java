@@ -23,7 +23,7 @@ import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.Unpooled;
 
 /**
- * Utility class for {@link com.github.mauricio.netty.buffer.ByteBuf} that encodes and decodes to and from
+ * Utility class for {@link ByteBuf} that encodes and decodes to and from
  * <a href="http://en.wikipedia.org/wiki/Base64">Base64</a> notation.
  * <p>
  * The encoding and decoding algorithm in this class has been derived from

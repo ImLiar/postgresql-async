@@ -16,7 +16,9 @@
 package com.github.mauricio.netty.handler.codec;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
+import com.github.mauricio.netty.channel.ChannelHandler;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
+import com.github.mauricio.netty.channel.ChannelPipeline;
 import com.github.mauricio.netty.util.Signal;
 import com.github.mauricio.netty.util.internal.RecyclableArrayList;
 import com.github.mauricio.netty.util.internal.StringUtil;
@@ -24,21 +26,21 @@ import com.github.mauricio.netty.util.internal.StringUtil;
 import java.util.List;
 
 /**
- * A specialized variation of {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} which enables implementation
+ * A specialized variation of {@link ByteToMessageDecoder} which enables implementation
  * of a non-blocking decoder in the blocking I/O paradigm.
  * <p>
- * The biggest difference between {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} and
- * {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} is that {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} allows you to
+ * The biggest difference between {@link ReplayingDecoder} and
+ * {@link ByteToMessageDecoder} is that {@link ReplayingDecoder} allows you to
  * implement the {@code decode()} and {@code decodeLast()} methods just like
  * all required bytes were received already, rather than checking the
  * availability of the required bytes.  For example, the following
- * {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} implementation:
+ * {@link ByteToMessageDecoder} implementation:
  * <pre>
- * public class IntegerHeaderFrameDecoder extends {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} {
+ * public class IntegerHeaderFrameDecoder extends {@link ByteToMessageDecoder} {
  *
  *   {@code @Override}
- *   protected void decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx,
- *                           {@link com.github.mauricio.netty.buffer.ByteBuf} in, List&lt;Object&gt; out) throws Exception {
+ *   protected void decode({@link ChannelHandlerContext} ctx,
+ *                           {@link ByteBuf} in, List&lt;Object&gt; out) throws Exception {
  *
  *     if (in.readableBytes() &lt; 4) {
  *        return;
@@ -56,13 +58,13 @@ import java.util.List;
  *   }
  * }
  * </pre>
- * is simplified like the following with {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}:
+ * is simplified like the following with {@link ReplayingDecoder}:
  * <pre>
  * public class IntegerHeaderFrameDecoder
- *      extends {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}&lt;{@link Void}&gt; {
+ *      extends {@link ReplayingDecoder}&lt;{@link Void}&gt; {
  *
- *   protected void decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx,
- *                           {@link com.github.mauricio.netty.buffer.ByteBuf} buf) throws Exception {
+ *   protected void decode({@link ChannelHandlerContext} ctx,
+ *                           {@link ByteBuf} buf) throws Exception {
  *
  *     out.add(buf.readBytes(buf.readInt()));
  *   }
@@ -71,26 +73,26 @@ import java.util.List;
  *
  * <h3>How does this work?</h3>
  * <p>
- * {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} passes a specialized {@link com.github.mauricio.netty.buffer.ByteBuf}
+ * {@link ReplayingDecoder} passes a specialized {@link ByteBuf}
  * implementation which throws an {@link Error} of certain type when there's not
  * enough data in the buffer.  In the {@code IntegerHeaderFrameDecoder} above,
  * you just assumed that there will be 4 or more bytes in the buffer when
  * you call {@code buf.readInt()}.  If there's really 4 bytes in the buffer,
  * it will return the integer header as you expected.  Otherwise, the
  * {@link Error} will be raised and the control will be returned to
- * {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}.  If {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} catches the
+ * {@link ReplayingDecoder}.  If {@link ReplayingDecoder} catches the
  * {@link Error}, then it will rewind the {@code readerIndex} of the buffer
  * back to the 'initial' position (i.e. the beginning of the buffer) and call
  * the {@code decode(..)} method again when more data is received into the
  * buffer.
  * <p>
- * Please note that {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} always throws the same cached
+ * Please note that {@link ReplayingDecoder} always throws the same cached
  * {@link Error} instance to avoid the overhead of creating a new {@link Error}
  * and filling its stack trace for every throw.
  *
  * <h3>Limitations</h3>
  * <p>
- * At the cost of the simplicity, {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} enforces you a few
+ * At the cost of the simplicity, {@link ReplayingDecoder} enforces you a few
  * limitations:
  * <ul>
  * <li>Some buffer operations are prohibited.</li>
@@ -101,12 +103,12 @@ import java.util.List;
  * <li>You must keep in mind that {@code decode(..)} method can be called many
  *     times to decode a single message.  For example, the following code will
  *     not work:
- * <pre> public class MyDecoder extends {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}&lt;{@link Void}&gt; {
+ * <pre> public class MyDecoder extends {@link ReplayingDecoder}&lt;{@link Void}&gt; {
  *
  *   private final Queue&lt;Integer&gt; values = new LinkedList&lt;Integer&gt;();
  *
  *   {@code @Override}
- *   public void decode(.., {@link com.github.mauricio.netty.buffer.ByteBuf} in, List&lt;Object&gt; out) throws Exception {
+ *   public void decode(.., {@link ByteBuf} in, List&lt;Object&gt; out) throws Exception {
  *
  *     // A message contains 2 integers.
  *     values.offer(buffer.readInt());
@@ -121,12 +123,12 @@ import java.util.List;
  *      The correct implementation looks like the following, and you can also
  *      utilize the 'checkpoint' feature which is explained in detail in the
  *      next section.
- * <pre> public class MyDecoder extends {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}&lt;{@link Void}&gt; {
+ * <pre> public class MyDecoder extends {@link ReplayingDecoder}&lt;{@link Void}&gt; {
  *
  *   private final Queue&lt;Integer&gt; values = new LinkedList&lt;Integer&gt;();
  *
  *   {@code @Override}
- *   public void decode(.., {@link com.github.mauricio.netty.buffer.ByteBuf} buffer, List&lt;Object&gt; out) throws Exception {
+ *   public void decode(.., {@link ByteBuf} buffer, List&lt;Object&gt; out) throws Exception {
  *
  *     // Revert the state of the variable that might have been changed
  *     // since the last partial decode.
@@ -149,7 +151,7 @@ import java.util.List;
  * Fortunately, the performance of a complex decoder implementation can be
  * improved significantly with the {@code checkpoint()} method.  The
  * {@code checkpoint()} method updates the 'initial' position of the buffer so
- * that {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} rewinds the {@code readerIndex} of the buffer
+ * that {@link ReplayingDecoder} rewinds the {@code readerIndex} of the buffer
  * to the last position where you called the {@code checkpoint()} method.
  *
  * <h4>Calling {@code checkpoint(T)} with an {@link Enum}</h4>
@@ -168,7 +170,7 @@ import java.util.List;
  * }
  *
  * public class IntegerHeaderFrameDecoder
- *      extends {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}&lt;<strong>MyDecoderState</strong>&gt; {
+ *      extends {@link ReplayingDecoder}&lt;<strong>MyDecoderState</strong>&gt; {
  *
  *   private int length;
  *
@@ -178,8 +180,8 @@ import java.util.List;
  *   }
  *
  *   {@code @Override}
- *   protected void decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx,
- *                           {@link com.github.mauricio.netty.buffer.ByteBuf} in, List&lt;Object&gt; out) throws Exception {
+ *   protected void decode({@link ChannelHandlerContext} ctx,
+ *                           {@link ByteBuf} in, List&lt;Object&gt; out) throws Exception {
  *     switch (state()) {
  *     case READ_LENGTH:
  *       length = buf.readInt();
@@ -200,14 +202,14 @@ import java.util.List;
  * An alternative way to manage the decoder state is to manage it by yourself.
  * <pre>
  * public class IntegerHeaderFrameDecoder
- *      extends {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}&lt;<strong>{@link Void}</strong>&gt; {
+ *      extends {@link ReplayingDecoder}&lt;<strong>{@link Void}</strong>&gt; {
  *
  *   <strong>private boolean readLength;</strong>
  *   private int length;
  *
  *   {@code @Override}
- *   protected void decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx,
- *                           {@link com.github.mauricio.netty.buffer.ByteBuf} in, List&lt;Object&gt; out) throws Exception {
+ *   protected void decode({@link ChannelHandlerContext} ctx,
+ *                           {@link ByteBuf} in, List&lt;Object&gt; out) throws Exception {
  *     if (!readLength) {
  *       length = buf.readInt();
  *       <strong>readLength = true;</strong>
@@ -227,18 +229,18 @@ import java.util.List;
  * <h3>Replacing a decoder with another decoder in a pipeline</h3>
  * <p>
  * If you are going to write a protocol multiplexer, you will probably want to
- * replace a {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder} (protocol detector) with another
- * {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}, {@link com.github.mauricio.netty.handler.codec.ByteToMessageDecoder} or {@link com.github.mauricio.netty.handler.codec.MessageToMessageDecoder}
+ * replace a {@link ReplayingDecoder} (protocol detector) with another
+ * {@link ReplayingDecoder}, {@link ByteToMessageDecoder} or {@link MessageToMessageDecoder}
  * (actual protocol decoder).
  * It is not possible to achieve this simply by calling
- * {@link com.github.mauricio.netty.channel.ChannelPipeline#replace(com.github.mauricio.netty.channel.ChannelHandler, String, com.github.mauricio.netty.channel.ChannelHandler)}, but
+ * {@link ChannelPipeline#replace(ChannelHandler, String, ChannelHandler)}, but
  * some additional steps are required:
  * <pre>
- * public class FirstDecoder extends {@link com.github.mauricio.netty.handler.codec.ReplayingDecoder}&lt;{@link Void}&gt; {
+ * public class FirstDecoder extends {@link ReplayingDecoder}&lt;{@link Void}&gt; {
  *
  *     {@code @Override}
- *     protected Object decode({@link com.github.mauricio.netty.channel.ChannelHandlerContext} ctx,
- *                             {@link com.github.mauricio.netty.buffer.ByteBuf} in, List&lt;Object&gt; out) {
+ *     protected Object decode({@link ChannelHandlerContext} ctx,
+ *                             {@link ByteBuf} in, List&lt;Object&gt; out) {
  *         ...
  *         // Decode the first message
  *         Object firstMessage = ...;

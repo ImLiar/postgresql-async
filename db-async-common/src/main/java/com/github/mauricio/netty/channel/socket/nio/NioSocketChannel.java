@@ -16,11 +16,19 @@
 package com.github.mauricio.netty.channel.socket.nio;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelMetadata;
+import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.EventLoop;
+import com.github.mauricio.netty.channel.FileRegion;
 import com.github.mauricio.netty.channel.nio.AbstractNioByteChannel;
 import com.github.mauricio.netty.channel.socket.DefaultSocketChannelConfig;
 import com.github.mauricio.netty.channel.socket.ServerSocketChannel;
 import com.github.mauricio.netty.channel.socket.SocketChannelConfig;
+import com.github.mauricio.netty.util.internal.OneTimeTask;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -28,6 +36,7 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
 
 /**
  * {@link com.github.mauricio.netty.channel.socket.SocketChannel} which uses NIO selector based implementation.
@@ -35,10 +44,17 @@ import java.nio.channels.SocketChannel;
 public class NioSocketChannel extends AbstractNioByteChannel implements com.github.mauricio.netty.channel.socket.SocketChannel {
 
     private static final ChannelMetadata METADATA = new ChannelMetadata(false);
+    private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
 
-    private static SocketChannel newSocket() {
+    private static SocketChannel newSocket(SelectorProvider provider) {
         try {
-            return SocketChannel.open();
+            /**
+             *  Use the {@link SelectorProvider} to open {@link SocketChannel} and so remove condition in
+             *  {@link SelectorProvider#provider()} which is called by each SocketChannel.open() otherwise.
+             *
+             *  See <a href="See https://github.com/netty/netty/issues/2308">#2308</a>.
+             */
+            return provider.openSocketChannel();
         } catch (IOException e) {
             throw new ChannelException("Failed to open a socket.", e);
         }
@@ -50,11 +66,18 @@ public class NioSocketChannel extends AbstractNioByteChannel implements com.gith
      * Create a new instance
      */
     public NioSocketChannel() {
-        this(newSocket());
+        this(newSocket(DEFAULT_SELECTOR_PROVIDER));
     }
 
     /**
-     * Create a new instance using the given {@link java.nio.channels.SocketChannel}.
+     * Create a new instance using the given {@link SelectorProvider}.
+     */
+    public NioSocketChannel(SelectorProvider provider) {
+        this(newSocket(provider));
+    }
+
+    /**
+     * Create a new instance using the given {@link SocketChannel}.
      */
     public NioSocketChannel(SocketChannel socket) {
         this(null, socket);
@@ -63,8 +86,8 @@ public class NioSocketChannel extends AbstractNioByteChannel implements com.gith
     /**
      * Create a new instance
      *
-     * @param parent    the {@link com.github.mauricio.netty.channel.Channel} which created this instance or {@code null} if it was created by the user
-     * @param socket    the {@link java.nio.channels.SocketChannel} which will be used
+     * @param parent    the {@link Channel} which created this instance or {@code null} if it was created by the user
+     * @param socket    the {@link SocketChannel} which will be used
      */
     public NioSocketChannel(Channel parent, SocketChannel socket) {
         super(parent, socket);
@@ -133,7 +156,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements com.gith
                 promise.setFailure(t);
             }
         } else {
-            loop.execute(new Runnable() {
+            loop.execute(new OneTimeTask() {
                 @Override
                 public void run() {
                     shutdownOutput(promise);

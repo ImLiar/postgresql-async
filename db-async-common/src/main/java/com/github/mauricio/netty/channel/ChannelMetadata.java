@@ -15,8 +15,10 @@
  */
 package com.github.mauricio.netty.channel;
 
+import java.net.SocketAddress;
+
 /**
- * Represents the properties of a {@link com.github.mauricio.netty.channel.Channel} implementation.
+ * Represents the properties of a {@link Channel} implementation.
  */
 public final class ChannelMetadata {
 
@@ -26,7 +28,7 @@ public final class ChannelMetadata {
      * Create a new instance
      *
      * @param hasDisconnect     {@code true} if and only if the channel has the {@code disconnect()} operation
-     *                          that allows a user to disconnect and then call {@link com.github.mauricio.netty.channel.Channel#connect(java.net.SocketAddress)}
+     *                          that allows a user to disconnect and then call {@link Channel#connect(SocketAddress)}
      *                                      again, such as UDP/IP.
      */
     public ChannelMetadata(boolean hasDisconnect) {
@@ -35,7 +37,7 @@ public final class ChannelMetadata {
 
     /**
      * Returns {@code true} if and only if the channel has the {@code disconnect()} operation
-     * that allows a user to disconnect and then call {@link com.github.mauricio.netty.channel.Channel#connect(java.net.SocketAddress)} again,
+     * that allows a user to disconnect and then call {@link Channel#connect(SocketAddress)} again,
      * such as UDP/IP.
      */
     public boolean hasDisconnect() {

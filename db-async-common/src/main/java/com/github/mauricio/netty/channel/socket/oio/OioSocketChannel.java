@@ -16,7 +16,12 @@
 package com.github.mauricio.netty.channel.socket.oio;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
-import com.github.mauricio.netty.channel.*;
+import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelException;
+import com.github.mauricio.netty.channel.ChannelFuture;
+import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.ConnectTimeoutException;
+import com.github.mauricio.netty.channel.EventLoop;
 import com.github.mauricio.netty.channel.oio.OioByteStreamChannel;
 import com.github.mauricio.netty.channel.socket.ServerSocketChannel;
 import com.github.mauricio.netty.channel.socket.SocketChannel;
@@ -30,7 +35,7 @@ import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 
 /**
- * A {@link com.github.mauricio.netty.channel.socket.SocketChannel} which is using Old-Blocking-IO
+ * A {@link SocketChannel} which is using Old-Blocking-IO
  */
 public class OioSocketChannel extends OioByteStreamChannel
                               implements SocketChannel {
@@ -42,27 +47,27 @@ public class OioSocketChannel extends OioByteStreamChannel
     private final OioSocketChannelConfig config;
 
     /**
-     * Create a new instance with an new {@link java.net.Socket}
+     * Create a new instance with an new {@link Socket}
      */
     public OioSocketChannel() {
         this(new Socket());
     }
 
     /**
-     * Create a new instance from the given {@link java.net.Socket}
+     * Create a new instance from the given {@link Socket}
      *
-     * @param socket    the {@link java.net.Socket} which is used by this instance
+     * @param socket    the {@link Socket} which is used by this instance
      */
     public OioSocketChannel(Socket socket) {
         this(null, socket);
     }
 
     /**
-     * Create a new instance from the given {@link java.net.Socket}
+     * Create a new instance from the given {@link Socket}
      *
-     * @param parent    the parent {@link com.github.mauricio.netty.channel.Channel} which was used to create this instance. This can be null if the
+     * @param parent    the parent {@link Channel} which was used to create this instance. This can be null if the
      *                  {@link} has no parent as it was created by your self.
-     * @param socket    the {@link java.net.Socket} which is used by this instance
+     * @param socket    the {@link Socket} which is used by this instance
      */
     public OioSocketChannel(Channel parent, Socket socket) {
         super(parent);

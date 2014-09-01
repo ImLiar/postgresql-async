@@ -21,8 +21,8 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 /**
- * A skeletal implementation of {@link com.github.mauricio.netty.util.internal.logging.InternalLogger}.  This class implements
- * all methods that have a {@link com.github.mauricio.netty.util.internal.logging.InternalLogLevel} parameter by default to call
+ * A skeletal implementation of {@link InternalLogger}.  This class implements
+ * all methods that have a {@link InternalLogLevel} parameter by default to call
  * specific logger methods such as {@link #info(String)} or {@link #isInfoEnabled()}.
  */
 public abstract class AbstractInternalLogger implements InternalLogger, Serializable {

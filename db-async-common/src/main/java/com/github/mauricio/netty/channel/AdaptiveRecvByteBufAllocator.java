@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The {@link com.github.mauricio.netty.channel.RecvByteBufAllocator} that automatically increases and
+ * The {@link RecvByteBufAllocator} that automatically increases and
  * decreases the predicted buffer size on feed back.
  * <p>
  * It gradually increases the expected number of readable bytes if the previous

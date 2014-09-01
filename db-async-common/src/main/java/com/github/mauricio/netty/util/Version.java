@@ -30,7 +30,7 @@ import java.util.TreeMap;
 /**
  * Retrieves the version information of available Netty artifacts.
  * <p>
- * This class retrieves the version information from {@code META-INF/io.netty.versions.properties}, which is
+ * This class retrieves the version information from {@code META-INF/com.github.mauricio.netty.versions.properties}, which is
  * generated in build time.  Note that it may not be possible to retrieve the information completely, depending on
  * your environment, such as the specified {@link ClassLoader}, the current {@link SecurityManager}.
  * </p>
@@ -48,7 +48,7 @@ public final class Version {
      * Retrieves the version information of Netty artifacts using the current
      * {@linkplain Thread#getContextClassLoader() context class loader}.
      *
-     * @return A {@link java.util.Map} whose keys are Maven artifact IDs and whose values are {@link com.github.mauricio.netty.util.Version}s
+     * @return A {@link Map} whose keys are Maven artifact IDs and whose values are {@link Version}s
      */
     public static Map<String, Version> identify() {
         return identify(null);
@@ -57,7 +57,7 @@ public final class Version {
     /**
      * Retrieves the version information of Netty artifacts using the specified {@link ClassLoader}.
      *
-     * @return A {@link java.util.Map} whose keys are Maven artifact IDs and whose values are {@link com.github.mauricio.netty.util.Version}s
+     * @return A {@link Map} whose keys are Maven artifact IDs and whose values are {@link Version}s
      */
     public static Map<String, Version> identify(ClassLoader classLoader) {
         if (classLoader == null) {

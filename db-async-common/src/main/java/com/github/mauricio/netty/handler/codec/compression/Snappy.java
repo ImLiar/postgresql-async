@@ -19,8 +19,8 @@ import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.buffer.ByteBufUtil;
 
 /**
- * Uncompresses an input {@link com.github.mauricio.netty.buffer.ByteBuf} encoded with Snappy compression into an
- * output {@link com.github.mauricio.netty.buffer.ByteBuf}.
+ * Uncompresses an input {@link ByteBuf} encoded with Snappy compression into an
+ * output {@link ByteBuf}.
  *
  * See http://code.google.com/p/snappy/source/browse/trunk/format_description.txt
  */
