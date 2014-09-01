@@ -1,4 +1,28 @@
-# [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala - 2.10
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala - 2.10 - 2.11
+	- [Abstractions and integrations](#abstractions-and-integrations)
+	- [Include them as dependencies](#include-them-as-dependencies)
+	- [Database connections and encodings](#database-connections-and-encodings)
+	- [Prepared statements gotcha](#prepared-statements-gotcha)
+	- [What are the design goals?](#what-are-the-design-goals)
+	- [What is missing?](#what-is-missing)
+	- [How can you help?](#how-can-you-help)
+	- [Main public interface](#main-public-interface)
+		- [Connection](#connection)
+		- [QueryResult](#queryresult)
+		- [ResultSet](#resultset)
+		- [Prepared statements](#prepared-statements)
+	- [Transactions](#transactions)
+	- [Example usage (for PostgreSQL, but it looks almost the same on MySQL)](#example-usage-for-postgresql-but-it-looks-almost-the-same-on-mysql)
+	- [Contributing](#contributing)
+	- [Licence](#licence)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala 2.10 and 2.11
 
 The main goal for this project is to implement simple, async, performant and reliable database drivers for
 PostgreSQL and MySQL in Scala. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
@@ -27,7 +51,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.2.12"
+"com.github.mauricio" %% "postgresql-async" % "0.2.14"
 ```
 
 Or Maven:
@@ -35,15 +59,15 @@ Or Maven:
 ```xml
 <dependency>
   <groupId>com.github.mauricio</groupId>
-  <artifactId>postgresql-async_2.10</artifactId>
-  <version>0.2.12</version>
+  <artifactId>postgresql-async_2.11</artifactId>
+  <version>0.2.14</version>
 </dependency>
 ```
 
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "0.2.12"
+"com.github.mauricio" %% "mysql-async" % "0.2.14"
 ```
 
 Or Maven:
@@ -51,8 +75,8 @@ Or Maven:
 ```xml
 <dependency>
   <groupId>com.github.mauricio</groupId>
-  <artifactId>mysql-async_2.10</artifactId>
-  <version>0.2.12</version>
+  <artifactId>mysql-async_2.11</artifactId>
+  <version>0.2.14</version>
 </dependency>
 ```
 
@@ -123,7 +147,7 @@ So, prepared statements are awesome, but are not free. Use them judiciously.
 ### Connection
 
 Represents a connection to the database. This is the **root** object you will be using in your application. You will
-find three classes that implement this trait, `PostgreSQLConnection`, `MySQLConnection` and `ConnectionPool`. 
+find three classes that implement this trait, `PostgreSQLConnection`, `MySQLConnection` and `ConnectionPool`.
 The difference between them is that `ConnectionPool` is, as the name implies, a pool of connections and you
 need to give it an connection factory so it can create connections and manage them.
 
