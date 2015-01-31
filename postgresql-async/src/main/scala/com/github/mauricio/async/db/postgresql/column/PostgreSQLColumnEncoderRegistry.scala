@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.column
 import java.nio.ByteBuffer
 
 import com.github.mauricio.async.db.column._
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 import org.joda.time._
 
 import scala.collection.JavaConversions._

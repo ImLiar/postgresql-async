@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.postgresql.exceptions.ByteArrayFormatNotSupp
 import com.github.mauricio.async.db.util.{ Log, HexCodec }
 import java.nio.ByteBuffer
 
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object ByteArrayEncoderDecoder extends ColumnEncoderDecoder {
 

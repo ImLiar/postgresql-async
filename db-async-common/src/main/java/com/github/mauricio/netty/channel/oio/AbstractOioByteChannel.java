@@ -17,11 +17,13 @@ package com.github.mauricio.netty.channel.oio;
 
 import com.github.mauricio.netty.buffer.ByteBuf;
 import com.github.mauricio.netty.channel.Channel;
+import com.github.mauricio.netty.channel.ChannelConfig;
 import com.github.mauricio.netty.channel.ChannelMetadata;
 import com.github.mauricio.netty.channel.ChannelOption;
 import com.github.mauricio.netty.channel.ChannelOutboundBuffer;
 import com.github.mauricio.netty.channel.ChannelPipeline;
 import com.github.mauricio.netty.channel.FileRegion;
+import com.github.mauricio.netty.channel.RecvByteBufAllocator;
 import com.github.mauricio.netty.channel.socket.ChannelInputShutdownEvent;
 import com.github.mauricio.netty.util.internal.StringUtil;
 
@@ -32,8 +34,13 @@ import java.io.IOException;
  */
 public abstract class AbstractOioByteChannel extends AbstractOioChannel {
 
-    private volatile boolean inputShutdown;
     private static final ChannelMetadata METADATA = new ChannelMetadata(false);
+    private static final String EXPECTED_TYPES =
+            " (expected: " + StringUtil.simpleClassName(ByteBuf.class) + ", " +
+            StringUtil.simpleClassName(FileRegion.class) + ')';
+
+    private RecvByteBufAllocator.Handle allocHandle;
+    private volatile boolean inputShutdown;
 
     /**
      * @see AbstractOioByteChannel#AbstractOioByteChannel(Channel)
@@ -72,17 +79,25 @@ public abstract class AbstractOioByteChannel extends AbstractOioChannel {
         if (checkInputShutdown()) {
             return;
         }
-
+        final ChannelConfig config = config();
         final ChannelPipeline pipeline = pipeline();
 
-        // TODO: calculate size as in 3.x
-        ByteBuf byteBuf = alloc().buffer();
+        RecvByteBufAllocator.Handle allocHandle = this.allocHandle;
+        if (allocHandle == null) {
+            this.allocHandle = allocHandle = config.getRecvByteBufAllocator().newHandle();
+        }
+
+        ByteBuf byteBuf = allocHandle.allocate(alloc());
+
         boolean closed = false;
         boolean read = false;
         Throwable exception = null;
+        int localReadAmount = 0;
         try {
+            int totalReadAmount = 0;
+
             for (;;) {
-                int localReadAmount = doReadBytes(byteBuf);
+                localReadAmount = doReadBytes(byteBuf);
                 if (localReadAmount > 0) {
                     read = true;
                 } else if (localReadAmount < 0) {
@@ -112,12 +127,23 @@ public abstract class AbstractOioByteChannel extends AbstractOioChannel {
                         }
                     }
                 }
-                if (!config().isAutoRead()) {
+
+                if (totalReadAmount >= Integer.MAX_VALUE - localReadAmount) {
+                    // Avoid overflow.
+                    totalReadAmount = Integer.MAX_VALUE;
+                    break;
+                }
+
+                totalReadAmount += localReadAmount;
+
+                if (!config.isAutoRead()) {
                     // stop reading until next Channel.read() call
                     // See https://github.com/netty/netty/issues/1363
                     break;
                 }
             }
+            allocHandle.record(totalReadAmount);
+
         } catch (Throwable t) {
             exception = t;
         } finally {
@@ -149,6 +175,15 @@ public abstract class AbstractOioByteChannel extends AbstractOioChannel {
                     }
                 }
             }
+            if (localReadAmount == 0 && isActive()) {
+                // If the read amount was 0 and the channel is still active we need to trigger a new read()
+                // as otherwise we will never try to read again and the user will never know.
+                // Just call read() is ok here as it will be submitted to the EventLoop as a task and so we are
+                // able to process the rest of the tasks in the queue first.
+                //
+                // See https://github.com/netty/netty/issues/2404
+                read();
+            }
         }
     }
 
@@ -162,18 +197,35 @@ public abstract class AbstractOioByteChannel extends AbstractOioChannel {
             }
             if (msg instanceof ByteBuf) {
                 ByteBuf buf = (ByteBuf) msg;
-                while (buf.isReadable()) {
+                int readableBytes = buf.readableBytes();
+                while (readableBytes > 0) {
                     doWriteBytes(buf);
+                    int newReadableBytes = buf.readableBytes();
+                    in.progress(readableBytes - newReadableBytes);
+                    readableBytes = newReadableBytes;
                 }
                 in.remove();
             } else if (msg instanceof FileRegion) {
-                doWriteFileRegion((FileRegion) msg);
+                FileRegion region = (FileRegion) msg;
+                long transfered = region.transfered();
+                doWriteFileRegion(region);
+                in.progress(region.transfered() - transfered);
                 in.remove();
             } else {
                 in.remove(new UnsupportedOperationException(
                         "unsupported message type: " + StringUtil.simpleClassName(msg)));
             }
         }
+    }
+
+    @Override
+    protected final Object filterOutboundMessage(Object msg) throws Exception {
+        if (msg instanceof ByteBuf || msg instanceof FileRegion) {
+            return msg;
+        }
+
+        throw new UnsupportedOperationException(
+                "unsupported message type: " + StringUtil.simpleClassName(msg) + EXPECTED_TYPES);
     }
 
     /**

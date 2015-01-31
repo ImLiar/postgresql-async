@@ -16,6 +16,8 @@
 
 package com.github.mauricio.netty.util;
 
+import com.github.mauricio.netty.util.internal.PlatformDependent;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
@@ -30,7 +32,7 @@ import java.util.TreeMap;
 /**
  * Retrieves the version information of available Netty artifacts.
  * <p>
- * This class retrieves the version information from {@code META-INF/com.github.mauricio.netty.versions.properties}, which is
+ * This class retrieves the version information from {@code META-INF/io.netty.versions.properties}, which is
  * generated in build time.  Note that it may not be possible to retrieve the information completely, depending on
  * your environment, such as the specified {@link ClassLoader}, the current {@link SecurityManager}.
  * </p>
@@ -61,7 +63,7 @@ public final class Version {
      */
     public static Map<String, Version> identify(ClassLoader classLoader) {
         if (classLoader == null) {
-            classLoader = Thread.currentThread().getContextClassLoader();
+            classLoader = PlatformDependent.getContextClassLoader();
         }
 
         // Collect all properties.
@@ -130,7 +132,7 @@ public final class Version {
     private static long parseIso8601(String value) {
         try {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z").parse(value).getTime();
-        } catch (ParseException e) {
+        } catch (ParseException ignored) {
             return 0;
         }
     }

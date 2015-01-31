@@ -90,7 +90,7 @@ java.sql.Time | time
 String | string
 Array[Byte] | blob
 java.nio.ByteBuffer | blob
-io.netty.buffer.ByteBuf | blob
+com.github.mauricio.netty.buffer.ByteBuf | blob
 
 The maximum size of a blob is 2^24-9 bytes (almost 16 MiB).
 

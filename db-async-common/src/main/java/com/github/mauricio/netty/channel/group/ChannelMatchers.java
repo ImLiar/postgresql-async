@@ -119,12 +119,12 @@ public final class ChannelMatchers {
 
         @Override
         public boolean matches(Channel channel) {
-            for (int i = 0; i < matchers.length; i++) {
-                if (!matchers[i].matches(channel)) {
-                    return true;
+            for (ChannelMatcher m: matchers) {
+                if (!m.matches(channel)) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         }
     }
 

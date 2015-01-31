@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import io.netty.buffer.ByteBuf
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object ByteBufferEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ByteBuf) {

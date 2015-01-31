@@ -278,7 +278,7 @@ final class PooledUnsafeDirectByteBuf extends PooledByteBuf<ByteBuffer> {
 
     @Override
     public ByteBuf setBytes(int index, ByteBuffer src) {
-        checkIndex(index);
+        checkIndex(index, src.remaining());
         ByteBuffer tmpBuf = internalNioBuffer();
         if (src == tmpBuf) {
             src = src.duplicate();
@@ -309,7 +309,7 @@ final class PooledUnsafeDirectByteBuf extends PooledByteBuf<ByteBuffer> {
         tmpBuf.clear().position(index).limit(index + length);
         try {
             return in.read(tmpBuf);
-        } catch (ClosedChannelException e) {
+        } catch (ClosedChannelException ignored) {
             return -1;
         }
     }
@@ -375,6 +375,7 @@ final class PooledUnsafeDirectByteBuf extends PooledByteBuf<ByteBuffer> {
 
     @Override
     public long memoryAddress() {
+        ensureAccessible();
         return memoryAddress;
     }
 
@@ -385,5 +386,10 @@ final class PooledUnsafeDirectByteBuf extends PooledByteBuf<ByteBuffer> {
     @Override
     protected Recycler<?> recycler() {
         return RECYCLER;
+    }
+
+    @Override
+    protected SwappedByteBuf newSwappedByteBuf() {
+        return new UnsafeDirectSwappedByteBuf(this);
     }
 }

@@ -16,6 +16,8 @@
 
 package com.github.mauricio.netty.channel;
 
+import com.github.mauricio.netty.util.internal.InternalThreadLocalMap;
+
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -23,23 +25,6 @@ import java.util.WeakHashMap;
  * Skelton implementation of a {@link ChannelHandler}.
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
-
-    /**
-     * Cache the result of {@link Sharable} annotation detection to workaround a condition. We use a
-     * {@link ThreadLocal} and {@link WeakHashMap} to eliminate the volatile write/reads. Using different
-     * {@link WeakHashMap} instances per {@link Thread} is good enough for us and the number of
-     * {@link Thread}s are quite limited anyway.
-     *
-     * See <a href="See https://github.com/netty/netty/issues/2289">#2289</a>.
-     */
-    private static final ThreadLocal<Map<Class<?>, Boolean>> SHARABLE_CACHE =
-            new ThreadLocal<Map<Class<?>, Boolean>>() {
-                @Override
-                protected Map<Class<?>, Boolean> initialValue() {
-                    // Start with small capacity to keep memory overhead as low as possible.
-                    return new WeakHashMap<Class<?>, Boolean>(4);
-                }
-            };
 
     // Not using volatile because it's used only for a sanity check.
     boolean added;
@@ -49,8 +34,16 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
      * to different {@link ChannelPipeline}s.
      */
     public boolean isSharable() {
+        /**
+         * Cache the result of {@link Sharable} annotation detection to workaround a condition. We use a
+         * {@link ThreadLocal} and {@link WeakHashMap} to eliminate the volatile write/reads. Using different
+         * {@link WeakHashMap} instances per {@link Thread} is good enough for us and the number of
+         * {@link Thread}s are quite limited anyway.
+         *
+         * See <a href="See https://github.com/netty/netty/issues/2289">#2289</a>.
+         */
         Class<?> clazz = getClass();
-        Map<Class<?>, Boolean> cache = SHARABLE_CACHE.get();
+        Map<Class<?>, Boolean> cache = InternalThreadLocalMap.get().handlerSharableCache();
         Boolean sharable = cache.get(clazz);
         if (sharable == null) {
             sharable = clazz.isAnnotationPresent(Sharable.class);
@@ -81,10 +74,8 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
      *
      * Sub-classes may override this method to change behavior.
      */
-    @Deprecated
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-            throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         ctx.fireExceptionCaught(cause);
     }
 }

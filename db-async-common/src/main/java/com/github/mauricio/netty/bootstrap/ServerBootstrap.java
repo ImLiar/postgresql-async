@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  * {@link Bootstrap} sub-class which allows easy bootstrap of {@link ServerChannel}
  *
  */
-public final class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerChannel> {
+public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerChannel> {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ServerBootstrap.class);
 
@@ -217,7 +217,6 @@ public final class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, Se
         private final Entry<ChannelOption<?>, Object>[] childOptions;
         private final Entry<AttributeKey<?>, Object>[] childAttrs;
 
-        @SuppressWarnings("unchecked")
         ServerBootstrapAcceptor(
                 EventLoopGroup childGroup, ChannelHandler childHandler,
                 Entry<ChannelOption<?>, Object>[] childOptions, Entry<AttributeKey<?>, Object>[] childAttrs) {

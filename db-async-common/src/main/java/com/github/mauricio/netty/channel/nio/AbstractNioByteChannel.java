@@ -35,6 +35,11 @@ import java.nio.channels.SelectionKey;
  * {@link AbstractNioChannel} base class for {@link Channel}s that operate on bytes.
  */
 public abstract class AbstractNioByteChannel extends AbstractNioChannel {
+
+    private static final String EXPECTED_TYPES =
+            " (expected: " + StringUtil.simpleClassName(ByteBuf.class) + ", " +
+            StringUtil.simpleClassName(FileRegion.class) + ')';
+
     private Runnable flushTask;
 
     /**
@@ -72,7 +77,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                                          ByteBuf byteBuf, Throwable cause, boolean close) {
             if (byteBuf != null) {
                 if (byteBuf.isReadable()) {
-                    readPending = false;
+                    setReadPending(false);
                     pipeline.fireChannelRead(byteBuf);
                 } else {
                     byteBuf.release();
@@ -88,6 +93,12 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
         @Override
         public void read() {
             final ChannelConfig config = config();
+            if (!config.isAutoRead() && !isReadPending()) {
+                // ChannelConfig.setAutoRead(false) was called in the meantime
+                removeReadOp();
+                return;
+            }
+
             final ChannelPipeline pipeline = pipeline();
             final ByteBufAllocator allocator = config.getAllocator();
             final int maxMessagesPerRead = config.getMaxMessagesPerRead();
@@ -100,10 +111,10 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             int messages = 0;
             boolean close = false;
             try {
-                int byteBufCapacity = allocHandle.guess();
                 int totalReadAmount = 0;
+                boolean readPendingReset = false;
                 do {
-                    byteBuf = allocator.ioBuffer(byteBufCapacity);
+                    byteBuf = allocHandle.allocate(allocator);
                     int writable = byteBuf.writableBytes();
                     int localReadAmount = doReadBytes(byteBuf);
                     if (localReadAmount <= 0) {
@@ -112,7 +123,10 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                         close = localReadAmount < 0;
                         break;
                     }
-                    readPending = false;
+                    if (!readPendingReset) {
+                        readPendingReset = true;
+                        setReadPending(false);
+                    }
                     pipeline.fireChannelRead(byteBuf);
                     byteBuf = null;
 
@@ -152,7 +166,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 // * The user called Channel.read() or ChannelHandlerContext.read() in channelReadComplete(...) method
                 //
                 // See https://github.com/netty/netty/issues/2254
-                if (!config.isAutoRead() && !readPending) {
+                if (!config.isAutoRead() && !isReadPending()) {
                     removeReadOp();
                 }
             }
@@ -177,17 +191,6 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 if (readableBytes == 0) {
                     in.remove();
                     continue;
-                }
-
-                if (!buf.isDirect()) {
-                    ByteBufAllocator alloc = alloc();
-                    if (alloc.isDirectBufferPooled()) {
-                        // Non-direct buffers are copied into JDK's own internal direct buffer on every I/O.
-                        // We can do a better job by using our pooled allocator. If the current allocator does not
-                        // pool a direct buffer, we rely on JDK's direct buffer pool.
-                        buf = alloc.directBuffer(readableBytes).writeBytes(buf);
-                        in.current(buf);
-                    }
                 }
 
                 boolean setOpWrite = false;
@@ -220,27 +223,31 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                 }
             } else if (msg instanceof FileRegion) {
                 FileRegion region = (FileRegion) msg;
+                boolean done = region.transfered() >= region.count();
                 boolean setOpWrite = false;
-                boolean done = false;
-                long flushedAmount = 0;
-                if (writeSpinCount == -1) {
-                    writeSpinCount = config().getWriteSpinCount();
-                }
-                for (int i = writeSpinCount - 1; i >= 0; i --) {
-                    long localFlushedAmount = doWriteFileRegion(region);
-                    if (localFlushedAmount == 0) {
-                        setOpWrite = true;
-                        break;
+
+                if (!done) {
+                    long flushedAmount = 0;
+                    if (writeSpinCount == -1) {
+                        writeSpinCount = config().getWriteSpinCount();
                     }
 
-                    flushedAmount += localFlushedAmount;
-                    if (region.transfered() >= region.count()) {
-                        done = true;
-                        break;
-                    }
-                }
+                    for (int i = writeSpinCount - 1; i >= 0; i--) {
+                        long localFlushedAmount = doWriteFileRegion(region);
+                        if (localFlushedAmount == 0) {
+                            setOpWrite = true;
+                            break;
+                        }
 
-                in.progress(flushedAmount);
+                        flushedAmount += localFlushedAmount;
+                        if (region.transfered() >= region.count()) {
+                            done = true;
+                            break;
+                        }
+                    }
+
+                    in.progress(flushedAmount);
+                }
 
                 if (done) {
                     in.remove();
@@ -249,9 +256,29 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
                     break;
                 }
             } else {
-                throw new UnsupportedOperationException("unsupported message type: " + StringUtil.simpleClassName(msg));
+                // Should not reach here.
+                throw new Error();
             }
         }
+    }
+
+    @Override
+    protected final Object filterOutboundMessage(Object msg) {
+        if (msg instanceof ByteBuf) {
+            ByteBuf buf = (ByteBuf) msg;
+            if (buf.isDirect()) {
+                return msg;
+            }
+
+            return newDirectBuffer(buf);
+        }
+
+        if (msg instanceof FileRegion) {
+            return msg;
+        }
+
+        throw new UnsupportedOperationException(
+                "unsupported message type: " + StringUtil.simpleClassName(msg) + EXPECTED_TYPES);
     }
 
     protected final void incompleteWrite(boolean setOpWrite) {

@@ -2,9 +2,9 @@ package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.mysql.message.client.{ClientMessage, SendLongDataMessage}
 import com.github.mauricio.async.db.util.{ByteBufferUtils, Log}
-import io.netty.buffer.Unpooled
-import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.codec.MessageToMessageEncoder
+import com.github.mauricio.netty.buffer.Unpooled
+import com.github.mauricio.netty.channel.ChannelHandlerContext
+import com.github.mauricio.netty.codec.MessageToMessageEncoder
 
 object SendLongDataEncoder {
   val log = Log.get[SendLongDataEncoder]

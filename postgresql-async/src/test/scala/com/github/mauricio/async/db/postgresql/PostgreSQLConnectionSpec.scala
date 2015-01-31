@@ -25,7 +25,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessa
 import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
-import io.netty.buffer.Unpooled
+import com.github.mauricio.netty.buffer.Unpooled
 import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global

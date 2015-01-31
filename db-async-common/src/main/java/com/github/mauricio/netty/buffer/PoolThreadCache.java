@@ -17,6 +17,10 @@
 package com.github.mauricio.netty.buffer;
 
 
+import com.github.mauricio.netty.util.ThreadDeathWatcher;
+import com.github.mauricio.netty.util.internal.logging.InternalLogger;
+import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -26,6 +30,9 @@ import java.nio.ByteBuffer;
  * 480222803919">Scalable memory allocation using jemalloc</a>.
  */
 final class PoolThreadCache {
+
+    private static final InternalLogger logger = InternalLoggerFactory.getInstance(PoolThreadCache.class);
+
     final PoolArena<byte[]> heapArena;
     final PoolArena<ByteBuffer> directArena;
 
@@ -43,6 +50,14 @@ final class PoolThreadCache {
     private final int freeSweepAllocationThreshold;
 
     private int allocations;
+
+    private final Thread thread = Thread.currentThread();
+    private final Runnable freeTask = new Runnable() {
+        @Override
+        public void run() {
+            free0();
+        }
+    };
 
     // TODO: Test if adding padding helps under contention
     //private long pad0, pad1, pad2, pad3, pad4, pad5, pad6, pad7;
@@ -90,6 +105,10 @@ final class PoolThreadCache {
             normalHeapCaches = null;
             numShiftsNormalHeap = -1;
         }
+
+        // The thread-local cache will keep a list of pooled buffers which must be returned to
+        // the pool when the thread is not alive anymore.
+        ThreadDeathWatcher.watch(thread, freeTask);
     }
 
     private static <T> SubPageMemoryRegionCache<T>[] createSubPageCaches(int cacheSize, int numCaches) {
@@ -193,28 +212,40 @@ final class PoolThreadCache {
      *  Should be called if the Thread that uses this cache is about to exist to release resources out of the cache
      */
     void free() {
-        free(tinySubPageDirectCaches);
-        free(smallSubPageDirectCaches);
-        free(normalDirectCaches);
-        free(tinySubPageHeapCaches);
-        free(smallSubPageHeapCaches);
-        free(normalHeapCaches);
+        ThreadDeathWatcher.unwatch(thread, freeTask);
+        free0();
     }
 
-    private static void free(MemoryRegionCache<?>[] caches) {
+    private void free0() {
+        int numFreed = free(tinySubPageDirectCaches) +
+                free(smallSubPageDirectCaches) +
+                free(normalDirectCaches) +
+                free(tinySubPageHeapCaches) +
+                free(smallSubPageHeapCaches) +
+                free(normalHeapCaches);
+
+        if (numFreed > 0 && logger.isDebugEnabled()) {
+            logger.debug("Freed {} thread-local buffer(s) from thread: {}", numFreed, thread.getName());
+        }
+    }
+
+    private static int free(MemoryRegionCache<?>[] caches) {
         if (caches == null) {
-            return;
+            return 0;
         }
-        for (int i = 0; i < caches.length; i++) {
-            free(caches[i]);
+
+        int numFreed = 0;
+        for (MemoryRegionCache<?> c: caches) {
+            numFreed += free(c);
         }
+        return numFreed;
     }
 
-    private static void free(MemoryRegionCache<?> cache) {
+    private static int free(MemoryRegionCache<?> cache) {
         if (cache == null) {
-            return;
+            return 0;
         }
-        cache.free();
+        return cache.free();
     }
 
     void trim() {
@@ -230,8 +261,8 @@ final class PoolThreadCache {
         if (caches == null) {
             return;
         }
-        for (int i = 0; i < caches.length; i++) {
-            trim(caches[i]);
+        for (MemoryRegionCache<?> c: caches) {
+            trim(c);
         }
     }
 
@@ -384,13 +415,16 @@ final class PoolThreadCache {
         /**
          * Clear out this cache and free up all previous cached {@link PoolChunk}s and {@code handle}s.
          */
-        public void free() {
+        public int free() {
+            int numFreed = 0;
             entriesInUse = 0;
             maxEntriesInUse = 0;
             for (int i = head;; i = nextIdx(i)) {
-                if (!freeEntry(entries[i])) {
+                if (freeEntry(entries[i])) {
+                    numFreed++;
+                } else {
                     // all cleared
-                    return;
+                    return numFreed;
                 }
             }
         }
@@ -411,10 +445,14 @@ final class PoolThreadCache {
             for (; free > 0; free--) {
                 if (!freeEntry(entries[i])) {
                     // all freed
-                    return;
+                    break;
                 }
                 i = nextIdx(i);
             }
+
+            // Update head to point to te correct entry
+            // See https://github.com/netty/netty/issues/2924
+            head = i;
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -440,7 +478,7 @@ final class PoolThreadCache {
 
         private int nextIdx(int index) {
             // use bitwise operation as this is faster as using modulo.
-            return (index + 1) & entries.length - 1;
+            return index + 1 & entries.length - 1;
         }
 
         private static final class Entry<T> {
