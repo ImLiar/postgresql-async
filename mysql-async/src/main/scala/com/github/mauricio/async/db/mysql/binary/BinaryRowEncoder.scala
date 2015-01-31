@@ -16,22 +16,19 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
-import io.netty.buffer.{Unpooled, ByteBuf}
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
+
 import com.github.mauricio.async.db.mysql.binary.encoder._
 import com.github.mauricio.async.db.util._
+import io.netty.buffer.ByteBuf
 import org.joda.time._
-import scala.Some
-import com.github.mauricio.async.db.mysql.column.ColumnTypes
-import java.nio.ByteOrder
 
 object BinaryRowEncoder {
   final val log = Log.get[BinaryRowEncoder]
 }
 
 class BinaryRowEncoder( charset : Charset ) {
-
-  import BinaryRowEncoder.log
 
   private final val stringEncoder = new StringEncoder(charset)
   private final val encoders = Map[Class[_],BinaryEncoder](
@@ -65,48 +62,7 @@ class BinaryRowEncoder( charset : Charset ) {
     classOf[java.lang.Boolean] -> BooleanEncoder
   )
 
-  def encode( values : Seq[Any] ) : ByteBuf = {
-
-    val nullBitsCount = (values.size + 7) / 8
-    val nullBits = new Array[Byte](nullBitsCount)
-    val bitMapBuffer = ByteBufferUtils.mysqlBuffer(1 + nullBitsCount)
-    val parameterTypesBuffer = ByteBufferUtils.mysqlBuffer(values.size * 2)
-    val parameterValuesBuffer = ByteBufferUtils.mysqlBuffer()
-
-
-    var index = 0
-
-    while ( index < values.length ) {
-      val value = values(index)
-      if ( value == null || value == None ) {
-        nullBits(index / 8) = (nullBits(index / 8) | (1 << (index & 7))).asInstanceOf[Byte]
-        parameterTypesBuffer.writeShort(ColumnTypes.FIELD_TYPE_NULL)
-      } else {
-        value match {
-          case Some(v) => encode(parameterTypesBuffer, parameterValuesBuffer, v)
-          case _ => encode(parameterTypesBuffer, parameterValuesBuffer, value)
-        }
-      }
-      index += 1
-    }
-
-    bitMapBuffer.writeBytes(nullBits)
-    if ( values.size > 0 ) {
-      bitMapBuffer.writeByte(1)
-    } else {
-      bitMapBuffer.writeByte(0)
-    }
-
-    Unpooled.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
-  }
-
-  private def encode(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any): Unit = {
-    val encoder = encoderFor(value)
-    parameterTypesBuffer.writeShort(encoder.encodesTo)
-    encoder.encode(value, parameterValuesBuffer)
-  }
-
-  private def encoderFor( v : Any ) : BinaryEncoder = {
+  def encoderFor( v : Any ) : BinaryEncoder = {
 
     this.encoders.get(v.getClass) match {
       case Some(encoder) => encoder
@@ -128,6 +84,8 @@ class BinaryRowEncoder( charset : Charset ) {
           case v : java.sql.Time => SQLTimeEncoder
           case v : scala.concurrent.duration.Duration => DurationEncoder
           case v : java.util.Date => JavaDateEncoder
+          case v : ByteBuffer => ByteBufferEncoder
+          case v : ByteBuf => ByteBufEncoder
         }
       }
     }
