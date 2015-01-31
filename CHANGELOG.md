@@ -1,4 +1,59 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [Changelog](#changelog)
+	- [0.2.17 - in progresss](#0217---in-progresss)
+	- [0.2.16 - 2015-01-04](#0216---2015-01-04)
+	- [0.2.15 - 2014-09-12](#0215---2014-09-12)
+	- [0.2.14 - 2014-08-30](#0214---2014-08-30)
+	- [0.2.13 - 2014-04-07](#0213---2014-04-07)
+	- [0.2.12 - 2014-01-11](#0212---2014-01-11)
+	- [0.2.11 - 2014-01-11](#0211---2014-01-11)
+	- [0.2.10 - 2013-12-18](#0210---2013-12-18)
+	- [0.2.9 - 2013-12-01](#029---2013-12-01)
+	- [0.2.8 - 2013-09-24](#028---2013-09-24)
+	- [0.2.7 - 2013-09-09](#027---2013-09-09)
+	- [0.2.5](#025)
+	- [0.2.4 - 2013-07-06](#024---2013-07-06)
+	- [0.2.3 - 2013-05-21](#023---2013-05-21)
+	- [0.2.2 - 2013-05-18](#022---2013-05-18)
+	- [0.1.1 - 2013-04-30](#011---2013-04-30)
+	- [0.1.0 - 2013-04-29](#010---2013-04-29)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Changelog
+
+## 0.2.17 - in progresss
+
+## 0.2.16 - 2015-01-04
+
+* Add support to byte arrays for PostgreSQL 8 and older - @SattaiLanfear - #21;
+* Make sure connections are returned to the pool before the result is returned to the user - @haski - #119;
+* Support to `SEND_LONG_DATA` to MySQL - @mst-appear - #115;
+* Support for `ByteBuffer` and `ByteBuf` for binary data - @mst-appear - #113 #112;
+* Fixed encoding backslashes in PostgreSQL arrays - @dylex - #110;
+* Included `escape` encoding method for bytes in PostgreSQL - @SattaiLanfear - #107;
+
+## 0.2.15 - 2014-09-12
+
+* Fixes issue where PostgreSQL decoders fail to produce a NULL value if the null is wrapped by a `Some` instance - #99;
+* Fixes issue where the 253 case of length encoded fields on MySQL produce a wrong value;
+
+## 0.2.14 - 2014-08-30
+
+* Remove failed prepared statement from cache - @dboissin - #95
+* Added support to zeroed dates on MySQL - #93
+* Cross compilation to Scala 2.11 is functional - @lpiepiora
+* Connect to older MySQL versions where auth protocol isn't provided - #37
+* Eclipse project support - @fwbrasil - #89
+* Make timeouts configurable - @fwbrasil - #90
+
+## 0.2.13 - 2014-04-07
+
+* Accepts MySQL old and unsafe auth methods - #37
+* Do not name every single logger as they all leak - @njeuk #86
 
 ## 0.2.12 - 2014-01-11
 

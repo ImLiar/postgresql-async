@@ -16,6 +16,8 @@
 
 package com.github.mauricio.async.db.postgresql.encoders
 
+import java.nio.charset.Charset
+
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, PreparedStatementExecuteMessage}

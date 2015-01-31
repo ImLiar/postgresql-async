@@ -16,9 +16,12 @@
 
 package com.github.mauricio.async.db.postgresql.column
 
+import java.nio.ByteBuffer
+
 import com.github.mauricio.async.db.column._
+import io.netty.buffer.ByteBuf
 import org.joda.time._
-import scala.Some
+
 import scala.collection.JavaConversions._
 
 object PostgreSQLColumnEncoderRegistry {
@@ -64,7 +67,9 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     classOf[java.sql.Timestamp] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[java.util.Calendar] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[java.util.GregorianCalendar] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
-    classOf[Array[Byte]] -> ( ByteArrayEncoderDecoder -> ColumnTypes.ByteA )
+    classOf[Array[Byte]] -> ( ByteArrayEncoderDecoder -> ColumnTypes.ByteA ),
+    classOf[ByteBuffer] -> ( ByteArrayEncoderDecoder -> ColumnTypes.ByteA ),
+    classOf[ByteBuf] -> ( ByteArrayEncoderDecoder -> ColumnTypes.ByteA )
   )
 
   private final val classesSequence = (classOf[LocalTime] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::
@@ -127,11 +132,11 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     val result = collection.map {
       item =>
 
-        if (item == null) {
+        if (item == null || item == None) {
           "NULL"
         } else {
           if (this.shouldQuote(item)) {
-            "\"" + this.encode(item).replaceAllLiterally("\"", """\"""") + "\""
+            "\"" + this.encode(item).replaceAllLiterally("\\", """\\""").replaceAllLiterally("\"", """\"""") + "\""
           } else {
             this.encode(item)
           }
@@ -177,4 +182,5 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
       }
     }
   }
+
 }

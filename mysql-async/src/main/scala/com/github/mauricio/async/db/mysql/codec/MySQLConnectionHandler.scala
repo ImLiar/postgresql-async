@@ -16,7 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
+import java.net.InetSocketAddress
+import java.nio.ByteBuffer
+
 import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.exceptions.DatabaseException
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
 import com.github.mauricio.async.db.mysql.message.client._
@@ -34,7 +38,6 @@ import scala.Some
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
-import com.github.mauricio.async.db.exceptions.DatabaseException
 
 class MySQLConnectionHandler(
                               configuration: Configuration,
@@ -52,13 +55,14 @@ class MySQLConnectionHandler(
   private final val connectionPromise = Promise[MySQLConnectionHandler]
   private final val decoder = new MySQLFrameDecoder(configuration.charset, connectionId)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
+  private final val sendLongDataEncoder = new SendLongDataEncoder()
   private final val currentParameters = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val parsedStatements = new HashMap[String,PreparedStatementHolder]()
   private final val binaryRowDecoder = new BinaryRowDecoder()
 
   private var currentPreparedStatementHolder : PreparedStatementHolder = null
-  private var currentPreparedStatement : PreparedStatementMessage = null
+  private var currentPreparedStatement : PreparedStatement = null
   private var currentQuery : MutableResultSet[ColumnDefinitionMessage] = null
   private var currentContext: ChannelHandlerContext = null
 
@@ -70,6 +74,7 @@ class MySQLConnectionHandler(
         channel.pipeline.addLast(
           decoder,
           encoder,
+          sendLongDataEncoder,
           MySQLConnectionHandler.this)
       }
 
@@ -185,20 +190,21 @@ class MySQLConnectionHandler(
     writeAndHandleError(message)
   }
 
-  def write( message : PreparedStatementMessage )  {
+  def sendPreparedStatement( query: String, values: Seq[Any] ): Future[ChannelFuture] = {
+    val preparedStatement = new PreparedStatement(query, values)
 
     this.currentColumns.clear()
     this.currentParameters.clear()
 
-    this.currentPreparedStatement = message
+    this.currentPreparedStatement = preparedStatement
 
-    this.parsedStatements.get(message.statement) match {
+    this.parsedStatements.get(preparedStatement.statement) match {
       case Some( item ) => {
-        this.executePreparedStatement(item.statementId, item.columns.size, message.values, item.parameters)
+        this.executePreparedStatement(item.statementId, item.columns.size, preparedStatement.values, item.parameters)
       }
       case None => {
         decoder.preparedStatementPrepareStarted()
-        writeAndHandleError( new PreparedStatementPrepareMessage(message.statement) )
+        writeAndHandleError( new PreparedStatementPrepareMessage(preparedStatement.statement) )
       }
     }
   }
@@ -230,11 +236,60 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ) {
+  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ): Future[ChannelFuture] = {
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
-    writeAndHandleError(new PreparedStatementExecuteMessage( statementId, values, parameters ))
+
+    val (nonLongIndicesOpt, longValuesOpt) = values.zipWithIndex.map {
+      case (Some(value), index) if isLong(value) => (None, Some(index, value))
+      case (value, index) if isLong(value) => (None, Some(index, value))
+      case (_, index) => (Some(index), None)
+    }.unzip
+    val nonLongIndices: Seq[Int] = nonLongIndicesOpt.flatten
+    val longValues: Seq[(Int, Any)] = longValuesOpt.flatten
+
+    if (longValues.nonEmpty) {
+      val (firstIndex, firstValue) = longValues.head
+      var channelFuture: Future[ChannelFuture] = sendLongParameter(statementId, firstIndex, firstValue)
+      longValues.tail foreach { case (index, value) =>
+        channelFuture = channelFuture.flatMap { _ =>
+          sendLongParameter(statementId, index, value)
+        }
+      }
+      channelFuture flatMap { _ =>
+        writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
+      }
+    } else {
+      writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
+    }
+  }
+
+  private def isLong(value: Any): Boolean = {
+    value match {
+      case v : Array[Byte] => v.length > SendLongDataEncoder.LONG_THRESHOLD
+      case v : ByteBuffer => v.remaining() > SendLongDataEncoder.LONG_THRESHOLD
+      case v : ByteBuf => v.readableBytes() > SendLongDataEncoder.LONG_THRESHOLD
+
+      case _ => false
+    }
+  }
+
+  private def sendLongParameter(statementId: Array[Byte], index: Int, longValue: Any): Future[ChannelFuture] = {
+    longValue match {
+      case v : Array[Byte] =>
+        sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
+
+      case v : ByteBuffer =>
+        sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
+
+      case v : ByteBuf =>
+        sendBuffer(v, statementId, index)
+    }
+  }
+
+  private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int): ChannelFuture = {
+    writeAndHandleError(new SendLongDataMessage(statementId, buffer, paramId))
   }
 
   private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {
