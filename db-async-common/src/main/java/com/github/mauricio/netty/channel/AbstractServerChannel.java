@@ -15,6 +15,8 @@
  */
 package com.github.mauricio.netty.channel;
 
+import com.github.mauricio.netty.util.internal.EmptyArrays;
+
 import java.net.SocketAddress;
 
 /**

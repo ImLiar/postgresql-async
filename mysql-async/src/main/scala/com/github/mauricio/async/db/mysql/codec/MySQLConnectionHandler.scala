@@ -29,7 +29,7 @@ import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import com.github.mauricio.netty.bootstrap.Bootstrap
-import com.github.mauricio.netty.buffer.ByteBufAllocator
+import com.github.mauricio.netty.buffer.{Unpooled, ByteBuf, ByteBufAllocator}
 import com.github.mauricio.netty.channel._
 import com.github.mauricio.netty.channel.socket.nio.NioSocketChannel
 import com.github.mauricio.netty.handler.codec.CodecException

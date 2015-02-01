@@ -41,7 +41,7 @@ public final class NativeLibraryLoader {
     static {
         OSNAME = SystemPropertyUtil.get("os.name", "").toLowerCase(Locale.US).replaceAll("[^a-z0-9]+", "");
 
-        String workdir = SystemPropertyUtil.get("io.netty.native.workdir");
+        String workdir = SystemPropertyUtil.get("com.github.mauricio.netty.native.workdir");
         if (workdir != null) {
             File f = new File(workdir);
             f.mkdirs();
@@ -53,25 +53,25 @@ public final class NativeLibraryLoader {
             }
 
             WORKDIR = f;
-            logger.debug("-Dio.netty.netty.workdir: " + WORKDIR);
+            logger.debug("-Dcom.github.mauricio.netty.netty.workdir: " + WORKDIR);
         } else {
             WORKDIR = tmpdir();
-            logger.debug("-Dio.netty.netty.workdir: " + WORKDIR + " (io.netty.tmpdir)");
+            logger.debug("-Dcom.github.mauricio.netty.netty.workdir: " + WORKDIR + " (com.github.mauricio.netty.tmpdir)");
         }
     }
 
     private static File tmpdir() {
         File f;
         try {
-            f = toDirectory(SystemPropertyUtil.get("io.netty.tmpdir"));
+            f = toDirectory(SystemPropertyUtil.get("com.github.mauricio.netty.tmpdir"));
             if (f != null) {
-                logger.debug("-Dio.netty.tmpdir: " + f);
+                logger.debug("-Dcom.github.mauricio.netty.tmpdir: " + f);
                 return f;
             }
 
             f = toDirectory(SystemPropertyUtil.get("java.io.tmpdir"));
             if (f != null) {
-                logger.debug("-Dio.netty.tmpdir: " + f + " (java.io.tmpdir)");
+                logger.debug("-Dcom.github.mauricio.netty.tmpdir: " + f + " (java.io.tmpdir)");
                 return f;
             }
 
@@ -79,7 +79,7 @@ public final class NativeLibraryLoader {
             if (isWindows()) {
                 f = toDirectory(System.getenv("TEMP"));
                 if (f != null) {
-                    logger.debug("-Dio.netty.tmpdir: " + f + " (%TEMP%)");
+                    logger.debug("-Dcom.github.mauricio.netty.tmpdir: " + f + " (%TEMP%)");
                     return f;
                 }
 
@@ -87,20 +87,20 @@ public final class NativeLibraryLoader {
                 if (userprofile != null) {
                     f = toDirectory(userprofile + "\\AppData\\Local\\Temp");
                     if (f != null) {
-                        logger.debug("-Dio.netty.tmpdir: " + f + " (%USERPROFILE%\\AppData\\Local\\Temp)");
+                        logger.debug("-Dcom.github.mauricio.netty.tmpdir: " + f + " (%USERPROFILE%\\AppData\\Local\\Temp)");
                         return f;
                     }
 
                     f = toDirectory(userprofile + "\\Local Settings\\Temp");
                     if (f != null) {
-                        logger.debug("-Dio.netty.tmpdir: " + f + " (%USERPROFILE%\\Local Settings\\Temp)");
+                        logger.debug("-Dcom.github.mauricio.netty.tmpdir: " + f + " (%USERPROFILE%\\Local Settings\\Temp)");
                         return f;
                     }
                 }
             } else {
                 f = toDirectory(System.getenv("TMPDIR"));
                 if (f != null) {
-                    logger.debug("-Dio.netty.tmpdir: " + f + " ($TMPDIR)");
+                    logger.debug("-Dcom.github.mauricio.netty.tmpdir: " + f + " ($TMPDIR)");
                     return f;
                 }
             }

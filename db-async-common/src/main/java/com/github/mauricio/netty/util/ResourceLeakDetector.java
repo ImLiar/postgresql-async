@@ -33,7 +33,7 @@ import static com.github.mauricio.netty.util.internal.StringUtil.*;
 
 public final class ResourceLeakDetector<T> {
 
-    private static final String PROP_LEVEL = "io.netty.leakDetectionLevel";
+    private static final String PROP_LEVEL = "com.github.mauricio.netty.leakDetectionLevel";
     private static final Level DEFAULT_LEVEL = Level.SIMPLE;
 
     /**
@@ -67,11 +67,11 @@ public final class ResourceLeakDetector<T> {
 
     static {
         final boolean disabled;
-        if (SystemPropertyUtil.get("io.netty.noResourceLeakDetection") != null) {
-            disabled = SystemPropertyUtil.getBoolean("io.netty.noResourceLeakDetection", false);
-            logger.debug("-Dio.netty.noResourceLeakDetection: {}", disabled);
+        if (SystemPropertyUtil.get("com.github.mauricio.netty.noResourceLeakDetection") != null) {
+            disabled = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noResourceLeakDetection", false);
+            logger.debug("-Dcom.github.mauricio.netty.noResourceLeakDetection: {}", disabled);
             logger.warn(
-                    "-Dio.netty.noResourceLeakDetection is deprecated. Use '-D{}={}' instead.",
+                    "-Dcom.github.mauricio.netty.noResourceLeakDetection is deprecated. Use '-D{}={}' instead.",
                     PROP_LEVEL, DEFAULT_LEVEL.name().toLowerCase());
         } else {
             disabled = false;
