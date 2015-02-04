@@ -19,7 +19,8 @@ object ProjectBuild extends Build {
     base = file(commonName),
     settings = Configuration.baseSettings ++ Seq(
       name := commonName,
-      libraryDependencies ++= Configuration.commonDependencies
+      libraryDependencies ++= Configuration.commonDependencies,
+      publishArtifact in (Compile, packageDoc) := false
     )
   )
 
@@ -45,16 +46,16 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val commonVersion = "0.2.14-SNAPSHOT"
+  val commonVersion = "0.2.14G"
   val projectScalaVersion = "2.10.4"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "2.3.11" % "test"
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
 
   val commonDependencies = Seq(
-    "org.slf4j" % "slf4j-api" % "1.7.5",
-    "joda-time" % "joda-time" % "2.3",
-    "org.joda" % "joda-convert" % "1.5",
+    "org.slf4j" % "slf4j-api" % "1.7.7",
+    "joda-time" % "joda-time" % "2.5",
+    "org.joda" % "joda-convert" % "1.6",
 //    "io.netty" % "netty-all" % "4.0.18.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
     "commons-logging" % "commons-logging" % "1.1.3" % "optional",
@@ -89,14 +90,7 @@ object Configuration {
     pomIncludeRepository := {
       _ => false
     },
-    publishTo <<= version {
-      v: String =>
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT"))
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        else
-          Some("releases" at nexus + "service/local/staging/deploy/maven2")
-    },
+    publishTo := Some(Resolver.file("file", new File("/home/liar/work/glopart-lib/mvn"))),
     pomExtra := (
       <url>https://github.com/mauricio/postgresql-async</url>
         <licenses>
