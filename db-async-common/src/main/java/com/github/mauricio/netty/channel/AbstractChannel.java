@@ -25,10 +25,12 @@ import com.github.mauricio.netty.util.internal.ThreadLocalRandom;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
-import java.io.EOFException;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.NoRouteToHostException;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NotYetConnectedException;
 import java.util.concurrent.RejectedExecutionException;
@@ -83,7 +85,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
     @Override
     public boolean isWritable() {
         ChannelOutboundBuffer buf = unsafe.outboundBuffer();
-        return buf != null && buf.getWritable();
+        return buf != null && buf.isWritable();
     }
 
     @Override
@@ -374,8 +376,10 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected abstract class AbstractUnsafe implements Unsafe {
 
-        private ChannelOutboundBuffer outboundBuffer = ChannelOutboundBuffer.newInstance(AbstractChannel.this);
+        private ChannelOutboundBuffer outboundBuffer = new ChannelOutboundBuffer(AbstractChannel.this);
         private boolean inFlush0;
+        /** true if the channel has never been registered, false otherwise */
+        private boolean neverRegistered = true;
 
         @Override
         public final ChannelOutboundBuffer outboundBuffer() {
@@ -437,11 +441,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 if (!promise.setUncancellable() || !ensureOpen(promise)) {
                     return;
                 }
+                boolean firstRegistration = neverRegistered;
                 doRegister();
+                neverRegistered = false;
                 registered = true;
                 safeSetSuccess(promise);
                 pipeline.fireChannelRegistered();
-                if (isActive()) {
+                // Only fire a channelActive if the channel has never been registered. This prevents firing
+                // multiple channel actives if the channel is deregistered and re-registered.
+                if (firstRegistration && isActive()) {
                     pipeline.fireChannelActive();
                 }
             } catch (Throwable t) {
@@ -618,7 +626,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
 
         @Override
-        public void beginRead() {
+        public final void beginRead() {
             if (!isActive()) {
                 return;
             }
@@ -637,23 +645,37 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
 
         @Override
-        public void write(Object msg, ChannelPromise promise) {
-            if (!isActive()) {
-                // Mark the write request as failure if the channel is inactive.
-                if (isOpen()) {
-                    safeSetFailure(promise, NOT_YET_CONNECTED_EXCEPTION);
-                } else {
-                    safeSetFailure(promise, CLOSED_CHANNEL_EXCEPTION);
-                }
+        public final void write(Object msg, ChannelPromise promise) {
+            ChannelOutboundBuffer outboundBuffer = this.outboundBuffer;
+            if (outboundBuffer == null) {
+                // If the outboundBuffer is null we know the channel was closed and so
+                // need to fail the future right away. If it is not null the handling of the rest
+                // will be done in flush0()
+                // See https://github.com/netty/netty/issues/2362
+                safeSetFailure(promise, CLOSED_CHANNEL_EXCEPTION);
                 // release message now to prevent resource-leak
                 ReferenceCountUtil.release(msg);
-            } else {
-                outboundBuffer.addMessage(msg, promise);
+                return;
             }
+
+            int size;
+            try {
+                msg = filterOutboundMessage(msg);
+                size = estimatorHandle().size(msg);
+                if (size < 0) {
+                    size = 0;
+                }
+            } catch (Throwable t) {
+                safeSetFailure(promise, t);
+                ReferenceCountUtil.release(msg);
+                return;
+            }
+
+            outboundBuffer.addMessage(msg, size, promise);
         }
 
         @Override
-        public void flush() {
+        public final void flush() {
             ChannelOutboundBuffer outboundBuffer = this.outboundBuffer;
             if (outboundBuffer == null) {
                 return;
@@ -703,7 +725,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         }
 
         @Override
-        public ChannelPromise voidPromise() {
+        public final ChannelPromise voidPromise() {
             return unsafeVoidPromise;
         }
 
@@ -758,6 +780,27 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             } catch (RejectedExecutionException e) {
                 logger.warn("Can't invoke task later as EventLoop rejected it", e);
             }
+        }
+
+        /**
+         * Appends the remote address to the message of the exceptions caused by connection attempt failure.
+         */
+        protected final Throwable annotateConnectException(Throwable cause, SocketAddress remoteAddress) {
+            if (cause instanceof ConnectException) {
+                Throwable newT = new ConnectException(cause.getMessage() + ": " + remoteAddress);
+                newT.setStackTrace(cause.getStackTrace());
+                cause = newT;
+            } else if (cause instanceof NoRouteToHostException) {
+                Throwable newT = new NoRouteToHostException(cause.getMessage() + ": " + remoteAddress);
+                newT.setStackTrace(cause.getStackTrace());
+                cause = newT;
+            } else if (cause instanceof SocketException) {
+                Throwable newT = new SocketException(cause.getMessage() + ": " + remoteAddress);
+                newT.setStackTrace(cause.getStackTrace());
+                cause = newT;
+            }
+
+            return cause;
         }
     }
 
@@ -819,12 +862,12 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
      */
     protected abstract void doWrite(ChannelOutboundBuffer in) throws Exception;
 
-    protected static void checkEOF(FileRegion region) throws IOException {
-        if (region.transfered() < region.count()) {
-            throw new EOFException("Expected to be able to write "
-                    + region.count() + " bytes, but only wrote "
-                    + region.transfered());
-        }
+    /**
+     * Invoked when a new message is added to a {@link ChannelOutboundBuffer} of this {@link AbstractChannel}, so that
+     * the {@link Channel} implementation converts the message to another. (e.g. heap buffer -> direct buffer)
+     */
+    protected Object filterOutboundMessage(Object msg) throws Exception {
+        return msg;
     }
 
     static final class CloseFuture extends DefaultChannelPromise {

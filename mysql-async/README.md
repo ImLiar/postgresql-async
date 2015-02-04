@@ -1,7 +1,17 @@
-# mysql-async - an async, Netty based, MySQL driver written in Scala 2.10
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
 
-This is the MySQL part of the async driver collection. As the PostgreSQL version, it is not supposed to be a JDBC
-replacement, but a simpler solution for those that need something that queries and then returns rows.
+- [mysql-async - an async, Netty based, MySQL driver written in Scala 2.10 and 2.11](#mysql-async---an-async-netty-based-mysql-driver-written-in-scala-210)
+	- [What can it do now?](#what-can-it-do-now)
+	- [Gotchas](#gotchas)
+	- [Supported types](#supported-types)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# mysql-async - an async, Netty based, MySQL driver written in Scala 2.10 and 2.11
+
+This is the MySQL part of the async driver collection. As the PostgreSQL version, it is not supposed to be a JDBC replacement, but a simpler solution for those that need something that queries and then returns rows.
 
 You can find more information about the MySQL network protocol [here](http://dev.mysql.com/doc/internals/en/client-server-protocol.html).
 
@@ -79,6 +89,10 @@ java.sql.Timestamp | timestamp
 java.sql.Time | time
 String | string
 Array[Byte] | blob
+java.nio.ByteBuffer | blob
+com.github.mauricio.netty.buffer.ByteBuf | blob
+
+The maximum size of a blob is 2^24-9 bytes (almost 16 MiB).
 
 You don't have to match exact values when sending parameters for your prepared statements, MySQL is usually smart
 enough to understand that if you have sent an Int to `smallint` column it has to truncate the 4 bytes into 2.

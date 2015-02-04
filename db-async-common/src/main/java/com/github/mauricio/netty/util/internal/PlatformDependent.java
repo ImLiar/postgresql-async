@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
@@ -61,7 +60,7 @@ public final class PlatformDependent {
 
     private static final boolean IS_ANDROID = isAndroid0();
     private static final boolean IS_WINDOWS = isWindows0();
-    private static final boolean IS_ROOT = isRoot0();
+    private static volatile Boolean IS_ROOT;
 
     private static final int JAVA_VERSION = javaVersion0();
 
@@ -70,7 +69,7 @@ public final class PlatformDependent {
     private static final boolean HAS_UNSAFE = hasUnsafe0();
     private static final boolean CAN_USE_CHM_V8 = HAS_UNSAFE && JAVA_VERSION < 8;
     private static final boolean DIRECT_BUFFER_PREFERRED =
-            HAS_UNSAFE && !SystemPropertyUtil.getBoolean("io.netty.noPreferDirect", false);
+            HAS_UNSAFE && !SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noPreferDirect", false);
     private static final long MAX_DIRECT_MEMORY = maxDirectMemory0();
 
     private static final long ARRAY_BASE_OFFSET = arrayBaseOffset0();
@@ -81,9 +80,11 @@ public final class PlatformDependent {
 
     private static final int BIT_MODE = bitMode0();
 
+    private static final int ADDRESS_SIZE = addressSize0();
+
     static {
         if (logger.isDebugEnabled()) {
-            logger.debug("-Dio.netty.noPreferDirect: {}", !DIRECT_BUFFER_PREFERRED);
+            logger.debug("-Dcom.github.mauricio.netty.noPreferDirect: {}", !DIRECT_BUFFER_PREFERRED);
         }
 
         if (!hasUnsafe() && !isAndroid()) {
@@ -113,6 +114,13 @@ public final class PlatformDependent {
      * {@code false} if on Windows.
      */
     public static boolean isRoot() {
+        if (IS_ROOT == null) {
+            synchronized (PlatformDependent.class) {
+                if (IS_ROOT == null) {
+                    IS_ROOT = isRoot0();
+                }
+            }
+        }
         return IS_ROOT;
     }
 
@@ -140,7 +148,7 @@ public final class PlatformDependent {
 
     /**
      * Returns {@code true} if the platform has reliable low-level direct buffer access API and a user specified
-     * {@code -Dio.netty.preferDirect} option.
+     * {@code -Dcom.github.mauricio.netty.preferDirect} option.
      */
     public static boolean directBufferPreferred() {
         return DIRECT_BUFFER_PREFERRED;
@@ -172,6 +180,22 @@ public final class PlatformDependent {
      */
     public static int bitMode() {
         return BIT_MODE;
+    }
+
+    /**
+     * Return the address size of the OS.
+     * 4 (for 32 bits systems ) and 8 (for 64 bits systems).
+     */
+    public static int addressSize() {
+        return ADDRESS_SIZE;
+    }
+
+    public static long allocateMemory(long size) {
+        return PlatformDependent0.allocateMemory(size);
+    }
+
+    public static void freeMemory(long address) {
+        PlatformDependent0.freeMemory(address);
     }
 
     /**
@@ -251,7 +275,9 @@ public final class PlatformDependent {
      * the current platform does not support this operation or the specified buffer is not a direct buffer.
      */
     public static void freeDirectBuffer(ByteBuffer buffer) {
-        if (hasUnsafe()) {
+        if (hasUnsafe() && !isAndroid()) {
+            // only direct to method if we are not running on android.
+            // See https://github.com/netty/netty/issues/2604
             PlatformDependent0.freeDirectBuffer(buffer);
         }
     }
@@ -379,18 +405,35 @@ public final class PlatformDependent {
      * Create a new {@link Queue} which is safe to use for multiple producers (different threads) and a single
      * consumer (one thread!).
      */
-    public static Queue<Runnable> newMpscQueue() {
-        if (hasUnsafe()) {
-            return new MpscLinkedQueue();
-        } else {
-            return new ConcurrentLinkedQueue<Runnable>();
-        }
+    public static <T> Queue<T> newMpscQueue() {
+        return new MpscLinkedQueue<T>();
+    }
+
+    /**
+     * Return the {@link ClassLoader} for the given {@link Class}.
+     */
+    public static ClassLoader getClassLoader(final Class<?> clazz) {
+        return PlatformDependent0.getClassLoader(clazz);
+    }
+
+    /**
+     * Return the context {@link ClassLoader} for the current {@link Thread}.
+     */
+    public static ClassLoader getContextClassLoader() {
+        return PlatformDependent0.getContextClassLoader();
+    }
+
+    /**
+     * Return the system {@link ClassLoader}.
+     */
+    public static ClassLoader getSystemClassLoader() {
+        return PlatformDependent0.getSystemClassLoader();
     }
 
     private static boolean isAndroid0() {
         boolean android;
         try {
-            Class.forName("android.app.Application", false, ClassLoader.getSystemClassLoader());
+            Class.forName("android.app.Application", false, getSystemClassLoader());
             android = true;
         } catch (Exception e) {
             // Failed to load the class uniquely available in Android.
@@ -517,7 +560,7 @@ public final class PlatformDependent {
             }
 
             try {
-                Class.forName("java.time.Clock", false, Object.class.getClassLoader());
+                Class.forName("java.time.Clock", false, getClassLoader(Object.class));
                 javaVersion = 8;
                 break;
             } catch (Exception e) {
@@ -525,7 +568,7 @@ public final class PlatformDependent {
             }
 
             try {
-                Class.forName("java.util.concurrent.LinkedTransferQueue", false, BlockingQueue.class.getClassLoader());
+                Class.forName("java.util.concurrent.LinkedTransferQueue", false, getClassLoader(BlockingQueue.class));
                 javaVersion = 7;
                 break;
             } catch (Exception e) {
@@ -543,8 +586,8 @@ public final class PlatformDependent {
     }
 
     private static boolean hasUnsafe0() {
-        boolean noUnsafe = SystemPropertyUtil.getBoolean("io.netty.noUnsafe", false);
-        logger.debug("-Dio.netty.noUnsafe: {}", noUnsafe);
+        boolean noUnsafe = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noUnsafe", false);
+        logger.debug("-Dcom.github.mauricio.netty.noUnsafe: {}", noUnsafe);
 
         if (isAndroid()) {
             logger.debug("sun.misc.Unsafe: unavailable (Android)");
@@ -552,20 +595,20 @@ public final class PlatformDependent {
         }
 
         if (noUnsafe) {
-            logger.debug("sun.misc.Unsafe: unavailable (io.netty.noUnsafe)");
+            logger.debug("sun.misc.Unsafe: unavailable (com.github.mauricio.netty.noUnsafe)");
             return false;
         }
 
         // Legacy properties
         boolean tryUnsafe;
-        if (SystemPropertyUtil.contains("io.netty.tryUnsafe")) {
-            tryUnsafe = SystemPropertyUtil.getBoolean("io.netty.tryUnsafe", true);
+        if (SystemPropertyUtil.contains("com.github.mauricio.netty.tryUnsafe")) {
+            tryUnsafe = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.tryUnsafe", true);
         } else {
             tryUnsafe = SystemPropertyUtil.getBoolean("org.jboss.netty.tryUnsafe", true);
         }
 
         if (!tryUnsafe) {
-            logger.debug("sun.misc.Unsafe: unavailable (io.netty.tryUnsafe/org.jboss.netty.tryUnsafe)");
+            logger.debug("sun.misc.Unsafe: unavailable (com.github.mauricio.netty.tryUnsafe/org.jboss.netty.tryUnsafe)");
             return false;
         }
 
@@ -591,7 +634,7 @@ public final class PlatformDependent {
         long maxDirectMemory = 0;
         try {
             // Try to get from sun.misc.VM.maxDirectMemory() which should be most accurate.
-            Class<?> vmClass = Class.forName("sun.misc.VM", true, ClassLoader.getSystemClassLoader());
+            Class<?> vmClass = Class.forName("sun.misc.VM", true, getSystemClassLoader());
             Method m = vmClass.getDeclaredMethod("maxDirectMemory");
             maxDirectMemory = ((Number) m.invoke(null)).longValue();
         } catch (Throwable t) {
@@ -606,9 +649,9 @@ public final class PlatformDependent {
             // Now try to get the JVM option (-XX:MaxDirectMemorySize) and parse it.
             // Note that we are using reflection because Android doesn't have these classes.
             Class<?> mgmtFactoryClass = Class.forName(
-                    "java.lang.management.ManagementFactory", true, ClassLoader.getSystemClassLoader());
+                    "java.lang.management.ManagementFactory", true, getSystemClassLoader());
             Class<?> runtimeClass = Class.forName(
-                    "java.lang.management.RuntimeMXBean", true, ClassLoader.getSystemClassLoader());
+                    "java.lang.management.RuntimeMXBean", true, getSystemClassLoader());
 
             Object runtime = mgmtFactoryClass.getDeclaredMethod("getRuntimeMXBean").invoke(null);
 
@@ -653,16 +696,16 @@ public final class PlatformDependent {
             return false;
         }
 
-        boolean noJavassist = SystemPropertyUtil.getBoolean("io.netty.noJavassist", false);
-        logger.debug("-Dio.netty.noJavassist: {}", noJavassist);
+        boolean noJavassist = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noJavassist", false);
+        logger.debug("-Dcom.github.mauricio.netty.noJavassist: {}", noJavassist);
 
         if (noJavassist) {
-            logger.debug("Javassist: unavailable (io.netty.noJavassist)");
+            logger.debug("Javassist: unavailable (com.github.mauricio.netty.noJavassist)");
             return false;
         }
 
         try {
-            JavassistTypeParameterMatcherGenerator.generate(Object.class, PlatformDependent.class.getClassLoader());
+            JavassistTypeParameterMatcherGenerator.generate(Object.class, getClassLoader(PlatformDependent.class));
             logger.debug("Javassist: available");
             return true;
         } catch (Throwable t) {
@@ -678,15 +721,15 @@ public final class PlatformDependent {
     private static File tmpdir0() {
         File f;
         try {
-            f = toDirectory(SystemPropertyUtil.get("io.netty.tmpdir"));
+            f = toDirectory(SystemPropertyUtil.get("com.github.mauricio.netty.tmpdir"));
             if (f != null) {
-                logger.debug("-Dio.netty.tmpdir: {}", f);
+                logger.debug("-Dcom.github.mauricio.netty.tmpdir: {}", f);
                 return f;
             }
 
             f = toDirectory(SystemPropertyUtil.get("java.io.tmpdir"));
             if (f != null) {
-                logger.debug("-Dio.netty.tmpdir: {} (java.io.tmpdir)", f);
+                logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (java.io.tmpdir)", f);
                 return f;
             }
 
@@ -694,7 +737,7 @@ public final class PlatformDependent {
             if (isWindows()) {
                 f = toDirectory(System.getenv("TEMP"));
                 if (f != null) {
-                    logger.debug("-Dio.netty.tmpdir: {} (%TEMP%)", f);
+                    logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (%TEMP%)", f);
                     return f;
                 }
 
@@ -702,20 +745,20 @@ public final class PlatformDependent {
                 if (userprofile != null) {
                     f = toDirectory(userprofile + "\\AppData\\Local\\Temp");
                     if (f != null) {
-                        logger.debug("-Dio.netty.tmpdir: {} (%USERPROFILE%\\AppData\\Local\\Temp)", f);
+                        logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (%USERPROFILE%\\AppData\\Local\\Temp)", f);
                         return f;
                     }
 
                     f = toDirectory(userprofile + "\\Local Settings\\Temp");
                     if (f != null) {
-                        logger.debug("-Dio.netty.tmpdir: {} (%USERPROFILE%\\Local Settings\\Temp)", f);
+                        logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (%USERPROFILE%\\Local Settings\\Temp)", f);
                         return f;
                     }
                 }
             } else {
                 f = toDirectory(System.getenv("TMPDIR"));
                 if (f != null) {
-                    logger.debug("-Dio.netty.tmpdir: {} ($TMPDIR)", f);
+                    logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} ($TMPDIR)", f);
                     return f;
                 }
             }
@@ -741,9 +784,7 @@ public final class PlatformDependent {
         }
 
         File f = new File(path);
-        if (!f.exists()) {
-            f.mkdirs();
-        }
+        f.mkdirs();
 
         if (!f.isDirectory()) {
             return null;
@@ -758,21 +799,21 @@ public final class PlatformDependent {
 
     private static int bitMode0() {
         // Check user-specified bit mode first.
-        int bitMode = SystemPropertyUtil.getInt("io.netty.bitMode", 0);
+        int bitMode = SystemPropertyUtil.getInt("com.github.mauricio.netty.bitMode", 0);
         if (bitMode > 0) {
-            logger.debug("-Dio.netty.bitMode: {}", bitMode);
+            logger.debug("-Dcom.github.mauricio.netty.bitMode: {}", bitMode);
             return bitMode;
         }
 
         // And then the vendor specific ones which is probably most reliable.
         bitMode = SystemPropertyUtil.getInt("sun.arch.data.model", 0);
         if (bitMode > 0) {
-            logger.debug("-Dio.netty.bitMode: {} (sun.arch.data.model)", bitMode);
+            logger.debug("-Dcom.github.mauricio.netty.bitMode: {} (sun.arch.data.model)", bitMode);
             return bitMode;
         }
         bitMode = SystemPropertyUtil.getInt("com.ibm.vm.bitmode", 0);
         if (bitMode > 0) {
-            logger.debug("-Dio.netty.bitMode: {} (com.ibm.vm.bitmode)", bitMode);
+            logger.debug("-Dcom.github.mauricio.netty.bitMode: {} (com.ibm.vm.bitmode)", bitMode);
             return bitMode;
         }
 
@@ -785,7 +826,7 @@ public final class PlatformDependent {
         }
 
         if (bitMode > 0) {
-            logger.debug("-Dio.netty.bitMode: {} (os.arch: {})", bitMode, arch);
+            logger.debug("-Dcom.github.mauricio.netty.bitMode: {} (os.arch: {})", bitMode, arch);
         }
 
         // Last resort: guess from VM name and then fall back to most common 64-bit mode.
@@ -797,6 +838,13 @@ public final class PlatformDependent {
         } else {
             return 64;
         }
+    }
+
+    private static int addressSize0() {
+        if (!hasUnsafe()) {
+            return -1;
+        }
+        return PlatformDependent0.addressSize();
     }
 
     private PlatformDependent() {

@@ -20,6 +20,7 @@ import com.github.mauricio.netty.buffer.ByteBufInputStream;
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 import com.github.mauricio.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 
@@ -70,8 +71,10 @@ public class ObjectDecoder extends LengthFieldBasedFrameDecoder {
             return null;
         }
 
-        return new CompactObjectInputStream(
-                new ByteBufInputStream(frame), classResolver).readObject();
+        ObjectInputStream is = new CompactObjectInputStream(new ByteBufInputStream(frame), classResolver);
+        Object result = is.readObject();
+        is.close();
+        return result;
     }
 
     @Override

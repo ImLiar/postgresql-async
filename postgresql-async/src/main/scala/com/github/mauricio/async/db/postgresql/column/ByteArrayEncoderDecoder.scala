@@ -18,7 +18,10 @@ package com.github.mauricio.async.db.postgresql.column
 
 import com.github.mauricio.async.db.column.ColumnEncoderDecoder
 import com.github.mauricio.async.db.postgresql.exceptions.ByteArrayFormatNotSupportedException
-import com.github.mauricio.async.db.util.{Log, HexCodec}
+import com.github.mauricio.async.db.util.{ Log, HexCodec }
+import java.nio.ByteBuffer
+
+import com.github.mauricio.netty.buffer.ByteBuf
 
 object ByteArrayEncoderDecoder extends ColumnEncoderDecoder {
 
@@ -31,13 +34,72 @@ object ByteArrayEncoderDecoder extends ColumnEncoderDecoder {
     if (value.startsWith(HexStart)) {
       HexCodec.decode(value, 2)
     } else {
-      throw new ByteArrayFormatNotSupportedException()
+      // Default encoding is 'escape'
+
+      // Size the buffer to the length of the string, the data can't be bigger
+      val buffer = ByteBuffer.allocate(value.length)
+
+      val ci = value.iterator
+
+      while (ci.hasNext) {
+        ci.next match {
+          case '\\' ⇒ getCharOrDie(ci) match {
+            case '\\' ⇒ buffer.put('\\'.toByte)
+            case firstDigit ⇒
+              val secondDigit = getCharOrDie(ci)
+              val thirdDigit = getCharOrDie(ci)
+              // Must always be in triplets
+              buffer.put(
+                Integer.decode(
+                  new String(Array('0', firstDigit, secondDigit, thirdDigit))).toByte)
+          }
+          case c ⇒ buffer.put(c.toByte)
+        }
+      }
+
+      buffer.flip
+      val finalArray = new Array[Byte](buffer.remaining())
+      buffer.get(finalArray)
+
+      finalArray
     }
 
   }
 
+  /**
+   * This is required since {@link Iterator#next} when {@linke Iterator#hasNext} is false is undefined.
+   * @param ci the iterator source of the data
+   * @return the next character
+   * @throws IllegalArgumentException if there is no next character
+   */
+  private [this] def getCharOrDie(ci: Iterator[Char]): Char = {
+    if (ci.hasNext) {
+      ci.next()
+    } else {
+      throw new IllegalArgumentException("Expected escape sequence character, found nothing")
+    }
+  }
+
   override def encode(value: Any): String = {
-    HexCodec.encode(value.asInstanceOf[Array[Byte]], HexStartChars)
+    val array = value match {
+      case byteArray: Array[Byte] => byteArray
+
+      case byteBuffer: ByteBuffer if byteBuffer.hasArray => byteBuffer.array()
+
+      case byteBuffer: ByteBuffer =>
+        val arr = new Array[Byte](byteBuffer.remaining())
+        byteBuffer.get(arr)
+        arr
+
+      case byteBuf: ByteBuf if byteBuf.hasArray => byteBuf.array()
+
+      case byteBuf: ByteBuf =>
+        val arr = new Array[Byte](byteBuf.readableBytes())
+        byteBuf.getBytes(0, arr)
+        arr
+    }
+
+    HexCodec.encode(array, HexStartChars)
   }
 
 }

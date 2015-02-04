@@ -41,8 +41,29 @@ import java.util.List;
  *     }
  * </pre>
  *
+ * <h3>Frame detection</h3>
+ * <p>
+ * Generally frame detection should be handled earlier in the pipeline by adding a
+ * {@link DelimiterBasedFrameDecoder}, {@link FixedLengthFrameDecoder}, {@link LengthFieldBasedFrameDecoder},
+ * or {@link LineBasedFrameDecoder}.
+ * <p>
+ * If a custom frame decoder is required, then one needs to be careful when implementing
+ * one with {@link ByteToMessageDecoder}. Ensure there are enough bytes in the buffer for a
+ * complete frame by checking {@link ByteBuf#readableBytes()}. If there are not enough bytes
+ * for a complete frame, return without modify the reader index to allow more bytes to arrive.
+ * <p>
+ * To check for complete frames without modify the reader index, use methods like {@link ByteBuf#getInt(int)}.
+ * One <strong>MUST</strong> use the reader index when using methods like {@link ByteBuf#getInt(int)}.
+ * For example calling <tt>in.getInt(0)</tt> is assuming the frame starts at the beginning of the buffer, which
+ * is not always the case. Use <tt>in.getInt(in.readerIndex())</tt> instead.
+ * <h3>Pitfalls</h3>
+ * <p>
  * Be aware that sub-classes of {@link ByteToMessageDecoder} <strong>MUST NOT</strong>
  * annotated with {@link @Sharable}.
+ * <p>
+ * Some methods such as {@link ByteBuf.readBytes(int)} will cause a memory leak if the returned buffer
+ * is not released or added to the <tt>out</tt> {@link List}. Use derived buffers like {@link ByteBuf.readSlice(int)}
+ * to avoid leaking memory.
  */
 public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter {
 
@@ -52,9 +73,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     private boolean first;
 
     protected ByteToMessageDecoder() {
-        if (isSharable()) {
-            throw new IllegalStateException("@Sharable annotation is not allowed");
-        }
+        CodecUtil.ensureNotSharable(this);
     }
 
     /**
@@ -132,7 +151,15 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 if (first) {
                     cumulation = data;
                 } else {
-                    if (cumulation.writerIndex() > cumulation.maxCapacity() - data.readableBytes()) {
+                    if (cumulation.writerIndex() > cumulation.maxCapacity() - data.readableBytes()
+                            || cumulation.refCnt() > 1) {
+                        // Expand cumulation (by replace it) when either there is not more room in the buffer
+                        // or if the refCnt is greater then 1 which may happen when the user use slice().retain() or
+                        // duplicate().retain().
+                        //
+                        // See:
+                        // - https://github.com/netty/netty/issues/2327
+                        // - https://github.com/netty/netty/issues/1764
                         expandCumulation(ctx, data.readableBytes());
                     }
                     cumulation.writeBytes(data);
@@ -170,9 +197,14 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        if (cumulation != null && !first) {
+        if (cumulation != null && !first && cumulation.refCnt() == 1) {
             // discard some bytes if possible to make more room in the
-            // buffer
+            // buffer but only if the refCnt == 1  as otherwise the user may have
+            // used slice().retain() or duplicate().retain().
+            //
+            // See:
+            // - https://github.com/netty/netty/issues/2327
+            // - https://github.com/netty/netty/issues/1764
             cumulation.discardSomeReadBytes();
         }
         if (decodeWasNull) {
@@ -199,16 +231,24 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
         } catch (Exception e) {
             throw new DecoderException(e);
         } finally {
-            if (cumulation != null) {
-                cumulation.release();
-                cumulation = null;
+            try {
+                if (cumulation != null) {
+                    cumulation.release();
+                    cumulation = null;
+                }
+                int size = out.size();
+                for (int i = 0; i < size; i++) {
+                    ctx.fireChannelRead(out.get(i));
+                }
+                if (size > 0) {
+                    // Something was read, call fireChannelReadComplete()
+                    ctx.fireChannelReadComplete();
+                }
+                ctx.fireChannelInactive();
+            } finally {
+                // recycle in all cases
+                out.recycle();
             }
-            int size = out.size();
-            for (int i = 0; i < size; i ++) {
-                ctx.fireChannelRead(out.get(i));
-            }
-            ctx.fireChannelInactive();
-            out.recycle();
         }
     }
 
@@ -262,13 +302,12 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     /**
      * Decode the from one {@link ByteBuf} to an other. This method will be called till either the input
-     * {@link ByteBuf} has nothing to read anymore, till nothing was read from the input {@link ByteBuf} or till
-     * this method returns {@code null}.
+     * {@link ByteBuf} has nothing to read when return from this method or till nothing was read from the input
+     * {@link ByteBuf}.
      *
      * @param ctx           the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param in            the {@link ByteBuf} from which to read data
      * @param out           the {@link List} to which decoded messages should be added
-
      * @throws Exception    is thrown if an error accour
      */
     protected abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;

@@ -17,6 +17,7 @@ package com.github.mauricio.netty.util.concurrent;
 
 import com.github.mauricio.netty.util.Signal;
 import com.github.mauricio.netty.util.internal.EmptyArrays;
+import com.github.mauricio.netty.util.internal.InternalThreadLocalMap;
 import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.StringUtil;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
@@ -35,12 +36,6 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
             InternalLoggerFactory.getInstance(DefaultPromise.class.getName() + ".rejectedExecution");
 
     private static final int MAX_LISTENER_STACK_DEPTH = 8;
-    private static final ThreadLocal<Integer> LISTENER_STACK_DEPTH = new ThreadLocal<Integer>() {
-        @Override
-        protected Integer initialValue() {
-            return 0;
-        }
-    };
     private static final Signal SUCCESS = Signal.valueOf(DefaultPromise.class.getName() + ".SUCCESS");
     private static final Signal UNCANCELLABLE = Signal.valueOf(DefaultPromise.class.getName() + ".UNCANCELLABLE");
     private static final CauseHolder CANCELLATION_CAUSE_HOLDER = new CauseHolder(new CancellationException());
@@ -152,7 +147,6 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
                     if (listeners instanceof DefaultFutureListeners) {
                         ((DefaultFutureListeners) listeners).add(listener);
                     } else {
-                        @SuppressWarnings("unchecked")
                         final GenericFutureListener<? extends Future<V>> firstListener =
                                 (GenericFutureListener<? extends Future<V>>) listeners;
                         listeners = new DefaultFutureListeners(firstListener, listener);
@@ -477,6 +471,10 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     }
 
     private boolean setFailure0(Throwable cause) {
+        if (cause == null) {
+            throw new NullPointerException("cause");
+        }
+
         if (isDone()) {
             return false;
         }
@@ -556,21 +554,21 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
         EventExecutor executor = executor();
         if (executor.inEventLoop()) {
-            final Integer stackDepth = LISTENER_STACK_DEPTH.get();
+            final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
+            final int stackDepth = threadLocals.futureListenerStackDepth();
             if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
-                LISTENER_STACK_DEPTH.set(stackDepth + 1);
+                threadLocals.setFutureListenerStackDepth(stackDepth + 1);
                 try {
                     if (listeners instanceof DefaultFutureListeners) {
                         notifyListeners0(this, (DefaultFutureListeners) listeners);
                     } else {
-                        @SuppressWarnings("unchecked")
                         final GenericFutureListener<? extends Future<V>> l =
                                 (GenericFutureListener<? extends Future<V>>) listeners;
                         notifyListener0(this, l);
                     }
                 } finally {
                     this.listeners = null;
-                    LISTENER_STACK_DEPTH.set(stackDepth);
+                    threadLocals.setFutureListenerStackDepth(stackDepth);
                 }
                 return;
             }
@@ -586,7 +584,6 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
                 }
             });
         } else {
-            @SuppressWarnings("unchecked")
             final GenericFutureListener<? extends Future<V>> l =
                     (GenericFutureListener<? extends Future<V>>) listeners;
             execute(executor, new Runnable() {
@@ -616,14 +613,16 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         final EventExecutor executor = executor();
         if (executor.inEventLoop()) {
             if (listeners == null && lateListeners == null) {
-                final Integer stackDepth = LISTENER_STACK_DEPTH.get();
+                final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
+                final int stackDepth = threadLocals.futureListenerStackDepth();
                 if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
-                    LISTENER_STACK_DEPTH.set(stackDepth + 1);
+                    threadLocals.setFutureListenerStackDepth(stackDepth + 1);
                     try {
                         notifyListener0(this, l);
                     } finally {
-                        LISTENER_STACK_DEPTH.set(stackDepth);
+                        threadLocals.setFutureListenerStackDepth(stackDepth);
                     }
+                    return;
                 }
             } else {
                 LateListeners lateListeners = this.lateListeners;
@@ -632,26 +631,28 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
                 }
                 lateListeners.add(l);
                 execute(executor, lateListeners);
+                return;
             }
-        } else {
-            // Add the late listener to lateListeners in the executor thread for thread safety.
-            // We could just make LateListeners extend ConcurrentLinkedQueue, but it's an overkill considering
-            // that most asynchronous applications won't execute this code path.
-            execute(executor, new LateListenerNotifier(l));
         }
+
+        // Add the late listener to lateListeners in the executor thread for thread safety.
+        // We could just make LateListeners extend ConcurrentLinkedQueue, but it's an overkill considering
+        // that most asynchronous applications won't execute this code path.
+        execute(executor, new LateListenerNotifier(l));
     }
 
     protected static void notifyListener(
             final EventExecutor eventExecutor, final Future<?> future, final GenericFutureListener<?> l) {
 
         if (eventExecutor.inEventLoop()) {
-            final Integer stackDepth = LISTENER_STACK_DEPTH.get();
+            final InternalThreadLocalMap threadLocals = InternalThreadLocalMap.get();
+            final int stackDepth = threadLocals.futureListenerStackDepth();
             if (stackDepth < MAX_LISTENER_STACK_DEPTH) {
-                LISTENER_STACK_DEPTH.set(stackDepth + 1);
+                threadLocals.setFutureListenerStackDepth(stackDepth + 1);
                 try {
                     notifyListener0(future, l);
                 } finally {
-                    LISTENER_STACK_DEPTH.set(stackDepth);
+                    threadLocals.setFutureListenerStackDepth(stackDepth);
                 }
                 return;
             }
@@ -729,7 +730,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         }
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     void notifyProgressiveListeners(final long progress, final long total) {
         final Object listeners = progressiveListeners();
         if (listeners == null) {
@@ -794,7 +795,7 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
 
     private static final class CauseHolder {
         final Throwable cause;
-        private CauseHolder(Throwable cause) {
+        CauseHolder(Throwable cause) {
             this.cause = cause;
         }
     }
@@ -805,10 +806,10 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
     }
 
     protected StringBuilder toStringBuilder() {
-        StringBuilder buf = new StringBuilder(64);
-        buf.append(StringUtil.simpleClassName(this));
-        buf.append('@');
-        buf.append(Integer.toHexString(hashCode()));
+        StringBuilder buf = new StringBuilder(64)
+            .append(StringUtil.simpleClassName(this))
+            .append('@')
+            .append(Integer.toHexString(hashCode()));
 
         Object result = this.result;
         if (result == SUCCESS) {
@@ -816,9 +817,9 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
         } else if (result == UNCANCELLABLE) {
             buf.append("(uncancellable)");
         } else if (result instanceof CauseHolder) {
-            buf.append("(failure(");
-            buf.append(((CauseHolder) result).cause);
-            buf.append(')');
+            buf.append("(failure(")
+               .append(((CauseHolder) result).cause)
+               .append(')');
         } else {
             buf.append("(incomplete)");
         }

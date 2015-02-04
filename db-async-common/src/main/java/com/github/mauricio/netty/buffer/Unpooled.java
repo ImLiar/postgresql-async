@@ -93,6 +93,10 @@ public final class Unpooled {
      */
     public static final ByteBuf EMPTY_BUFFER = ALLOC.buffer(0, 0);
 
+    static {
+        assert EMPTY_BUFFER instanceof EmptyByteBuf: "EMPTY_BUFFER must be an EmptyByteBuf.";
+    }
+
     /**
      * Creates a new big-endian Java heap buffer with reasonably small initial capacity, which
      * expands its capacity boundlessly on demand.
@@ -412,12 +416,7 @@ public final class Unpooled {
     public static ByteBuf copiedBuffer(ByteBuf buffer) {
         int readable = buffer.readableBytes();
         if (readable > 0) {
-            ByteBuf copy;
-            if (buffer.isDirect()) {
-                copy = directBuffer(readable);
-            } else {
-                copy = buffer(readable);
-            }
+            ByteBuf copy = buffer(readable);
             copy.writeBytes(buffer, buffer.readerIndex(), readable);
             return copy;
         } else {
@@ -637,6 +636,9 @@ public final class Unpooled {
      * {@code 0} and the length of the encoded string respectively.
      */
     public static ByteBuf copiedBuffer(char[] array, Charset charset) {
+        if (array == null) {
+            throw new NullPointerException("array");
+        }
         return copiedBuffer(array, 0, array.length, charset);
     }
 
@@ -657,7 +659,7 @@ public final class Unpooled {
     }
 
     private static ByteBuf copiedBuffer(CharBuffer buffer, Charset charset) {
-        return ByteBufUtil.encodeString(ALLOC, buffer, charset);
+        return ByteBufUtil.encodeString0(ALLOC, true, buffer, charset);
     }
 
     /**

@@ -17,6 +17,7 @@ package com.github.mauricio.netty.handler.codec.marshalling;
 
 import com.github.mauricio.netty.channel.ChannelHandlerContext;
 
+import com.github.mauricio.netty.util.concurrent.FastThreadLocal;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.MarshallingConfiguration;
@@ -27,7 +28,7 @@ import org.jboss.marshalling.MarshallingConfiguration;
  * many small {@link Object}'s and your actual Thread count is not to big
  */
 public class ThreadLocalMarshallerProvider implements MarshallerProvider {
-    private final ThreadLocal<Marshaller> marshallers = new ThreadLocal<Marshaller>();
+    private final FastThreadLocal<Marshaller> marshallers = new FastThreadLocal<Marshaller>();
 
     private final MarshallerFactory factory;
     private final MarshallingConfiguration config;

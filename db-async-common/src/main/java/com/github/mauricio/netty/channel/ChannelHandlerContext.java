@@ -87,14 +87,14 @@ import java.nio.channels.Channels;
  * <pre>
  * public class FactorialHandler extends {@link ChannelInboundHandlerAdapter}&lt{@link Integer}&gt {
  *
- *   private final {@link AttributeKey}&lt{@link Integer}&gt counter =
- *           new {@link AttributeKey}&lt{@link Integer}&gt("counter");
+ *   private final {@link AttributeKey}&lt;{@link Integer}&gt; counter =
+ *           new {@link AttributeKey}&lt;{@link Integer}&gt;("counter");
  *
  *   // This handler will receive a sequence of increasing integers starting
  *   // from 1.
  *   {@code @Override}
  *   public void channelRead({@link ChannelHandlerContext} ctx, {@link Integer} integer) {
- *     {@link Attribute}&lt{@link Integer}&gt attr = ctx.getAttr(counter);
+ *     {@link Attribute}&lt;{@link Integer}&gt; attr = ctx.getAttr(counter);
  *     Integer a = ctx.getAttr(counter).get();
  *
  *     if (a == null) {
@@ -177,7 +177,6 @@ public interface ChannelHandlerContext
      * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
      * {@link Channel}.
      */
-    @Deprecated
     ChannelHandlerContext fireChannelUnregistered();
 
     /**
@@ -226,7 +225,7 @@ public interface ChannelHandlerContext
     ChannelHandlerContext fireChannelRead(Object msg);
 
     /**
-     * Triggers an {@link ChannelInboundHandler#channelWritabilityChanged(ChannelHandlerContext)}
+     * Triggers an {@link ChannelInboundHandler#channelReadComplete(ChannelHandlerContext)}
      * event to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
      */
     ChannelHandlerContext fireChannelReadComplete();
@@ -311,7 +310,6 @@ public interface ChannelHandlerContext
      * {@link Channel}.
      *
      */
-    @Deprecated
     ChannelFuture deregister();
 
     /**
@@ -399,7 +397,6 @@ public interface ChannelHandlerContext
      * method called of the next {@link ChannelOutboundHandler} contained in the  {@link ChannelPipeline} of the
      * {@link Channel}.
      */
-    @Deprecated
     ChannelFuture deregister(ChannelPromise promise);
 
     /**

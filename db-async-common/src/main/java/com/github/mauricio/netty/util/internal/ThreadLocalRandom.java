@@ -25,6 +25,7 @@ package com.github.mauricio.netty.util.internal;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
@@ -57,7 +58,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * //author Doug Lea
  */
 @SuppressWarnings("all")
-public class ThreadLocalRandom extends Random {
+public final class ThreadLocalRandom extends Random {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ThreadLocalRandom.class);
 
@@ -75,7 +76,7 @@ public class ThreadLocalRandom extends Random {
         if (initialSeedUniquifier == 0) {
             // Use the system property value.
             ThreadLocalRandom.initialSeedUniquifier = initialSeedUniquifier =
-                    SystemPropertyUtil.getLong("io.netty.initialSeedUniquifier", 0);
+                    SystemPropertyUtil.getLong("com.github.mauricio.netty.initialSeedUniquifier", 0);
         }
 
         // Otherwise, generate one.
@@ -90,17 +91,27 @@ public class ThreadLocalRandom extends Random {
                     queue.add(random.generateSeed(8));
                 }
             };
+            generatorThread.setDaemon(true);
             generatorThread.start();
+            generatorThread.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    logger.debug("An exception has been raised by {}", t.getName(), e);
+                }
+            });
 
             // Get the random seed from the thread with timeout.
             final long timeoutSeconds = 3;
             final long deadLine = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
+            boolean interrupted = false;
             for (;;) {
                 long waitTime = deadLine - System.nanoTime();
                 if (waitTime <= 0) {
+                    generatorThread.interrupt();
                     logger.warn(
                             "Failed to generate a seed from SecureRandom within {} seconds. " +
-                            "Not enough entrophy?", timeoutSeconds);
+                                    "Not enough entrophy?", timeoutSeconds
+                    );
                     break;
                 }
 
@@ -119,8 +130,9 @@ public class ThreadLocalRandom extends Random {
                         break;
                     }
                 } catch (InterruptedException e) {
-                    // restore interrupt status because we don't know how to/don't need to handle it here
-                    Thread.currentThread().interrupt();
+                    interrupted = true;
+                    logger.warn("Failed to generate a seed from SecureRandom due to an InterruptedException.");
+                    break;
                 }
             }
 
@@ -129,12 +141,22 @@ public class ThreadLocalRandom extends Random {
             initialSeedUniquifier ^= Long.reverse(System.nanoTime());
 
             ThreadLocalRandom.initialSeedUniquifier = initialSeedUniquifier;
+
+            if (interrupted) {
+                // Restore the interrupt status because we don't know how to/don't need to handle it here.
+                Thread.currentThread().interrupt();
+
+                // Interrupt the generator thread if it's still running,
+                // in the hope that the SecureRandom provider raises an exception on interruption.
+                generatorThread.interrupt();
+            }
         }
 
         return initialSeedUniquifier;
     }
 
     private static long newSeed() {
+        final long startTime = System.nanoTime();
         for (;;) {
             final long current = seedUniquifier.get();
             final long actualCurrent = current != 0? current : getInitialSeedUniquifier();
@@ -144,7 +166,9 @@ public class ThreadLocalRandom extends Random {
 
             if (seedUniquifier.compareAndSet(current, next)) {
                 if (current == 0 && logger.isDebugEnabled()) {
-                    logger.debug(String.format("-Dio.netty.initialSeedUniquifier: 0x%016x", actualCurrent));
+                    logger.debug(String.format(
+                            "-Dcom.github.mauricio.netty.initialSeedUniquifier: 0x%016x (took %d ms)",
+                            actualCurrent, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime)));
                 }
                 return next ^ System.nanoTime();
             }
@@ -183,22 +207,12 @@ public class ThreadLocalRandom extends Random {
     }
 
     /**
-     * The actual ThreadLocal
-     */
-    private static final ThreadLocal<ThreadLocalRandom> localRandom =
-            new ThreadLocal<ThreadLocalRandom>() {
-                protected ThreadLocalRandom initialValue() {
-                    return new ThreadLocalRandom();
-                }
-            };
-
-    /**
      * Returns the current thread's {@code ThreadLocalRandom}.
      *
      * @return the current thread's {@code ThreadLocalRandom}
      */
     public static ThreadLocalRandom current() {
-        return localRandom.get();
+        return InternalThreadLocalMap.get().random();
     }
 
     /**

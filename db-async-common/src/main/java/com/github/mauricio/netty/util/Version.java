@@ -16,6 +16,8 @@
 
 package com.github.mauricio.netty.util;
 
+import com.github.mauricio.netty.util.internal.PlatformDependent;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.text.ParseException;
@@ -61,13 +63,13 @@ public final class Version {
      */
     public static Map<String, Version> identify(ClassLoader classLoader) {
         if (classLoader == null) {
-            classLoader = Thread.currentThread().getContextClassLoader();
+            classLoader = PlatformDependent.getContextClassLoader();
         }
 
         // Collect all properties.
         Properties props = new Properties();
         try {
-            Enumeration<URL> resources = classLoader.getResources("META-INF/io.netty.versions.properties");
+            Enumeration<URL> resources = classLoader.getResources("META-INF/com.github.mauricio.netty.versions.properties");
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
                 InputStream in = url.openStream();
@@ -130,7 +132,7 @@ public final class Version {
     private static long parseIso8601(String value) {
         try {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z").parse(value).getTime();
-        } catch (ParseException e) {
+        } catch (ParseException ignored) {
             return 0;
         }
     }

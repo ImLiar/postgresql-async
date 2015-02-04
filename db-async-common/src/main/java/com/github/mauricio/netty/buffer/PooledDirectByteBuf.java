@@ -274,7 +274,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
 
     @Override
     public ByteBuf setBytes(int index, ByteBuffer src) {
-        checkIndex(index);
+        checkIndex(index, src.remaining());
         ByteBuffer tmpBuf = internalNioBuffer();
         if (src == tmpBuf) {
             src = src.duplicate();
@@ -308,7 +308,7 @@ final class PooledDirectByteBuf extends PooledByteBuf<ByteBuffer> {
         tmpBuf.clear().position(index).limit(index + length);
         try {
             return in.read(tmpBuf);
-        } catch (ClosedChannelException e) {
+        } catch (ClosedChannelException ignored) {
             return -1;
         }
     }

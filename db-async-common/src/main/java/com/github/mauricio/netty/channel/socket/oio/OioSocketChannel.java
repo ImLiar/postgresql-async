@@ -136,7 +136,7 @@ public class OioSocketChannel extends OioByteStreamChannel
         }
         try {
             return super.doReadBytes(buf);
-        } catch (SocketTimeoutException e) {
+        } catch (SocketTimeoutException ignored) {
             return 0;
         }
     }
@@ -231,5 +231,10 @@ public class OioSocketChannel extends OioByteStreamChannel
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected void setReadPending(boolean readPending) {
+        super.setReadPending(readPending);
     }
 }

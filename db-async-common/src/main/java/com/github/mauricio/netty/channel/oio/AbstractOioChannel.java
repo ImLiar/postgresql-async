@@ -21,7 +21,6 @@ import com.github.mauricio.netty.channel.ChannelPromise;
 import com.github.mauricio.netty.channel.EventLoop;
 import com.github.mauricio.netty.channel.ThreadPerChannelEventLoop;
 
-import java.net.ConnectException;
 import java.net.SocketAddress;
 
 /**
@@ -31,12 +30,17 @@ public abstract class AbstractOioChannel extends AbstractChannel {
 
     protected static final int SO_TIMEOUT = 1000;
 
-    private boolean readInProgress;
+    private volatile boolean readPending;
 
     private final Runnable readTask = new Runnable() {
         @Override
         public void run() {
-            readInProgress = false;
+            if (!isReadPending() && !config().isAutoRead()) {
+                // ChannelConfig.setAutoRead(false) was called in the meantime so just return
+                return;
+            }
+
+            setReadPending(false);
             doRead();
         }
     };
@@ -70,12 +74,7 @@ public abstract class AbstractOioChannel extends AbstractChannel {
                     pipeline().fireChannelActive();
                 }
             } catch (Throwable t) {
-                if (t instanceof ConnectException) {
-                    Throwable newT = new ConnectException(t.getMessage() + ": " + remoteAddress);
-                    newT.setStackTrace(t.getStackTrace());
-                    t = newT;
-                }
-                safeSetFailure(promise, t);
+                safeSetFailure(promise, annotateConnectException(t, remoteAddress));
                 closeIfClosed();
             }
         }
@@ -94,13 +93,21 @@ public abstract class AbstractOioChannel extends AbstractChannel {
 
     @Override
     protected void doBeginRead() throws Exception {
-        if (readInProgress) {
+        if (isReadPending()) {
             return;
         }
 
-        readInProgress = true;
+        setReadPending(true);
         eventLoop().execute(readTask);
     }
 
     protected abstract void doRead();
+
+    protected boolean isReadPending() {
+        return readPending;
+    }
+
+    protected void setReadPending(boolean readPending) {
+        this.readPending = readPending;
+    }
 }

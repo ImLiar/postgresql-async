@@ -18,6 +18,8 @@ package com.github.mauricio.netty.util.internal;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -27,12 +29,12 @@ import java.util.regex.Pattern;
  */
 public final class SystemPropertyUtil {
 
-    @SuppressWarnings("all")
     private static boolean initializedLogger;
     private static final InternalLogger logger;
     private static boolean loggedException;
 
     static {
+        initializedLogger = false;
         logger = InternalLoggerFactory.getInstance(SystemPropertyUtil.class);
         initializedLogger = true;
     }
@@ -64,7 +66,7 @@ public final class SystemPropertyUtil {
      *         {@code def} if there's no such property or if an access to the
      *         specified property is not allowed.
      */
-    public static String get(String key, String def) {
+    public static String get(final String key, String def) {
         if (key == null) {
             throw new NullPointerException("key");
         }
@@ -74,7 +76,16 @@ public final class SystemPropertyUtil {
 
         String value = null;
         try {
-            value = System.getProperty(key);
+            if (System.getSecurityManager() == null) {
+                value = System.getProperty(key);
+            } else {
+                value = AccessController.doPrivileged(new PrivilegedAction<String>() {
+                    @Override
+                    public String run() {
+                        return System.getProperty(key);
+                    }
+                });
+            }
         } catch (Exception e) {
             if (!loggedException) {
                 log("Unable to retrieve a system property '" + key + "'; default values will be used.", e);

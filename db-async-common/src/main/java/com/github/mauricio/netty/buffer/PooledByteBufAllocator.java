@@ -16,6 +16,7 @@
 
 package com.github.mauricio.netty.buffer;
 
+import com.github.mauricio.netty.util.concurrent.FastThreadLocal;
 import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.SystemPropertyUtil;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
@@ -27,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PooledByteBufAllocator extends AbstractByteBufAllocator {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(PooledByteBufAllocator.class);
-
     private static final int DEFAULT_NUM_HEAP_ARENA;
     private static final int DEFAULT_NUM_DIRECT_ARENA;
 
@@ -43,7 +43,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
     private static final int MAX_CHUNK_SIZE = (int) (((long) Integer.MAX_VALUE + 1) / 2);
 
     static {
-        int defaultPageSize = SystemPropertyUtil.getInt("io.netty.allocator.pageSize", 8192);
+        int defaultPageSize = SystemPropertyUtil.getInt("com.github.mauricio.netty.allocator.pageSize", 8192);
         Throwable pageSizeFallbackCause = null;
         try {
             validateAndCalculatePageShifts(defaultPageSize);
@@ -53,7 +53,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
         }
         DEFAULT_PAGE_SIZE = defaultPageSize;
 
-        int defaultMaxOrder = SystemPropertyUtil.getInt("io.netty.allocator.maxOrder", 11);
+        int defaultMaxOrder = SystemPropertyUtil.getInt("com.github.mauricio.netty.allocator.maxOrder", 11);
         Throwable maxOrderFallbackCause = null;
         try {
             validateAndCalculateChunkSize(DEFAULT_PAGE_SIZE, defaultMaxOrder);
@@ -69,51 +69,50 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
         final int defaultChunkSize = DEFAULT_PAGE_SIZE << DEFAULT_MAX_ORDER;
         DEFAULT_NUM_HEAP_ARENA = Math.max(0,
                 SystemPropertyUtil.getInt(
-                        "io.netty.allocator.numHeapArenas",
+                        "com.github.mauricio.netty.allocator.numHeapArenas",
                         (int) Math.min(
                                 runtime.availableProcessors(),
                                 Runtime.getRuntime().maxMemory() / defaultChunkSize / 2 / 3)));
         DEFAULT_NUM_DIRECT_ARENA = Math.max(0,
                 SystemPropertyUtil.getInt(
-                        "io.netty.allocator.numDirectArenas",
+                        "com.github.mauricio.netty.allocator.numDirectArenas",
                         (int) Math.min(
                                 runtime.availableProcessors(),
                                 PlatformDependent.maxDirectMemory() / defaultChunkSize / 2 / 3)));
 
         // cache sizes
-        DEFAULT_TINY_CACHE_SIZE = SystemPropertyUtil.getInt("io.netty.allocator.tinyCacheSize", 512);
-        DEFAULT_SMALL_CACHE_SIZE = SystemPropertyUtil.getInt("io.netty.allocator.smallCacheSize", 256);
-        DEFAULT_NORMAL_CACHE_SIZE = SystemPropertyUtil.getInt("io.netty.allocator.normalCacheSize", 64);
+        DEFAULT_TINY_CACHE_SIZE = SystemPropertyUtil.getInt("com.github.mauricio.netty.allocator.tinyCacheSize", 512);
+        DEFAULT_SMALL_CACHE_SIZE = SystemPropertyUtil.getInt("com.github.mauricio.netty.allocator.smallCacheSize", 256);
+        DEFAULT_NORMAL_CACHE_SIZE = SystemPropertyUtil.getInt("com.github.mauricio.netty.allocator.normalCacheSize", 64);
 
         // 32 kb is the default maximum capacity of the cached buffer. Similar to what is explained in
         // 'Scalable memory allocation using jemalloc'
         DEFAULT_MAX_CACHED_BUFFER_CAPACITY = SystemPropertyUtil.getInt(
-                "io.netty.allocator.maxCachedBufferCapacity", 32 * 1024);
+                "com.github.mauricio.netty.allocator.maxCachedBufferCapacity", 32 * 1024);
 
         // the number of threshold of allocations when cached entries will be freed up if not frequently used
         DEFAULT_CACHE_TRIM_INTERVAL = SystemPropertyUtil.getInt(
-                "io.netty.allocator.cacheTrimInterval", 8192);
+                "com.github.mauricio.netty.allocator.cacheTrimInterval", 8192);
 
         if (logger.isDebugEnabled()) {
-            logger.debug("-Dio.netty.allocator.numHeapArenas: {}", DEFAULT_NUM_HEAP_ARENA);
-            logger.debug("-Dio.netty.allocator.numDirectArenas: {}", DEFAULT_NUM_DIRECT_ARENA);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.numHeapArenas: {}", DEFAULT_NUM_HEAP_ARENA);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.numDirectArenas: {}", DEFAULT_NUM_DIRECT_ARENA);
             if (pageSizeFallbackCause == null) {
-                logger.debug("-Dio.netty.allocator.pageSize: {}", DEFAULT_PAGE_SIZE);
+                logger.debug("-Dcom.github.mauricio.netty.allocator.pageSize: {}", DEFAULT_PAGE_SIZE);
             } else {
-                logger.debug("-Dio.netty.allocator.pageSize: {}", DEFAULT_PAGE_SIZE, pageSizeFallbackCause);
+                logger.debug("-Dcom.github.mauricio.netty.allocator.pageSize: {}", DEFAULT_PAGE_SIZE, pageSizeFallbackCause);
             }
             if (maxOrderFallbackCause == null) {
-                logger.debug("-Dio.netty.allocator.maxOrder: {}", DEFAULT_MAX_ORDER);
+                logger.debug("-Dcom.github.mauricio.netty.allocator.maxOrder: {}", DEFAULT_MAX_ORDER);
             } else {
-                logger.debug("-Dio.netty.allocator.maxOrder: {}", DEFAULT_MAX_ORDER, maxOrderFallbackCause);
+                logger.debug("-Dcom.github.mauricio.netty.allocator.maxOrder: {}", DEFAULT_MAX_ORDER, maxOrderFallbackCause);
             }
-            logger.debug("-Dio.netty.allocator.chunkSize: {}", DEFAULT_PAGE_SIZE << DEFAULT_MAX_ORDER);
-            logger.debug("-Dio.netty.allocator.tinyCacheSize: {}", DEFAULT_TINY_CACHE_SIZE);
-            logger.debug("-Dio.netty.allocator.smallCacheSize: {}", DEFAULT_SMALL_CACHE_SIZE);
-            logger.debug("-Dio.netty.allocator.normalCacheSize: {}", DEFAULT_NORMAL_CACHE_SIZE);
-            logger.debug("-Dio.netty.allocator.maxCachedBufferCapacity: {}", DEFAULT_MAX_CACHED_BUFFER_CAPACITY);
-            logger.debug("-Dio.netty.allocator.cacheTrimInterval: {}",
-                    DEFAULT_CACHE_TRIM_INTERVAL);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.chunkSize: {}", DEFAULT_PAGE_SIZE << DEFAULT_MAX_ORDER);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.tinyCacheSize: {}", DEFAULT_TINY_CACHE_SIZE);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.smallCacheSize: {}", DEFAULT_SMALL_CACHE_SIZE);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.normalCacheSize: {}", DEFAULT_NORMAL_CACHE_SIZE);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.maxCachedBufferCapacity: {}", DEFAULT_MAX_CACHED_BUFFER_CAPACITY);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.cacheTrimInterval: {}", DEFAULT_CACHE_TRIM_INTERVAL);
         }
     }
 
@@ -126,7 +125,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
     private final int smallCacheSize;
     private final int normalCacheSize;
 
-    final PoolThreadLocalCache threadCache = new PoolThreadLocalCache();
+    final PoolThreadLocalCache threadCache;
 
     public PooledByteBufAllocator() {
         this(false);
@@ -148,6 +147,7 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
     public PooledByteBufAllocator(boolean preferDirect, int nHeapArena, int nDirectArena, int pageSize, int maxOrder,
                                   int tinyCacheSize, int smallCacheSize, int normalCacheSize) {
         super(preferDirect);
+        threadCache = new PoolThreadLocalCache();
         this.tinyCacheSize = tinyCacheSize;
         this.smallCacheSize = smallCacheSize;
         this.normalCacheSize = normalCacheSize;
@@ -179,6 +179,15 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
         } else {
             directArenas = null;
         }
+    }
+
+    @Deprecated
+    @SuppressWarnings("UnusedParameters")
+    public PooledByteBufAllocator(boolean preferDirect, int nHeapArena, int nDirectArena, int pageSize, int maxOrder,
+                                  int tinyCacheSize, int smallCacheSize, int normalCacheSize,
+                                  long cacheThreadAliveCheckInterval) {
+        this(preferDirect, nHeapArena, nDirectArena, pageSize, maxOrder,
+                tinyCacheSize, smallCacheSize, normalCacheSize);
     }
 
     @SuppressWarnings("unchecked")
@@ -259,66 +268,48 @@ public class PooledByteBufAllocator extends AbstractByteBufAllocator {
      * Returns {@code true} if the calling {@link Thread} has a {@link ThreadLocal} cache for the allocated
      * buffers.
      */
+    @Deprecated
     public boolean hasThreadLocalCache() {
-        return threadCache.exists();
+        return threadCache.isSet();
     }
 
     /**
      * Free all cached buffers for the calling {@link Thread}.
      */
+    @Deprecated
     public void freeThreadLocalCache() {
-        threadCache.free();
+        threadCache.remove();
     }
 
-    final class PoolThreadLocalCache extends ThreadLocal<PoolThreadCache> {
-
+    final class PoolThreadLocalCache extends FastThreadLocal<PoolThreadCache> {
         private final AtomicInteger index = new AtomicInteger();
 
         @Override
-        public PoolThreadCache get() {
-            PoolThreadCache cache = super.get();
-            if (cache == null) {
-                final int idx = index.getAndIncrement();
-                final PoolArena<byte[]> heapArena;
-                final PoolArena<ByteBuffer> directArena;
+        protected PoolThreadCache initialValue() {
+            final int idx = index.getAndIncrement();
+            final PoolArena<byte[]> heapArena;
+            final PoolArena<ByteBuffer> directArena;
 
-                if (heapArenas != null) {
-                    heapArena = heapArenas[Math.abs(idx % heapArenas.length)];
-                } else {
-                    heapArena = null;
-                }
-
-                if (directArenas != null) {
-                    directArena = directArenas[Math.abs(idx % directArenas.length)];
-                } else {
-                    directArena = null;
-                }
-                // If the current Thread is assigned to an EventExecutor we can
-                // easily free the cached stuff again once the EventExecutor completes later.
-                cache = new PoolThreadCache(
-                        heapArena, directArena, tinyCacheSize, smallCacheSize, normalCacheSize,
-                        DEFAULT_MAX_CACHED_BUFFER_CAPACITY, DEFAULT_CACHE_TRIM_INTERVAL);
-                set(cache);
+            if (heapArenas != null) {
+                heapArena = heapArenas[Math.abs(idx % heapArenas.length)];
+            } else {
+                heapArena = null;
             }
-            return cache;
+
+            if (directArenas != null) {
+                directArena = directArenas[Math.abs(idx % directArenas.length)];
+            } else {
+                directArena = null;
+            }
+
+            return new PoolThreadCache(
+                    heapArena, directArena, tinyCacheSize, smallCacheSize, normalCacheSize,
+                    DEFAULT_MAX_CACHED_BUFFER_CAPACITY, DEFAULT_CACHE_TRIM_INTERVAL);
         }
 
-        /**
-         * Returns {@code true} if the calling {@link Thread} has a {@link ThreadLocal} cache for the allocated
-         * buffers.
-         */
-        public boolean exists() {
-            return super.get() != null;
-        }
-
-        /**
-         * Free all cached buffers for the calling {@link Thread}.
-         */
-        public void free() {
-            PoolThreadCache cache = super.get();
-            if (cache != null) {
-                cache.free();
-            }
+        @Override
+        protected void onRemoval(PoolThreadCache value) {
+            value.free();
         }
     }
 

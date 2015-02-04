@@ -255,7 +255,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
                 int tooLongFrameLength = this.tooLongFrameLength;
                 this.tooLongFrameLength = 0;
                 if (!failFast) {
-                    fail(ctx, tooLongFrameLength);
+                    fail(tooLongFrameLength);
                 }
                 return null;
             }
@@ -263,18 +263,18 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
             if (minFrameLength > maxFrameLength) {
                 // Discard read frame.
                 buffer.skipBytes(minFrameLength + minDelimLength);
-                fail(ctx, minFrameLength);
+                fail(minFrameLength);
                 return null;
             }
 
             if (stripDelimiter) {
-                frame = buffer.readBytes(minFrameLength);
+                frame = buffer.readSlice(minFrameLength);
                 buffer.skipBytes(minDelimLength);
             } else {
-                frame = buffer.readBytes(minFrameLength + minDelimLength);
+                frame = buffer.readSlice(minFrameLength + minDelimLength);
             }
 
-            return frame;
+            return frame.retain();
         } else {
             if (!discardingTooLongFrame) {
                 if (buffer.readableBytes() > maxFrameLength) {
@@ -283,7 +283,7 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
                     buffer.skipBytes(buffer.readableBytes());
                     discardingTooLongFrame = true;
                     if (failFast) {
-                        fail(ctx, tooLongFrameLength);
+                        fail(tooLongFrameLength);
                     }
                 }
             } else {
@@ -295,17 +295,15 @@ public class DelimiterBasedFrameDecoder extends ByteToMessageDecoder {
         }
     }
 
-    private void fail(ChannelHandlerContext ctx, long frameLength) {
+    private void fail(long frameLength) {
         if (frameLength > 0) {
-            ctx.fireExceptionCaught(
-                    new TooLongFrameException(
+            throw new TooLongFrameException(
                             "frame length exceeds " + maxFrameLength +
-                            ": " + frameLength + " - discarded"));
+                            ": " + frameLength + " - discarded");
         } else {
-            ctx.fireExceptionCaught(
-                    new TooLongFrameException(
+            throw new TooLongFrameException(
                             "frame length exceeds " + maxFrameLength +
-                            " - discarding"));
+                            " - discarding");
         }
     }
 

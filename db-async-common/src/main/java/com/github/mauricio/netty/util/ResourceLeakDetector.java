@@ -33,7 +33,7 @@ import static com.github.mauricio.netty.util.internal.StringUtil.*;
 
 public final class ResourceLeakDetector<T> {
 
-    private static final String PROP_LEVEL = "io.netty.leakDetectionLevel";
+    private static final String PROP_LEVEL = "com.github.mauricio.netty.leakDetectionLevel";
     private static final Level DEFAULT_LEVEL = Level.SIMPLE;
 
     /**
@@ -67,11 +67,11 @@ public final class ResourceLeakDetector<T> {
 
     static {
         final boolean disabled;
-        if (SystemPropertyUtil.get("io.netty.noResourceLeakDetection") != null) {
-            disabled = SystemPropertyUtil.getBoolean("io.netty.noResourceLeakDetection", false);
-            logger.debug("-Dio.netty.noResourceLeakDetection: {}", disabled);
+        if (SystemPropertyUtil.get("com.github.mauricio.netty.noResourceLeakDetection") != null) {
+            disabled = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noResourceLeakDetection", false);
+            logger.debug("-Dcom.github.mauricio.netty.noResourceLeakDetection: {}", disabled);
             logger.warn(
-                    "-Dio.netty.noResourceLeakDetection is deprecated. Use '-D{}={}' instead.",
+                    "-Dcom.github.mauricio.netty.noResourceLeakDetection is deprecated. Use '-D{}={}' instead.",
                     PROP_LEVEL, DEFAULT_LEVEL.name().toLowerCase());
         } else {
             disabled = false;
@@ -327,33 +327,33 @@ public final class ResourceLeakDetector<T> {
                 array = lastRecords.toArray();
             }
 
-            StringBuilder buf = new StringBuilder(16384);
-            buf.append(NEWLINE);
-            buf.append("Recent access records: ");
-            buf.append(array.length);
-            buf.append(NEWLINE);
+            StringBuilder buf = new StringBuilder(16384)
+                .append(NEWLINE)
+                .append("Recent access records: ")
+                .append(array.length)
+                .append(NEWLINE);
 
             if (array.length > 0) {
                 for (int i = array.length - 1; i >= 0; i --) {
-                    buf.append('#');
-                    buf.append(i + 1);
-                    buf.append(':');
-                    buf.append(NEWLINE);
-                    buf.append(array[i]);
+                    buf.append('#')
+                       .append(i + 1)
+                       .append(':')
+                       .append(NEWLINE)
+                       .append(array[i]);
                 }
             }
 
-            buf.append("Created at:");
-            buf.append(NEWLINE);
-            buf.append(creationRecord);
-            buf.setLength(buf.length() - NEWLINE.length());
+            buf.append("Created at:")
+               .append(NEWLINE)
+               .append(creationRecord);
 
+            buf.setLength(buf.length() - NEWLINE.length());
             return buf.toString();
         }
     }
 
     private static final String[] STACK_TRACE_ELEMENT_EXCLUSIONS = {
-            "io.netty.buffer.AbstractByteBufAllocator.toLeakAwareBuffer(",
+            "com.github.mauricio.netty.buffer.AbstractByteBufAllocator.toLeakAwareBuffer(",
     };
 
     static String newRecord(int recordsToSkip) {

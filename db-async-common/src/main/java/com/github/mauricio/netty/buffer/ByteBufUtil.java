@@ -16,6 +16,9 @@
 package com.github.mauricio.netty.buffer;
 
 import com.github.mauricio.netty.util.CharsetUtil;
+import com.github.mauricio.netty.util.Recycler;
+import com.github.mauricio.netty.util.Recycler.Handle;
+import com.github.mauricio.netty.util.internal.PlatformDependent;
 import com.github.mauricio.netty.util.internal.SystemPropertyUtil;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
@@ -41,6 +44,8 @@ public final class ByteBufUtil {
 
     static final ByteBufAllocator DEFAULT_ALLOCATOR;
 
+    private static final int THREAD_LOCAL_BUFFER_SIZE;
+
     static {
         final char[] DIGITS = "0123456789abcdef".toCharArray();
         for (int i = 0; i < 256; i ++) {
@@ -48,20 +53,23 @@ public final class ByteBufUtil {
             HEXDUMP_TABLE[(i << 1) + 1] = DIGITS[i       & 0x0F];
         }
 
-        String allocType = SystemPropertyUtil.get("io.netty.allocator.type", "unpooled").toLowerCase(Locale.US).trim();
+        String allocType = SystemPropertyUtil.get("com.github.mauricio.netty.allocator.type", "unpooled").toLowerCase(Locale.US).trim();
         ByteBufAllocator alloc;
         if ("unpooled".equals(allocType)) {
             alloc = UnpooledByteBufAllocator.DEFAULT;
-            logger.debug("-Dio.netty.allocator.type: {}", allocType);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.type: {}", allocType);
         } else if ("pooled".equals(allocType)) {
             alloc = PooledByteBufAllocator.DEFAULT;
-            logger.debug("-Dio.netty.allocator.type: {}", allocType);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.type: {}", allocType);
         } else {
             alloc = UnpooledByteBufAllocator.DEFAULT;
-            logger.debug("-Dio.netty.allocator.type: unpooled (unknown: {})", allocType);
+            logger.debug("-Dcom.github.mauricio.netty.allocator.type: unpooled (unknown: {})", allocType);
         }
 
         DEFAULT_ALLOCATOR = alloc;
+
+        THREAD_LOCAL_BUFFER_SIZE = SystemPropertyUtil.getInt("com.github.mauricio.netty.threadLocalDirectBufferSize", 64 * 1024);
+        logger.debug("-Dcom.github.mauricio.netty.threadLocalDirectBufferSize: {}", THREAD_LOCAL_BUFFER_SIZE);
     }
 
     /**
@@ -328,14 +336,109 @@ public final class ByteBufUtil {
     }
 
     /**
+     * Encode a {@link CharSequence} in <a href="http://en.wikipedia.org/wiki/UTF-8">UTF-8</a> and write
+     * it to a {@link ByteBuf}.
+     *
+     * This method returns the actual number of bytes written.
+     */
+    public static int writeUtf8(ByteBuf buf, CharSequence seq) {
+        if (buf == null) {
+            throw new NullPointerException("buf");
+        }
+        if (seq == null) {
+            throw new NullPointerException("seq");
+        }
+        // UTF-8 uses max. 3 bytes per char, so calculate the worst case.
+        final int len = seq.length();
+        final int maxSize = len * 3;
+        buf.ensureWritable(maxSize);
+        if (buf instanceof AbstractByteBuf) {
+            // Fast-Path
+            AbstractByteBuf buffer = (AbstractByteBuf) buf;
+            int oldWriterIndex = buffer.writerIndex;
+            int writerIndex = oldWriterIndex;
+
+            // We can use the _set methods as these not need to do any index checks and reference checks.
+            // This is possible as we called ensureWritable(...) before.
+            for (int i = 0; i < len; i++) {
+                char c = seq.charAt(i);
+                if (c < 0x80) {
+                    buffer._setByte(writerIndex++, (byte) c);
+                } else if (c < 0x800) {
+                    buffer._setByte(writerIndex++, (byte) (0xc0 | (c >> 6)));
+                    buffer._setByte(writerIndex++, (byte) (0x80 | (c & 0x3f)));
+                } else {
+                    buffer._setByte(writerIndex++, (byte) (0xe0 | (c >> 12)));
+                    buffer._setByte(writerIndex++, (byte) (0x80 | ((c >> 6) & 0x3f)));
+                    buffer._setByte(writerIndex++, (byte) (0x80 | (c & 0x3f)));
+                }
+            }
+            // update the writerIndex without any extra checks for performance reasons
+            buffer.writerIndex = writerIndex;
+            return writerIndex - oldWriterIndex;
+        } else {
+            // Maybe we could also check if we can unwrap() to access the wrapped buffer which
+            // may be an AbstractByteBuf. But this may be overkill so let us keep it simple for now.
+            byte[] bytes = seq.toString().getBytes(CharsetUtil.UTF_8);
+            buf.writeBytes(bytes);
+            return bytes.length;
+        }
+    }
+
+    /**
+     * Encode a {@link CharSequence} in <a href="http://en.wikipedia.org/wiki/ASCII">ASCII</a> and write it
+     * to a {@link ByteBuf}.
+     *
+     * This method returns the actual number of bytes written.
+     */
+    public static int writeAscii(ByteBuf buf, CharSequence seq) {
+        if (buf == null) {
+            throw new NullPointerException("buf");
+        }
+        if (seq == null) {
+            throw new NullPointerException("seq");
+        }
+        // ASCII uses 1 byte per char
+        final int len = seq.length();
+        buf.ensureWritable(len);
+        if (buf instanceof AbstractByteBuf) {
+            // Fast-Path
+            AbstractByteBuf buffer = (AbstractByteBuf) buf;
+            int writerIndex = buffer.writerIndex;
+
+            // We can use the _set methods as these not need to do any index checks and reference checks.
+            // This is possible as we called ensureWritable(...) before.
+            for (int i = 0; i < len; i++) {
+                buffer._setByte(writerIndex++, (byte) seq.charAt(i));
+            }
+            // update the writerIndex without any extra checks for performance reasons
+            buffer.writerIndex = writerIndex;
+        } else {
+            // Maybe we could also check if we can unwrap() to access the wrapped buffer which
+            // may be an AbstractByteBuf. But this may be overkill so let us keep it simple for now.
+            buf.writeBytes(seq.toString().getBytes(CharsetUtil.US_ASCII));
+        }
+        return len;
+    }
+
+    /**
      * Encode the given {@link CharBuffer} using the given {@link Charset} into a new {@link ByteBuf} which
      * is allocated via the {@link ByteBufAllocator}.
      */
     public static ByteBuf encodeString(ByteBufAllocator alloc, CharBuffer src, Charset charset) {
+        return encodeString0(alloc, false, src, charset);
+    }
+
+    static ByteBuf encodeString0(ByteBufAllocator alloc, boolean enforceHeap, CharBuffer src, Charset charset) {
         final CharsetEncoder encoder = CharsetUtil.getEncoder(charset);
         int length = (int) ((double) src.remaining() * encoder.maxBytesPerChar());
         boolean release = true;
-        final ByteBuf dst = alloc.buffer(length);
+        final ByteBuf dst;
+        if (enforceHeap) {
+            dst = alloc.heapBuffer(length);
+        } else {
+            dst = alloc.buffer(length);
+        }
         try {
             final ByteBuffer dstBuf = dst.internalNioBuffer(0, length);
             final int pos = dstBuf.position();
@@ -376,6 +479,90 @@ public final class ByteBufUtil {
             throw new IllegalStateException(x);
         }
         return dst.flip().toString();
+    }
+
+    /**
+     * Returns a cached thread-local direct buffer, if available.
+     *
+     * @return a cached thread-local direct buffer, if available.  {@code null} otherwise.
+     */
+    public static ByteBuf threadLocalDirectBuffer() {
+        if (THREAD_LOCAL_BUFFER_SIZE <= 0) {
+            return null;
+        }
+
+        if (PlatformDependent.hasUnsafe()) {
+            return ThreadLocalUnsafeDirectByteBuf.newInstance();
+        } else {
+            return ThreadLocalDirectByteBuf.newInstance();
+        }
+    }
+
+    static final class ThreadLocalUnsafeDirectByteBuf extends UnpooledUnsafeDirectByteBuf {
+
+        private static final Recycler<ThreadLocalUnsafeDirectByteBuf> RECYCLER =
+                new Recycler<ThreadLocalUnsafeDirectByteBuf>() {
+                    @Override
+                    protected ThreadLocalUnsafeDirectByteBuf newObject(Handle handle) {
+                        return new ThreadLocalUnsafeDirectByteBuf(handle);
+                    }
+                };
+
+        static ThreadLocalUnsafeDirectByteBuf newInstance() {
+            ThreadLocalUnsafeDirectByteBuf buf = RECYCLER.get();
+            buf.setRefCnt(1);
+            return buf;
+        }
+
+        private final Handle handle;
+
+        private ThreadLocalUnsafeDirectByteBuf(Handle handle) {
+            super(UnpooledByteBufAllocator.DEFAULT, 256, Integer.MAX_VALUE);
+            this.handle = handle;
+        }
+
+        @Override
+        protected void deallocate() {
+            if (capacity() > THREAD_LOCAL_BUFFER_SIZE) {
+                super.deallocate();
+            } else {
+                clear();
+                RECYCLER.recycle(this, handle);
+            }
+        }
+    }
+
+    static final class ThreadLocalDirectByteBuf extends UnpooledDirectByteBuf {
+
+        private static final Recycler<ThreadLocalDirectByteBuf> RECYCLER = new Recycler<ThreadLocalDirectByteBuf>() {
+            @Override
+            protected ThreadLocalDirectByteBuf newObject(Handle handle) {
+                return new ThreadLocalDirectByteBuf(handle);
+            }
+        };
+
+        static ThreadLocalDirectByteBuf newInstance() {
+            ThreadLocalDirectByteBuf buf = RECYCLER.get();
+            buf.setRefCnt(1);
+            return buf;
+        }
+
+        private final Handle handle;
+
+        private ThreadLocalDirectByteBuf(Handle handle) {
+            super(UnpooledByteBufAllocator.DEFAULT, 256, Integer.MAX_VALUE);
+            this.handle = handle;
+        }
+
+        @Override
+        protected void deallocate() {
+            if (capacity() > THREAD_LOCAL_BUFFER_SIZE) {
+                super.deallocate();
+            } else {
+                clear();
+                RECYCLER.recycle(this, handle);
+            }
+        }
     }
 
     private ByteBufUtil() { }

@@ -276,7 +276,7 @@ class PostgreSQLConnection
       notReadyForQueryError(errorMessage, false)
   
   private def validateQuery(query: String) {
-    this.validateIfItIsReadyForQuery("Can't run query because there is one query pending already")
+    this.validateIfItIsReadyForQuery(s"Can't run query because there is one query pending already: $query")
 
     if (query == null || query.isEmpty) {
       throw new QueryMustNotBeNullOrEmptyException(query)
@@ -303,6 +303,7 @@ class PostgreSQLConnection
 
   private def succeedQueryPromise(result: QueryResult) {
     this.queryResult = None
+    this.currentQuery = None
     this.clearQueryPromise.foreach {
       _.success(result)
     }
