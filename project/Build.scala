@@ -80,7 +80,7 @@ object Configuration {
         :+ "-feature"
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
-    crossScalaVersions := Seq(projectScalaVersion, "2.10.4"),
+    crossScalaVersions := Seq(projectScalaVersion, "2.10.4", "2.11.5"),
     javacOptions := Seq("-source", "1.7", "-target", "1.7", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,
