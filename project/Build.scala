@@ -52,8 +52,8 @@ object Configuration {
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
 
   val commonDependencies = Seq(
-    "org.slf4j" % "slf4j-api" % "1.7.5",
-    "joda-time" % "joda-time" % "2.3",
+    "org.slf4j" % "slf4j-api" % "1.7.10",
+    "joda-time" % "joda-time" % "2.7",
     "org.joda" % "joda-convert" % "1.5",
 //    "io.netty" % "netty-all" % "4.0.25.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
