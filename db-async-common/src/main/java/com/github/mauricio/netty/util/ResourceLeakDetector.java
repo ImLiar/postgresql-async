@@ -33,7 +33,7 @@ import static com.github.mauricio.netty.util.internal.StringUtil.*;
 
 public final class ResourceLeakDetector<T> {
 
-    private static final String PROP_LEVEL = "com.github.mauricio.netty.leakDetectionLevel";
+    private static final String PROP_LEVEL = "io.netty.leakDetectionLevel";
     private static final Level DEFAULT_LEVEL = Level.SIMPLE;
 
     /**
@@ -67,11 +67,11 @@ public final class ResourceLeakDetector<T> {
 
     static {
         final boolean disabled;
-        if (SystemPropertyUtil.get("com.github.mauricio.netty.noResourceLeakDetection") != null) {
-            disabled = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noResourceLeakDetection", false);
-            logger.debug("-Dcom.github.mauricio.netty.noResourceLeakDetection: {}", disabled);
+        if (SystemPropertyUtil.get("io.netty.noResourceLeakDetection") != null) {
+            disabled = SystemPropertyUtil.getBoolean("io.netty.noResourceLeakDetection", false);
+            logger.debug("-Dio.netty.noResourceLeakDetection: {}", disabled);
             logger.warn(
-                    "-Dcom.github.mauricio.netty.noResourceLeakDetection is deprecated. Use '-D{}={}' instead.",
+                    "-Dio.netty.noResourceLeakDetection is deprecated. Use '-D{}={}' instead.",
                     PROP_LEVEL, DEFAULT_LEVEL.name().toLowerCase());
         } else {
             disabled = false;
@@ -238,11 +238,13 @@ public final class ResourceLeakDetector<T> {
                     logger.error("LEAK: {}.release() was not called before it's garbage-collected. " +
                             "Enable advanced leak reporting to find out where the leak occurred. " +
                             "To enable advanced leak reporting, " +
-                            "specify the JVM option '-D{}={}' or call {}.setLevel()",
+                            "specify the JVM option '-D{}={}' or call {}.setLevel() " +
+                            "See http://netty.io/wiki/reference-counted-objects.html for more information.",
                             resourceType, PROP_LEVEL, Level.ADVANCED.name().toLowerCase(), simpleClassName(this));
                 } else {
                     logger.error(
-                            "LEAK: {}.release() was not called before it's garbage-collected.{}",
+                            "LEAK: {}.release() was not called before it's garbage-collected. " +
+                            "See http://netty.io/wiki/reference-counted-objects.html for more information.{}",
                             resourceType, records);
                 }
             }
@@ -317,6 +319,7 @@ public final class ResourceLeakDetector<T> {
             return false;
         }
 
+        @Override
         public String toString() {
             if (creationRecord == null) {
                 return "";
@@ -353,7 +356,7 @@ public final class ResourceLeakDetector<T> {
     }
 
     private static final String[] STACK_TRACE_ELEMENT_EXCLUSIONS = {
-            "com.github.mauricio.netty.buffer.AbstractByteBufAllocator.toLeakAwareBuffer(",
+            "io.netty.buffer.AbstractByteBufAllocator.toLeakAwareBuffer(",
     };
 
     static String newRecord(int recordsToSkip) {

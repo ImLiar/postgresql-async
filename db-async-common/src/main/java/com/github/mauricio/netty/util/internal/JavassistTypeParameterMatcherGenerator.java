@@ -56,7 +56,7 @@ public final class JavassistTypeParameterMatcherGenerator {
 
     public static TypeParameterMatcher generate(Class<?> type, ClassLoader classLoader) {
         final String typeName = typeName(type);
-        final String className = "com.github.mauricio.netty.util.internal.__matchers__." + typeName + "Matcher";
+        final String className = "io.netty.util.internal.__matchers__." + typeName + "Matcher";
         try {
             try {
                 return (TypeParameterMatcher) Class.forName(className, true, classLoader).newInstance();

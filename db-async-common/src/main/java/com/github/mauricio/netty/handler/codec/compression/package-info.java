@@ -15,7 +15,7 @@
  */
 
 /**
- * Encoder and decoder which compresses and decompresses {@link com.github.mauricio.netty.buffer.ByteBuf}s
+ * Encoder and decoder which compresses and decompresses {@link io.netty.buffer.ByteBuf}s
  * in a compression format such as <a href="http://en.wikipedia.org/wiki/Zlib">zlib</a>,
  * <a href="http://en.wikipedia.org/wiki/Gzip">gzip</a>, and
  * <a href="http://code.google.com/p/snappy/">Snappy</a>.

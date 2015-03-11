@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  * {@code sun.misc.Unsafe} object.
  * <p>
  * You can disable the use of {@code sun.misc.Unsafe} if you specify
- * the system property <strong>com.github.mauricio.netty.noUnsafe</strong>.
+ * the system property <strong>io.netty.noUnsafe</strong>.
  */
 public final class PlatformDependent {
 
@@ -69,7 +69,7 @@ public final class PlatformDependent {
     private static final boolean HAS_UNSAFE = hasUnsafe0();
     private static final boolean CAN_USE_CHM_V8 = HAS_UNSAFE && JAVA_VERSION < 8;
     private static final boolean DIRECT_BUFFER_PREFERRED =
-            HAS_UNSAFE && !SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noPreferDirect", false);
+            HAS_UNSAFE && !SystemPropertyUtil.getBoolean("io.netty.noPreferDirect", false);
     private static final long MAX_DIRECT_MEMORY = maxDirectMemory0();
 
     private static final long ARRAY_BASE_OFFSET = arrayBaseOffset0();
@@ -84,7 +84,7 @@ public final class PlatformDependent {
 
     static {
         if (logger.isDebugEnabled()) {
-            logger.debug("-Dcom.github.mauricio.netty.noPreferDirect: {}", !DIRECT_BUFFER_PREFERRED);
+            logger.debug("-Dio.netty.noPreferDirect: {}", !DIRECT_BUFFER_PREFERRED);
         }
 
         if (!hasUnsafe() && !isAndroid()) {
@@ -148,7 +148,7 @@ public final class PlatformDependent {
 
     /**
      * Returns {@code true} if the platform has reliable low-level direct buffer access API and a user specified
-     * {@code -Dcom.github.mauricio.netty.preferDirect} option.
+     * {@code -Dio.netty.preferDirect} option.
      */
     public static boolean directBufferPreferred() {
         return DIRECT_BUFFER_PREFERRED;
@@ -459,7 +459,7 @@ public final class PlatformDependent {
             return false;
         }
 
-        String[] ID_COMMANDS = { "/usr/bin/id", "/bin/id", "id", "/usr/xpg4/bin/id"};
+        String[] ID_COMMANDS = { "/usr/bin/id", "/bin/id", "/usr/xpg4/bin/id", "id"};
         Pattern UID_PATTERN = Pattern.compile("^(?:0|[1-9][0-9]*)$");
         for (String idCmd: ID_COMMANDS) {
             Process p = null;
@@ -586,8 +586,8 @@ public final class PlatformDependent {
     }
 
     private static boolean hasUnsafe0() {
-        boolean noUnsafe = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noUnsafe", false);
-        logger.debug("-Dcom.github.mauricio.netty.noUnsafe: {}", noUnsafe);
+        boolean noUnsafe = SystemPropertyUtil.getBoolean("io.netty.noUnsafe", false);
+        logger.debug("-Dio.netty.noUnsafe: {}", noUnsafe);
 
         if (isAndroid()) {
             logger.debug("sun.misc.Unsafe: unavailable (Android)");
@@ -595,20 +595,20 @@ public final class PlatformDependent {
         }
 
         if (noUnsafe) {
-            logger.debug("sun.misc.Unsafe: unavailable (com.github.mauricio.netty.noUnsafe)");
+            logger.debug("sun.misc.Unsafe: unavailable (io.netty.noUnsafe)");
             return false;
         }
 
         // Legacy properties
         boolean tryUnsafe;
-        if (SystemPropertyUtil.contains("com.github.mauricio.netty.tryUnsafe")) {
-            tryUnsafe = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.tryUnsafe", true);
+        if (SystemPropertyUtil.contains("io.netty.tryUnsafe")) {
+            tryUnsafe = SystemPropertyUtil.getBoolean("io.netty.tryUnsafe", true);
         } else {
             tryUnsafe = SystemPropertyUtil.getBoolean("org.jboss.netty.tryUnsafe", true);
         }
 
         if (!tryUnsafe) {
-            logger.debug("sun.misc.Unsafe: unavailable (com.github.mauricio.netty.tryUnsafe/org.jboss.netty.tryUnsafe)");
+            logger.debug("sun.misc.Unsafe: unavailable (io.netty.tryUnsafe/org.jboss.netty.tryUnsafe)");
             return false;
         }
 
@@ -696,11 +696,11 @@ public final class PlatformDependent {
             return false;
         }
 
-        boolean noJavassist = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noJavassist", false);
-        logger.debug("-Dcom.github.mauricio.netty.noJavassist: {}", noJavassist);
+        boolean noJavassist = SystemPropertyUtil.getBoolean("io.netty.noJavassist", false);
+        logger.debug("-Dio.netty.noJavassist: {}", noJavassist);
 
         if (noJavassist) {
-            logger.debug("Javassist: unavailable (com.github.mauricio.netty.noJavassist)");
+            logger.debug("Javassist: unavailable (io.netty.noJavassist)");
             return false;
         }
 
@@ -721,15 +721,15 @@ public final class PlatformDependent {
     private static File tmpdir0() {
         File f;
         try {
-            f = toDirectory(SystemPropertyUtil.get("com.github.mauricio.netty.tmpdir"));
+            f = toDirectory(SystemPropertyUtil.get("io.netty.tmpdir"));
             if (f != null) {
-                logger.debug("-Dcom.github.mauricio.netty.tmpdir: {}", f);
+                logger.debug("-Dio.netty.tmpdir: {}", f);
                 return f;
             }
 
             f = toDirectory(SystemPropertyUtil.get("java.io.tmpdir"));
             if (f != null) {
-                logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (java.io.tmpdir)", f);
+                logger.debug("-Dio.netty.tmpdir: {} (java.io.tmpdir)", f);
                 return f;
             }
 
@@ -737,7 +737,7 @@ public final class PlatformDependent {
             if (isWindows()) {
                 f = toDirectory(System.getenv("TEMP"));
                 if (f != null) {
-                    logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (%TEMP%)", f);
+                    logger.debug("-Dio.netty.tmpdir: {} (%TEMP%)", f);
                     return f;
                 }
 
@@ -745,20 +745,20 @@ public final class PlatformDependent {
                 if (userprofile != null) {
                     f = toDirectory(userprofile + "\\AppData\\Local\\Temp");
                     if (f != null) {
-                        logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (%USERPROFILE%\\AppData\\Local\\Temp)", f);
+                        logger.debug("-Dio.netty.tmpdir: {} (%USERPROFILE%\\AppData\\Local\\Temp)", f);
                         return f;
                     }
 
                     f = toDirectory(userprofile + "\\Local Settings\\Temp");
                     if (f != null) {
-                        logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} (%USERPROFILE%\\Local Settings\\Temp)", f);
+                        logger.debug("-Dio.netty.tmpdir: {} (%USERPROFILE%\\Local Settings\\Temp)", f);
                         return f;
                     }
                 }
             } else {
                 f = toDirectory(System.getenv("TMPDIR"));
                 if (f != null) {
-                    logger.debug("-Dcom.github.mauricio.netty.tmpdir: {} ($TMPDIR)", f);
+                    logger.debug("-Dio.netty.tmpdir: {} ($TMPDIR)", f);
                     return f;
                 }
             }
@@ -799,21 +799,21 @@ public final class PlatformDependent {
 
     private static int bitMode0() {
         // Check user-specified bit mode first.
-        int bitMode = SystemPropertyUtil.getInt("com.github.mauricio.netty.bitMode", 0);
+        int bitMode = SystemPropertyUtil.getInt("io.netty.bitMode", 0);
         if (bitMode > 0) {
-            logger.debug("-Dcom.github.mauricio.netty.bitMode: {}", bitMode);
+            logger.debug("-Dio.netty.bitMode: {}", bitMode);
             return bitMode;
         }
 
         // And then the vendor specific ones which is probably most reliable.
         bitMode = SystemPropertyUtil.getInt("sun.arch.data.model", 0);
         if (bitMode > 0) {
-            logger.debug("-Dcom.github.mauricio.netty.bitMode: {} (sun.arch.data.model)", bitMode);
+            logger.debug("-Dio.netty.bitMode: {} (sun.arch.data.model)", bitMode);
             return bitMode;
         }
         bitMode = SystemPropertyUtil.getInt("com.ibm.vm.bitmode", 0);
         if (bitMode > 0) {
-            logger.debug("-Dcom.github.mauricio.netty.bitMode: {} (com.ibm.vm.bitmode)", bitMode);
+            logger.debug("-Dio.netty.bitMode: {} (com.ibm.vm.bitmode)", bitMode);
             return bitMode;
         }
 
@@ -826,7 +826,7 @@ public final class PlatformDependent {
         }
 
         if (bitMode > 0) {
-            logger.debug("-Dcom.github.mauricio.netty.bitMode: {} (os.arch: {})", bitMode, arch);
+            logger.debug("-Dio.netty.bitMode: {} (os.arch: {})", bitMode, arch);
         }
 
         // Last resort: guess from VM name and then fall back to most common 64-bit mode.

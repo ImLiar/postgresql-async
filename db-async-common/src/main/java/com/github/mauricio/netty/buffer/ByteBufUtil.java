@@ -53,23 +53,23 @@ public final class ByteBufUtil {
             HEXDUMP_TABLE[(i << 1) + 1] = DIGITS[i       & 0x0F];
         }
 
-        String allocType = SystemPropertyUtil.get("com.github.mauricio.netty.allocator.type", "unpooled").toLowerCase(Locale.US).trim();
+        String allocType = SystemPropertyUtil.get("io.netty.allocator.type", "unpooled").toLowerCase(Locale.US).trim();
         ByteBufAllocator alloc;
         if ("unpooled".equals(allocType)) {
             alloc = UnpooledByteBufAllocator.DEFAULT;
-            logger.debug("-Dcom.github.mauricio.netty.allocator.type: {}", allocType);
+            logger.debug("-Dio.netty.allocator.type: {}", allocType);
         } else if ("pooled".equals(allocType)) {
             alloc = PooledByteBufAllocator.DEFAULT;
-            logger.debug("-Dcom.github.mauricio.netty.allocator.type: {}", allocType);
+            logger.debug("-Dio.netty.allocator.type: {}", allocType);
         } else {
             alloc = UnpooledByteBufAllocator.DEFAULT;
-            logger.debug("-Dcom.github.mauricio.netty.allocator.type: unpooled (unknown: {})", allocType);
+            logger.debug("-Dio.netty.allocator.type: unpooled (unknown: {})", allocType);
         }
 
         DEFAULT_ALLOCATOR = alloc;
 
-        THREAD_LOCAL_BUFFER_SIZE = SystemPropertyUtil.getInt("com.github.mauricio.netty.threadLocalDirectBufferSize", 64 * 1024);
-        logger.debug("-Dcom.github.mauricio.netty.threadLocalDirectBufferSize: {}", THREAD_LOCAL_BUFFER_SIZE);
+        THREAD_LOCAL_BUFFER_SIZE = SystemPropertyUtil.getInt("io.netty.threadLocalDirectBufferSize", 64 * 1024);
+        logger.debug("-Dio.netty.threadLocalDirectBufferSize: {}", THREAD_LOCAL_BUFFER_SIZE);
     }
 
     /**

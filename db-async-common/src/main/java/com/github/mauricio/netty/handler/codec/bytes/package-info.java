@@ -16,6 +16,6 @@
 
 /**
  * Encoder and decoder which transform an array of bytes into a
- * {@link com.github.mauricio.netty.buffer.ByteBuf} and vice versa.
+ * {@link io.netty.buffer.ByteBuf} and vice versa.
  */
 package com.github.mauricio.netty.handler.codec.bytes;

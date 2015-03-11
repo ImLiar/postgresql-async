@@ -16,6 +16,6 @@
 
 /**
  * A channel registry which helps a user maintain the list of open
- * {@link com.github.mauricio.netty.channel.Channel}s and perform bulk operations on them.
+ * {@link io.netty.channel.Channel}s and perform bulk operations on them.
  */
 package com.github.mauricio.netty.channel.group;

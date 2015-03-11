@@ -35,10 +35,10 @@ public abstract class MultithreadEventLoopGroup extends MultithreadEventExecutor
 
     static {
         DEFAULT_EVENT_LOOP_THREADS = Math.max(1, SystemPropertyUtil.getInt(
-                "com.github.mauricio.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
+                "io.netty.eventLoopThreads", Runtime.getRuntime().availableProcessors() * 2));
 
         if (logger.isDebugEnabled()) {
-            logger.debug("-Dcom.github.mauricio.netty.eventLoopThreads: {}", DEFAULT_EVENT_LOOP_THREADS);
+            logger.debug("-Dio.netty.eventLoopThreads: {}", DEFAULT_EVENT_LOOP_THREADS);
         }
     }
 

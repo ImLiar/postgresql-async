@@ -33,11 +33,11 @@ public final class ZlibCodecFactory {
     private static final boolean noJdkZlibEncoder;
 
     static {
-        noJdkZlibDecoder = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noJdkZlibDecoder", true);
-        logger.debug("-Dcom.github.mauricio.netty.noJdkZlibDecoder: {}", noJdkZlibDecoder);
+        noJdkZlibDecoder = SystemPropertyUtil.getBoolean("io.netty.noJdkZlibDecoder", true);
+        logger.debug("-Dio.netty.noJdkZlibDecoder: {}", noJdkZlibDecoder);
 
-        noJdkZlibEncoder = SystemPropertyUtil.getBoolean("com.github.mauricio.netty.noJdkZlibEncoder", false);
-        logger.debug("-Dcom.github.mauricio.netty.noJdkZlibEncoder: {}", noJdkZlibEncoder);
+        noJdkZlibEncoder = SystemPropertyUtil.getBoolean("io.netty.noJdkZlibEncoder", false);
+        logger.debug("-Dio.netty.noJdkZlibEncoder: {}", noJdkZlibEncoder);
     }
 
     public static ZlibEncoder newZlibEncoder(int compressionLevel) {

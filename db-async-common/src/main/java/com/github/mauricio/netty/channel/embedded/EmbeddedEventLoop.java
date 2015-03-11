@@ -21,14 +21,14 @@ import com.github.mauricio.netty.channel.ChannelPromise;
 import com.github.mauricio.netty.channel.DefaultChannelPromise;
 import com.github.mauricio.netty.channel.EventLoop;
 import com.github.mauricio.netty.channel.EventLoopGroup;
-import com.github.mauricio.netty.util.concurrent.AbstractEventExecutor;
+import com.github.mauricio.netty.util.concurrent.AbstractScheduledEventExecutor;
 import com.github.mauricio.netty.util.concurrent.Future;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
-final class EmbeddedEventLoop extends AbstractEventExecutor implements EventLoop {
+final class EmbeddedEventLoop extends AbstractScheduledEventExecutor implements EventLoop {
 
     private final Queue<Runnable> tasks = new ArrayDeque<Runnable>(2);
 
@@ -49,6 +49,27 @@ final class EmbeddedEventLoop extends AbstractEventExecutor implements EventLoop
 
             task.run();
         }
+    }
+
+    long runScheduledTasks() {
+        long time = AbstractScheduledEventExecutor.nanoTime();
+        for (;;) {
+            Runnable task = pollScheduledTask(time);
+            if (task == null) {
+                return nextScheduledTaskNano();
+            }
+
+            task.run();
+        }
+    }
+
+    long nextScheduledTask() {
+        return nextScheduledTaskNano();
+    }
+
+    @Override
+    protected void cancelScheduledTasks() {
+        super.cancelScheduledTasks();
     }
 
     @Override

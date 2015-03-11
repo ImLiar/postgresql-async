@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * than shared {@code Random} objects in concurrent programs will
  * typically encounter much less overhead and contention.  Use of
  * {@code ThreadLocalRandom} is particularly appropriate when multiple
- * tasks (for example, each a {@link com.github.mauricio.netty.util.internal.chmv8.ForkJoinTask}) use random numbers
+ * tasks (for example, each a {@link io.netty.util.internal.chmv8.ForkJoinTask}) use random numbers
  * in parallel in thread pools.
  *
  * <p>Usages of this class should typically be of the form:
@@ -76,7 +76,7 @@ public final class ThreadLocalRandom extends Random {
         if (initialSeedUniquifier == 0) {
             // Use the system property value.
             ThreadLocalRandom.initialSeedUniquifier = initialSeedUniquifier =
-                    SystemPropertyUtil.getLong("com.github.mauricio.netty.initialSeedUniquifier", 0);
+                    SystemPropertyUtil.getLong("io.netty.initialSeedUniquifier", 0);
         }
 
         // Otherwise, generate one.
@@ -167,7 +167,7 @@ public final class ThreadLocalRandom extends Random {
             if (seedUniquifier.compareAndSet(current, next)) {
                 if (current == 0 && logger.isDebugEnabled()) {
                     logger.debug(String.format(
-                            "-Dcom.github.mauricio.netty.initialSeedUniquifier: 0x%016x (took %d ms)",
+                            "-Dio.netty.initialSeedUniquifier: 0x%016x (took %d ms)",
                             actualCurrent, TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime)));
                 }
                 return next ^ System.nanoTime();

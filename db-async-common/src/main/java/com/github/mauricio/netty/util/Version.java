@@ -32,7 +32,7 @@ import java.util.TreeMap;
 /**
  * Retrieves the version information of available Netty artifacts.
  * <p>
- * This class retrieves the version information from {@code META-INF/com.github.mauricio.netty.versions.properties}, which is
+ * This class retrieves the version information from {@code META-INF/io.netty.versions.properties}, which is
  * generated in build time.  Note that it may not be possible to retrieve the information completely, depending on
  * your environment, such as the specified {@link ClassLoader}, the current {@link SecurityManager}.
  * </p>
@@ -69,7 +69,7 @@ public final class Version {
         // Collect all properties.
         Properties props = new Properties();
         try {
-            Enumeration<URL> resources = classLoader.getResources("META-INF/com.github.mauricio.netty.versions.properties");
+            Enumeration<URL> resources = classLoader.getResources("META-INF/io.netty.versions.properties");
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
                 InputStream in = url.openStream();
