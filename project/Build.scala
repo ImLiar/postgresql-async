@@ -1,5 +1,5 @@
+import sbt.Keys._
 import sbt._
-import Keys._
 
 object ProjectBuild extends Build {
 
@@ -45,7 +45,7 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val commonVersion = "0.2.19-SNAPSHOT"
+  val commonVersion = "0.2.18-EmbeddedNetty"
   val projectScalaVersion = "2.11.7"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "2.3.11" % "test"
@@ -53,7 +53,7 @@ object Configuration {
 
   val commonDependencies = Seq(
     "org.slf4j" % "slf4j-api" % "1.7.12",
-    "joda-time" % "joda-time" % "2.7",
+    "joda-time" % "joda-time" % "2.8.2",
     "org.joda" % "joda-convert" % "1.5",
 //    "io.netty" % "netty-all" % "4.0.29.Final",
     "org.javassist" % "javassist" % "3.20.0-GA",
