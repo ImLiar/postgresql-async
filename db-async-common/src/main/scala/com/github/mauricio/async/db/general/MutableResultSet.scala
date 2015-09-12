@@ -31,22 +31,18 @@ class MutableResultSet[T <: ColumnData](
   private val columnMapping: Map[String, Int] = this.columnTypes.indices.map(
     index =>
       ( this.columnTypes(index).name, index ) ).toMap
-    
+
 
   val columnNames : IndexedSeq[String] = this.columnTypes.map(c => c.name)
+
+  val types : IndexedSeq[Int] = this.columnTypes.map(c => c.dataType)
 
   override def length: Int = this.rows.length
 
   override def apply(idx: Int): RowData = this.rows(idx)
 
-  def addRow( row : Seq[Any] ) {
-    val realRow = new ArrayRowData( columnTypes.size, this.rows.size, this.columnMapping )
-    var x = 0
-    while ( x < row.size ) {
-      realRow(x) = row(x)
-      x += 1
-    }
-    this.rows += realRow
+  def addRow(row : Array[Any] ) {
+    this.rows += new ArrayRowData(this.rows.size, this.columnMapping, row)
   }
 
 }

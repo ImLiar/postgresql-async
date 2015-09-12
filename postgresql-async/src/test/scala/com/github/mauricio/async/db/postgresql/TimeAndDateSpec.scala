@@ -35,7 +35,7 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
                          )"""
 
           executeDdl(handler, create)
-          executeQuery(handler, "INSERT INTO messages (moment) VALUES ('04:05:06')")
+          executePreparedStatement(handler, "INSERT INTO messages (moment) VALUES (?)", Array[Any](new LocalTime(4, 5, 6)))
 
           val rows = executePreparedStatement(handler, "select * from messages").rows.get
 
@@ -60,7 +60,7 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
                          )"""
 
           executeDdl(handler, create)
-          executeQuery(handler, "INSERT INTO messages (moment) VALUES ('04:05:06.134')")
+          executePreparedStatement(handler, "INSERT INTO messages (moment) VALUES (?)", Array[Any](new LocalTime(4, 5, 6, 134)))
 
           val rows = executePreparedStatement(handler, "select * from messages").rows.get
 
@@ -196,6 +196,22 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
           val date2 = result.rows.get.head(0)
 
           date2 === date1.toDateTime(DateTimeZone.UTC).toLocalDateTime
+      }
+
+    }
+
+    "handle sending a LocalDateTime and return a LocalDateTime for a timestamp without timezone column" in {
+
+      withTimeHandler {
+        conn =>
+          val date1 = new LocalDateTime(2190319)
+
+          await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
+          await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", Seq(date1)))
+          val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
+          val date2 = result.rows.get.head(0)
+
+          date2 === date1
       }
 
     }

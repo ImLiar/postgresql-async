@@ -45,18 +45,18 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val commonVersion = "0.2.17-SNAPSHOT"
-  val projectScalaVersion = "2.10.4"
+  val commonVersion = "0.2.19-SNAPSHOT"
+  val projectScalaVersion = "2.11.7"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "2.3.11" % "test"
-  val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
+  val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.1.3" % "test"
 
   val commonDependencies = Seq(
-    "org.slf4j" % "slf4j-api" % "1.7.10",
+    "org.slf4j" % "slf4j-api" % "1.7.12",
     "joda-time" % "joda-time" % "2.7",
     "org.joda" % "joda-convert" % "1.5",
-//    "io.netty" % "netty-all" % "4.0.25.Final",
-    "org.javassist" % "javassist" % "3.18.1-GA",
+//    "io.netty" % "netty-all" % "4.0.29.Final",
+    "org.javassist" % "javassist" % "3.20.0-GA",
     "commons-logging" % "commons-logging" % "1.1.3" % "optional",
     "org.jboss.marshalling" % "jboss-marshalling" % "1.3.18.GA" % "optional",
     "com.jcraft" % "jzlib" % "1.1.2" % "optional",
