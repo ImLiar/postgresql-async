@@ -14,23 +14,22 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.postgresql
 
 import java.nio.ByteBuffer
 
-import com.github.mauricio.async.db.column.{TimestampEncoderDecoder, TimeEncoderDecoder, DateEncoderDecoder}
+import com.github.mauricio.async.db.column.{DateEncoderDecoder, TimeEncoderDecoder, TimestampEncoderDecoder}
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
-import com.github.mauricio.async.db.postgresql.exceptions.{QueryMustNotBeNullOrEmptyException, GenericDatabaseException}
+import com.github.mauricio.async.db.postgresql.exceptions.{GenericDatabaseException, QueryMustNotBeNullOrEmptyException}
 import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
-import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
+import com.github.mauricio.async.db.{Configuration, Connection, QueryResult}
 import io.netty.buffer.Unpooled
-import concurrent.{Future, Await}
-import org.specs2.mutable.Specification
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
 import org.joda.time.LocalDateTime
+import org.specs2.mutable.Specification
+
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 object PostgreSQLConnectionSpec {
   val log = Log.get[PostgreSQLConnectionSpec]
@@ -285,16 +284,12 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
       try {
         withHandler(configuration, {
           handler =>
-            executeQuery(handler, "SELECT 0")
-            throw new IllegalStateException("should not have come here")
+            val result = executeQuery(handler, "SELECT 0")
+            throw new IllegalStateException("should not have arrived")
         })
       } catch {
-        case e: GenericDatabaseException => {
+        case e: GenericDatabaseException =>
           e.errorMessage.fields(InformationMessage.Routine) === "auth_failed"
-        }
-        case e: Exception => {
-          throw new IllegalStateException("should not have come here")
-        }
       }
 
     }
