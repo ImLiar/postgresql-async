@@ -100,8 +100,7 @@ package com.github.mauricio.netty.buffer;
  * where as per convention defined above
  * the second value (i.e, x) indicates that the first node which is free to be allocated is at depth x (from root)
  */
-
-final class PoolChunk<T> {
+final class PoolChunk<T> implements PoolChunkMetric {
 
     final PoolArena<T> arena;
     final T memory;
@@ -186,7 +185,8 @@ final class PoolChunk<T> {
         return new PoolSubpage[size];
     }
 
-    int usage() {
+    @Override
+    public int usage() {
         final int freeBytes = this.freeBytes;
         if (freeBytes == 0) {
             return 100;
@@ -358,7 +358,8 @@ final class PoolChunk<T> {
         if (bitmapIdx == 0) {
             byte val = value(memoryMapIdx);
             assert val == unusable : String.valueOf(val);
-            buf.init(this, handle, runOffset(memoryMapIdx), reqCapacity, runLength(memoryMapIdx));
+            buf.init(this, handle, runOffset(memoryMapIdx), reqCapacity, runLength(memoryMapIdx),
+                     arena.parent.threadCache());
         } else {
             initBufWithSubpage(buf, handle, bitmapIdx, reqCapacity);
         }
@@ -379,7 +380,8 @@ final class PoolChunk<T> {
 
         buf.init(
             this, handle,
-            runOffset(memoryMapIdx) + (bitmapIdx & 0x3FFFFFFF) * subpage.elemSize, reqCapacity, subpage.elemSize);
+            runOffset(memoryMapIdx) + (bitmapIdx & 0x3FFFFFFF) * subpage.elemSize, reqCapacity, subpage.elemSize,
+            arena.parent.threadCache());
     }
 
     private byte value(int id) {
@@ -412,6 +414,16 @@ final class PoolChunk<T> {
 
     private int subpageIdx(int memoryMapIdx) {
         return memoryMapIdx ^ maxSubpageAllocs; // remove highest set bit, to get offset
+    }
+
+    @Override
+    public int chunkSize() {
+        return chunkSize;
+    }
+
+    @Override
+    public int freeBytes() {
+        return freeBytes;
     }
 
     @Override

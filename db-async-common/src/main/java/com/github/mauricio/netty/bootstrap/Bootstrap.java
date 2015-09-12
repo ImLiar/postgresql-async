@@ -21,6 +21,7 @@ import com.github.mauricio.netty.channel.ChannelFutureListener;
 import com.github.mauricio.netty.channel.ChannelOption;
 import com.github.mauricio.netty.channel.ChannelPipeline;
 import com.github.mauricio.netty.channel.ChannelPromise;
+import com.github.mauricio.netty.channel.EventLoopGroup;
 import com.github.mauricio.netty.util.AttributeKey;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
@@ -214,6 +215,17 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     @SuppressWarnings("CloneDoesntCallSuperClone")
     public Bootstrap clone() {
         return new Bootstrap(this);
+    }
+
+    /**
+     * Returns a deep clone of this bootstrap which has the identical configuration except that it uses
+     * the given {@link EventLoopGroup}. This method is useful when making multiple {@link Channel}s with similar
+     * settings.
+     */
+    public Bootstrap clone(EventLoopGroup group) {
+        Bootstrap bs = new Bootstrap(this);
+        bs.group = group;
+        return bs;
     }
 
     @Override

@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.pool
 
 import java.util.concurrent.atomic.AtomicInteger
 import com.github.mauricio.async.db.util.{NettyUtils, ExecutorServiceUtils}
-import io.netty.channel.EventLoopGroup
+import com.github.mauricio.netty.channel.EventLoopGroup
 
 /**
  * Implementation of TimeoutScheduler used for testing

@@ -30,6 +30,7 @@ import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 
@@ -149,7 +150,7 @@ public final class ChannelOutboundBuffer {
                 if (!entry.promise.setUncancellable()) {
                     // Was cancelled so make sure we free up memory and notify about the freed bytes
                     int pending = entry.cancel();
-                    decrementPendingOutboundBytes(pending, false);
+                    decrementPendingOutboundBytes(pending, false, true);
                 }
                 entry = entry.next;
             } while (entry != null);
@@ -183,16 +184,17 @@ public final class ChannelOutboundBuffer {
      * This method is thread-safe!
      */
     void decrementPendingOutboundBytes(long size) {
-        decrementPendingOutboundBytes(size, true);
+        decrementPendingOutboundBytes(size, true, true);
     }
 
-    private void decrementPendingOutboundBytes(long size, boolean invokeLater) {
+    private void decrementPendingOutboundBytes(long size, boolean invokeLater, boolean notifyWritability) {
         if (size == 0) {
             return;
         }
 
         long newWriteBufferSize = TOTAL_PENDING_SIZE_UPDATER.addAndGet(this, -size);
-        if (newWriteBufferSize == 0 || newWriteBufferSize <= channel.config().getWriteBufferLowWaterMark()) {
+        if (notifyWritability && (newWriteBufferSize == 0
+            || newWriteBufferSize <= channel.config().getWriteBufferLowWaterMark())) {
             setWritable(invokeLater);
         }
     }
@@ -244,6 +246,7 @@ public final class ChannelOutboundBuffer {
     public boolean remove() {
         Entry e = flushedEntry;
         if (e == null) {
+            clearNioBuffers();
             return false;
         }
         Object msg = e.msg;
@@ -257,7 +260,7 @@ public final class ChannelOutboundBuffer {
             // only release message, notify and decrement if it was not canceled before.
             ReferenceCountUtil.safeRelease(msg);
             safeSuccess(promise);
-            decrementPendingOutboundBytes(size, false);
+            decrementPendingOutboundBytes(size, false, true);
         }
 
         // recycle the entry
@@ -272,8 +275,13 @@ public final class ChannelOutboundBuffer {
      * {@code false} to signal that no more messages are ready to be handled.
      */
     public boolean remove(Throwable cause) {
+        return remove0(cause, true);
+    }
+
+    private boolean remove0(Throwable cause, boolean notifyWritability) {
         Entry e = flushedEntry;
         if (e == null) {
+            clearNioBuffers();
             return false;
         }
         Object msg = e.msg;
@@ -288,7 +296,7 @@ public final class ChannelOutboundBuffer {
             ReferenceCountUtil.safeRelease(msg);
 
             safeFail(promise, cause);
-            decrementPendingOutboundBytes(size, false);
+            decrementPendingOutboundBytes(size, false, notifyWritability);
         }
 
         // recycle the entry
@@ -340,6 +348,17 @@ public final class ChannelOutboundBuffer {
                 break;
             }
         }
+        clearNioBuffers();
+    }
+
+    // Clear all ByteBuffer from the array so these can be GC'ed.
+    // See https://github.com/netty/netty/issues/3837
+    private void clearNioBuffers() {
+        int count = nioBufferCount;
+        if (count > 0) {
+            nioBufferCount = 0;
+            Arrays.fill(NIO_BUFFERS.get(), 0, count, null);
+        }
     }
 
     /**
@@ -365,6 +384,19 @@ public final class ChannelOutboundBuffer {
                 final int readableBytes = buf.writerIndex() - readerIndex;
 
                 if (readableBytes > 0) {
+                    if (Integer.MAX_VALUE - readableBytes < nioBufferSize) {
+                        // If the nioBufferSize + readableBytes will overflow an Integer we stop populate the
+                        // ByteBuffer array. This is done as bsd/osx don't allow to write more bytes then
+                        // Integer.MAX_VALUE with one writev(...) call and so will return 'EINVAL', which will
+                        // raise an IOException. On Linux it may work depending on the
+                        // architecture and kernel but to be safe we also enforce the limit here.
+                        // This said writing more the Integer.MAX_VALUE is not a good idea anyway.
+                        //
+                        // See also:
+                        // - https://www.freebsd.org/cgi/man.cgi?query=write&sektion=2
+                        // - http://linux.die.net/man/2/writev
+                        break;
+                    }
                     nioBufferSize += readableBytes;
                     int count = entry.count;
                     if (count == -1) {
@@ -573,7 +605,7 @@ public final class ChannelOutboundBuffer {
         return flushed == 0;
     }
 
-    void failFlushed(Throwable cause) {
+    void failFlushed(Throwable cause, boolean notify) {
         // Make sure that this method does not reenter.  A listener added to the current promise can be notified by the
         // current thread in the tryFailure() call of the loop below, and the listener can trigger another fail() call
         // indirectly (usually by closing the channel.)
@@ -586,7 +618,7 @@ public final class ChannelOutboundBuffer {
         try {
             inFail = true;
             for (;;) {
-                if (!remove(cause)) {
+                if (!remove0(cause, notify)) {
                     break;
                 }
             }
@@ -633,6 +665,7 @@ public final class ChannelOutboundBuffer {
         } finally {
             inFail = false;
         }
+        clearNioBuffers();
     }
 
     private static void safeSuccess(ChannelPromise promise) {
@@ -654,6 +687,36 @@ public final class ChannelOutboundBuffer {
 
     public long totalPendingWriteBytes() {
         return totalPendingSize;
+    }
+
+    /**
+     * Get how many bytes can be written until {@link #isWritable()} returns {@code false}.
+     * This quantity will always be non-negative. If {@link #isWritable()} is {@code false} then 0.
+     */
+    public long bytesBeforeUnwritable() {
+        long bytes = channel.config().getWriteBufferHighWaterMark() - totalPendingSize;
+        // If bytes is negative we know we are not writable, but if bytes is non-negative we have to check writability.
+        // Note that totalPendingSize and isWritable() use different volatile variables that are not synchronized
+        // together. totalPendingSize will be updated before isWritable().
+        if (bytes > 0) {
+            return isWritable() ? bytes : 0;
+        }
+        return 0;
+    }
+
+    /**
+     * Get how many bytes must be drained from the underlying buffer until {@link #isWritable()} returns {@code true}.
+     * This quantity will always be non-negative. If {@link #isWritable()} is {@code true} then 0.
+     */
+    public long bytesBeforeWritable() {
+        long bytes = totalPendingSize - channel.config().getWriteBufferLowWaterMark();
+        // If bytes is negative we know we are writable, but if bytes is non-negative we have to check writability.
+        // Note that totalPendingSize and isWritable() use different volatile variables that are not synchronized
+        // together. totalPendingSize will be updated before isWritable().
+        if (bytes > 0) {
+            return isWritable() ? 0 : bytes;
+        }
+        return 0;
     }
 
     /**

@@ -17,6 +17,7 @@ package com.github.mauricio.netty.util.internal;
 
 import com.github.mauricio.netty.util.CharsetUtil;
 import com.github.mauricio.netty.util.internal.chmv8.ConcurrentHashMapV8;
+import com.github.mauricio.netty.util.internal.chmv8.LongAdderV8;
 import com.github.mauricio.netty.util.internal.logging.InternalLogger;
 import com.github.mauricio.netty.util.internal.logging.InternalLoggerFactory;
 
@@ -29,14 +30,19 @@ import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
+import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.regex.Matcher;
@@ -147,8 +153,8 @@ public final class PlatformDependent {
     }
 
     /**
-     * Returns {@code true} if the platform has reliable low-level direct buffer access API and a user specified
-     * {@code -Dio.netty.preferDirect} option.
+     * Returns {@code true} if the platform has reliable low-level direct buffer access API and a user has not specified
+     * {@code -Dio.netty.noPreferDirect} option.
      */
     public static boolean directBufferPreferred() {
         return DIRECT_BUFFER_PREFERRED;
@@ -222,6 +228,17 @@ public final class PlatformDependent {
             return new ConcurrentHashMapV8<K, V>();
         } else {
             return new ConcurrentHashMap<K, V>();
+        }
+    }
+
+    /**
+     * Creates a new fastest {@link LongCounter} implementaion for the current platform.
+     */
+    public static LongCounter newLongCounter() {
+        if (HAS_UNSAFE) {
+            return new LongAdderV8();
+        } else {
+            return new AtomicLongCounter();
         }
     }
 
@@ -410,6 +427,18 @@ public final class PlatformDependent {
     }
 
     /**
+     * Create a new {@link Queue} which is safe to use for multiple producers (different threads) and a single
+     * consumer (one thread!) with the given fixes {@code capacity}.
+     */
+    public static <T> Queue<T> newFixedMpscQueue(int capacity) {
+        if (hasUnsafe()) {
+            return new MpscArrayQueue<T>(capacity);
+        } else {
+            return new LinkedBlockingQueue<T>(capacity);
+        }
+    }
+
+    /**
      * Return the {@link ClassLoader} for the given {@link Class}.
      */
     public static ClassLoader getClassLoader(final Class<?> clazz) {
@@ -428,6 +457,17 @@ public final class PlatformDependent {
      */
     public static ClassLoader getSystemClassLoader() {
         return PlatformDependent0.getSystemClassLoader();
+    }
+
+    /**
+     * Returns a new concurrent {@link Deque}.
+     */
+    public static <C> Deque<C> newConcurrentDeque() {
+        if (javaVersion() < 7) {
+            return new LinkedBlockingDeque<C>();
+        } else {
+            return new ConcurrentLinkedDeque<C>();
+        }
     }
 
     private static boolean isAndroid0() {
@@ -845,6 +885,28 @@ public final class PlatformDependent {
             return -1;
         }
         return PlatformDependent0.addressSize();
+    }
+
+    private static final class AtomicLongCounter extends AtomicLong implements LongCounter {
+        @Override
+        public void add(long delta) {
+            addAndGet(delta);
+        }
+
+        @Override
+        public void increment() {
+            incrementAndGet();
+        }
+
+        @Override
+        public void decrement() {
+            decrementAndGet();
+        }
+
+        @Override
+        public long value() {
+            return get();
+        }
     }
 
     private PlatformDependent() {

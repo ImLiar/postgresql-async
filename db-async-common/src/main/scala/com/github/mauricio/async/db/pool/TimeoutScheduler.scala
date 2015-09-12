@@ -2,7 +2,7 @@ package com.github.mauricio.async.db.pool
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{TimeUnit, TimeoutException, ScheduledFuture}
-import io.netty.channel.EventLoopGroup
+import com.github.mauricio.netty.channel.EventLoopGroup
 import scala.concurrent.{ExecutionContext, Promise}
 import scala.concurrent.duration.Duration
 

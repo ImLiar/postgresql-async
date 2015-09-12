@@ -133,6 +133,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     ByteBuf cumulation;
     private Cumulator cumulator = MERGE_CUMULATOR;
     private boolean singleDecode;
+    private boolean decodeWasNull;
     private boolean first;
 
     protected ByteToMessageDecoder() {
@@ -200,11 +201,11 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
             ByteBuf bytes = buf.readBytes(readable);
             buf.release();
             ctx.fireChannelRead(bytes);
-            ctx.fireChannelReadComplete();
         } else {
             buf.release();
         }
         cumulation = null;
+        ctx.fireChannelReadComplete();
         handlerRemoved0(ctx);
     }
 
@@ -237,6 +238,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                     cumulation = null;
                 }
                 int size = out.size();
+                decodeWasNull = size == 0;
 
                 for (int i = 0; i < size; i ++) {
                     ctx.fireChannelRead(out.get(i));
@@ -250,6 +252,17 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        discardSomeReadBytes();
+        if (decodeWasNull) {
+            decodeWasNull = false;
+            if (!ctx.channel().config().isAutoRead()) {
+                ctx.read();
+            }
+        }
+        ctx.fireChannelReadComplete();
+    }
+
+    protected final void discardSomeReadBytes() {
         if (cumulation != null && !first && cumulation.refCnt() == 1) {
             // discard some bytes if possible to make more room in the
             // buffer but only if the refCnt == 1  as otherwise the user may have
@@ -260,7 +273,6 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
             // - https://github.com/netty/netty/issues/1764
             cumulation.discardSomeReadBytes();
         }
-        ctx.fireChannelReadComplete();
     }
 
     @Override

@@ -233,6 +233,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements com.gith
 
     @Override
     protected void doClose() throws Exception {
+        super.doClose();
         javaChannel().close();
     }
 
@@ -332,7 +333,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements com.gith
     private final class NioSocketChannelUnsafe extends NioByteUnsafe {
         @Override
         protected Executor closeExecutor() {
-            if (config().getSoLinger() > 0) {
+            if (javaChannel().isOpen() && config().getSoLinger() > 0) {
                 return GlobalEventExecutor.INSTANCE;
             }
             return null;

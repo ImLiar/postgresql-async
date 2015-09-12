@@ -26,10 +26,14 @@ import java.util.List;
 public final class StringUtil {
 
     public static final String NEWLINE;
-
+    public static final char DOUBLE_QUOTE = '\"';
+    public static final char COMMA = ',';
+    public static final char LINE_FEED = '\n';
+    public static final char CARRIAGE_RETURN = '\r';
+    public static final String EMPTY_STRING = "";
     private static final String[] BYTE2HEX_PAD = new String[256];
     private static final String[] BYTE2HEX_NOPAD = new String[256];
-    private static final String EMPTY_STRING = "";
+    private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
     static {
         // Determine the newline character of the current platform.
@@ -302,16 +306,12 @@ public final class StringUtil {
      * with anonymous classes.
      */
     public static String simpleClassName(Class<?> clazz) {
-        if (clazz == null) {
-            return "null_class";
+        String className = ObjectUtil.checkNotNull(clazz, "clazz").getName();
+        final int lastDotIdx = className.lastIndexOf(PACKAGE_SEPARATOR_CHAR);
+        if (lastDotIdx > -1) {
+            return className.substring(lastDotIdx + 1);
         }
-
-        Package pkg = clazz.getPackage();
-        if (pkg != null) {
-            return clazz.getName().substring(pkg.getName().length() + 1);
-        } else {
-            return clazz.getName();
-        }
+        return className;
     }
 
     private StringUtil() {

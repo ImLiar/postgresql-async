@@ -31,7 +31,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
     protected int offset;
     protected int length;
     int maxLength;
-    Thread initThread;
+    PoolThreadCache cache;
     private ByteBuffer tmpNioBuf;
 
     protected PooledByteBuf(Recycler.Handle recyclerHandle, int maxCapacity) {
@@ -39,7 +39,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         this.recyclerHandle = recyclerHandle;
     }
 
-    void init(PoolChunk<T> chunk, long handle, int offset, int length, int maxLength) {
+    void init(PoolChunk<T> chunk, long handle, int offset, int length, int maxLength, PoolThreadCache cache) {
         assert handle >= 0;
         assert chunk != null;
 
@@ -50,8 +50,9 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         this.length = length;
         this.maxLength = maxLength;
         setIndex(0, 0);
+        discardMarks();
         tmpNioBuf = null;
-        initThread = Thread.currentThread();
+        this.cache = cache;
     }
 
     void initUnpooled(PoolChunk<T> chunk, int length) {
@@ -64,7 +65,17 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         this.length = maxLength = length;
         setIndex(0, 0);
         tmpNioBuf = null;
-        initThread = Thread.currentThread();
+        cache = null;
+    }
+
+    @Override
+    public ByteBuf slice(int index, int length) {
+        return PooledSlicedByteBuf.newInstance(this, index, length);
+    }
+
+    @Override
+    public ByteBuf duplicate() {
+        return PooledDuplicatedByteBuf.newInstance(this);
     }
 
     @Override
@@ -142,9 +153,7 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
             final long handle = this.handle;
             this.handle = -1;
             memory = null;
-            boolean sameThread = initThread == Thread.currentThread();
-            initThread = null;
-            chunk.arena.free(chunk, handle, maxLength, sameThread);
+            chunk.arena.free(chunk, handle, maxLength, cache);
             recycle();
         }
     }

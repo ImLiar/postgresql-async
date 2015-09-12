@@ -67,7 +67,7 @@ final class DefaultChannelPipeline implements ChannelPipeline {
     final Map<EventExecutorGroup, EventExecutor> childExecutors =
             new IdentityHashMap<EventExecutorGroup, EventExecutor>();
 
-    DefaultChannelPipeline(AbstractChannel channel) {
+    public DefaultChannelPipeline(AbstractChannel channel) {
         if (channel == null) {
             throw new NullPointerException("channel");
         }
@@ -469,7 +469,7 @@ final class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
-    private void callHandlerAdded(final AbstractChannelHandlerContext ctx) {
+    private void callHandlerAdded(final ChannelHandlerContext ctx) {
         if (ctx.channel().isRegistered() && !ctx.executor().inEventLoop()) {
             ctx.executor().execute(new Runnable() {
                 @Override
@@ -482,14 +482,13 @@ final class DefaultChannelPipeline implements ChannelPipeline {
         callHandlerAdded0(ctx);
     }
 
-    private void callHandlerAdded0(final AbstractChannelHandlerContext ctx) {
+    private void callHandlerAdded0(final ChannelHandlerContext ctx) {
         try {
-            ctx.invokedThisChannelRead = false;
             ctx.handler().handlerAdded(ctx);
         } catch (Throwable t) {
             boolean removed = false;
             try {
-                remove(ctx);
+                remove((AbstractChannelHandlerContext) ctx);
                 removed = true;
             } catch (Throwable t2) {
                 if (logger.isWarnEnabled()) {
@@ -1024,13 +1023,22 @@ final class DefaultChannelPipeline implements ChannelPipeline {
         public void handlerRemoved(ChannelHandlerContext ctx) throws Exception { }
 
         @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception { }
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            // This may not be a configuration error and so don't log anything.
+            // The event may be superfluous for the current pipeline configuration.
+            ReferenceCountUtil.release(evt);
+        }
 
         @Override
         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            logger.warn(
-                    "An exceptionCaught() event was fired, and it reached at the tail of the pipeline. " +
-                    "It usually means the last handler in the pipeline did not handle the exception.", cause);
+            try {
+                logger.warn(
+                        "An exceptionCaught() event was fired, and it reached at the tail of the pipeline. " +
+                                "It usually means the last handler in the pipeline did not handle the exception.",
+                                cause);
+            } finally {
+                ReferenceCountUtil.release(cause);
+            }
         }
 
         @Override
@@ -1052,7 +1060,7 @@ final class DefaultChannelPipeline implements ChannelPipeline {
 
         private static final String HEAD_NAME = generateName0(HeadContext.class);
 
-        final Unsafe unsafe;
+        protected final Unsafe unsafe;
 
         HeadContext(DefaultChannelPipeline pipeline) {
             super(pipeline, null, HEAD_NAME, false, true);

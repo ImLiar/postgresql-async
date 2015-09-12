@@ -17,3 +17,6 @@ cp -r netty/transport/src/main/java/io/netty/bootstrap db-async-common/src/main/
 
 rm -rf db-async-common/src/main/java/com/github/mauricio/netty/channel
 cp -r netty/transport/src/main/java/io/netty/channel db-async-common/src/main/java/io/netty
+
+cp -r db-async-common/src/main/java/io/netty/* db-async-common/src/main/java/com/github/mauricio/netty
+rm -rf db-async-common/src/main/java/io/netty
